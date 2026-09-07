@@ -125,6 +125,8 @@ pub fn parse_mod_keybinds_and_variables(
     let mut keybinds = Vec::new();
     let mut variables_map: HashMap<String, ModVariableState> = HashMap::new();
 
+    let mut constants_defaults: HashMap<String, i64> = HashMap::new();
+
     for ini_path in &ini_files {
         let content = match fs::read_to_string(ini_path) {
             Ok(c) => c,
@@ -139,6 +141,65 @@ pub fn parse_mod_keybinds_and_variables(
 
         let mut in_constants = false;
 
+        let flush_section = |current_section: &str,
+                             section_key: &str,
+                             section_type: &str,
+                             section_var: &Option<String>,
+                             section_vals: &[i64],
+                             ini_path: &Path,
+                             keybinds: &mut Vec<ModKeybind>,
+                             variables_map: &mut HashMap<String, ModVariableState>| {
+            if current_section.is_empty() || section_key.is_empty() {
+                return;
+            }
+
+            let label = format_section_label(current_section);
+            let b_type = if section_type.is_empty() {
+                "cycle".to_string()
+            } else {
+                section_type.to_string()
+            };
+
+            keybinds.push(ModKeybind {
+                section: current_section.to_string(),
+                label: label.clone(),
+                key: section_key.to_string(),
+                binding_type: b_type.clone(),
+                variable: section_var.clone(),
+                values: section_vals.to_vec(),
+                ini_path: ini_path.to_string_lossy().to_string(),
+            });
+
+            if !b_type.eq_ignore_ascii_case("hold") {
+                if let Some(var_name) = section_var {
+                    let mut possible = section_vals.to_vec();
+                    if b_type.eq_ignore_ascii_case("toggle") && possible.len() == 1 {
+                        if !possible.contains(&0) {
+                            possible.insert(0, 0);
+                        }
+                    }
+                    if possible.is_empty() {
+                        possible = vec![0, 1];
+                    }
+
+                    let entry = variables_map
+                        .entry(var_name.clone())
+                        .or_insert_with(|| ModVariableState {
+                            variable: var_name.clone(),
+                            label,
+                            current_value: possible.first().copied().unwrap_or(0),
+                            possible_values: Vec::new(),
+                            is_persisted: true,
+                        });
+                    for v in &possible {
+                        if !entry.possible_values.contains(v) {
+                            entry.possible_values.push(*v);
+                        }
+                    }
+                }
+            }
+        };
+
         for line in content.lines() {
             let clean = strip_comments(line);
             if clean.is_empty() {
@@ -146,39 +207,16 @@ pub fn parse_mod_keybinds_and_variables(
             }
 
             if clean.starts_with('[') && clean.ends_with(']') {
-                if !current_section.is_empty() && !section_key.is_empty() {
-                    let label = format_section_label(&current_section);
-                    keybinds.push(ModKeybind {
-                        section: current_section.clone(),
-                        label: label.clone(),
-                        key: section_key.clone(),
-                        binding_type: if section_type.is_empty() {
-                            "cycle".to_string()
-                        } else {
-                            section_type.clone()
-                        },
-                        variable: section_var.clone(),
-                        values: section_vals.clone(),
-                        ini_path: ini_path.to_string_lossy().to_string(),
-                    });
-
-                    if let Some(var_name) = &section_var {
-                        let entry = variables_map.entry(var_name.clone()).or_insert_with(|| {
-                            ModVariableState {
-                                variable: var_name.clone(),
-                                label: label.clone(),
-                                current_value: section_vals.first().copied().unwrap_or(0),
-                                possible_values: Vec::new(),
-                                is_persisted: true,
-                            }
-                        });
-                        for v in &section_vals {
-                            if !entry.possible_values.contains(v) {
-                                entry.possible_values.push(*v);
-                            }
-                        }
-                    }
-                }
+                flush_section(
+                    &current_section,
+                    &section_key,
+                    &section_type,
+                    &section_var,
+                    &section_vals,
+                    ini_path,
+                    &mut keybinds,
+                    &mut variables_map,
+                );
 
                 current_section = clean.to_string();
                 section_key.clear();
@@ -192,9 +230,6 @@ pub fn parse_mod_keybinds_and_variables(
             }
 
             if in_constants {
-                let lower = clean.to_ascii_lowercase();
-                let is_persisted = lower.contains("persist");
-
                 if let Some((left, right)) = clean.split_once('=') {
                     let left_trimmed = left.trim();
                     let right_trimmed = right.trim();
@@ -206,18 +241,9 @@ pub fn parse_mod_keybinds_and_variables(
                     };
 
                     if !var_name.is_empty() {
-                        let default_val = right_trimmed.parse::<i64>().unwrap_or(0);
-                        let entry = variables_map.entry(var_name.clone()).or_insert_with(|| {
-                            ModVariableState {
-                                variable: var_name.clone(),
-                                label: format_section_label(&var_name),
-                                current_value: default_val,
-                                possible_values: vec![0, 1],
-                                is_persisted,
-                            }
-                        });
-                        entry.current_value = default_val;
-                        entry.is_persisted = is_persisted;
+                        if let Ok(val) = right_trimmed.parse::<i64>() {
+                            constants_defaults.insert(var_name, val);
+                        }
                     }
                 }
             } else if current_section.to_ascii_lowercase().starts_with("[key") {
@@ -247,39 +273,21 @@ pub fn parse_mod_keybinds_and_variables(
             }
         }
 
-        if !current_section.is_empty() && !section_key.is_empty() {
-            let label = format_section_label(&current_section);
-            keybinds.push(ModKeybind {
-                section: current_section,
-                label: label.clone(),
-                key: section_key,
-                binding_type: if section_type.is_empty() {
-                    "cycle".to_string()
-                } else {
-                    section_type
-                },
-                variable: section_var.clone(),
-                values: section_vals.clone(),
-                ini_path: ini_path.to_string_lossy().to_string(),
-            });
+        flush_section(
+            &current_section,
+            &section_key,
+            &section_type,
+            &section_var,
+            &section_vals,
+            ini_path,
+            &mut keybinds,
+            &mut variables_map,
+        );
+    }
 
-            if let Some(var_name) = &section_var {
-                let entry =
-                    variables_map
-                        .entry(var_name.clone())
-                        .or_insert_with(|| ModVariableState {
-                            variable: var_name.clone(),
-                            label,
-                            current_value: section_vals.first().copied().unwrap_or(0),
-                            possible_values: Vec::new(),
-                            is_persisted: true,
-                        });
-                for v in &section_vals {
-                    if !entry.possible_values.contains(v) {
-                        entry.possible_values.push(*v);
-                    }
-                }
-            }
+    for (var_name, default_val) in constants_defaults {
+        if let Some(entry) = variables_map.get_mut(&var_name) {
+            entry.current_value = default_val;
         }
     }
 
@@ -551,5 +559,40 @@ $glasses = 0, 1
         let updated = fs::read_to_string(&d3dx_path).unwrap();
         assert!(updated.contains("$\\Jane_Doe\\swapvar = 1"));
         assert!(!updated.contains("= 2"));
+    }
+
+    #[test]
+    fn test_parse_mod_keybinds_and_variables_filters_internal_constants() {
+        let temp = tempdir().unwrap();
+        let mod_dir = temp.path().join("TestMod");
+        fs::create_dir_all(&mod_dir).unwrap();
+
+        let ini_content = r#"
+[Constants]
+global $pass = 0
+global $internal_hash_abc = 1
+global $mesh_vertex_count = 12345
+global $dt = 0
+global persist $swapvar = 1
+
+[KeySwapOutfit]
+key = ]
+type = cycle
+$swapvar = 0, 1, 2
+
+[KeyHoldSprint]
+key = shift
+type = hold
+$sprint = 1
+"#;
+        fs::write(mod_dir.join("mod.ini"), ini_content).unwrap();
+
+        let data = parse_mod_keybinds_and_variables(&mod_dir, temp.path()).unwrap();
+        assert_eq!(data.keybinds.len(), 2);
+        assert_eq!(data.variables.len(), 1);
+        assert_eq!(data.variables[0].variable, "$swapvar");
+        assert_eq!(data.variables[0].label, "Outfit");
+        assert_eq!(data.variables[0].current_value, 1);
+        assert_eq!(data.variables[0].possible_values, vec![0, 1, 2]);
     }
 }
