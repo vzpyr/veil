@@ -13,6 +13,7 @@ interface ModGridProps {
   onDelete: (mod: ModItem) => void;
   onOpenConflicts: () => void;
   onOpenSettings: () => void;
+  onOpenKeybinds: (mod: ModItem) => void;
 }
 
 export default function ModGrid({
@@ -25,6 +26,7 @@ export default function ModGrid({
   onDelete,
   onOpenConflicts,
   onOpenSettings,
+  onOpenKeybinds,
 }: ModGridProps) {
   if (!hasModsDir) {
     return (
@@ -88,6 +90,7 @@ export default function ModGrid({
             onReveal={onReveal}
             onDelete={onDelete}
             onOpenConflicts={onOpenConflicts}
+            onOpenKeybinds={onOpenKeybinds}
           />
         ))}
       </SimpleGrid>

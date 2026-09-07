@@ -3,6 +3,7 @@ pub mod config;
 pub mod conflict;
 pub mod gamebanana;
 pub mod games;
+pub mod keybinds;
 pub mod scanner;
 pub mod symlink;
 
@@ -11,6 +12,9 @@ use config::{get_config_path, read_config, write_config, AppConfig, GameSettings
 use conflict::{detect_conflicts, ConflictGroup};
 use gamebanana::download_and_install_mod;
 use games::{get_supported_games, GameDefinition};
+use keybinds::{
+    parse_mod_keybinds_and_variables, set_d3dx_user_toggle, update_ini_keybind, ModKeybindData,
+};
 use scanner::{
     create_category, delete_mod, list_categories, move_mod_category, scan_mods, toggle_mod_status,
     CategoryItem, ModItem,
@@ -215,6 +219,31 @@ async fn download_mod(
     .await
 }
 
+#[tauri::command]
+fn get_mod_keybinds(mods_dir: String, mod_id: String) -> Result<ModKeybindData, String> {
+    let path = Path::new(&mods_dir);
+    ensure_veil_dirs(path)?;
+    let disabled_dir = get_disabled_dir(path);
+    let mod_folder = disabled_dir.join(&mod_id);
+    parse_mod_keybinds_and_variables(&mod_folder, path)
+}
+
+#[tauri::command]
+fn set_mod_keybind(ini_path: String, section: String, new_key: String) -> Result<(), String> {
+    update_ini_keybind(Path::new(&ini_path), &section, &new_key)
+}
+
+#[tauri::command]
+fn set_mod_toggle_state(
+    mods_dir: String,
+    mod_name: String,
+    variable: String,
+    new_value: i64,
+) -> Result<(), String> {
+    let path = Path::new(&mods_dir);
+    set_d3dx_user_toggle(path, &mod_name, &variable, new_value)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -237,6 +266,9 @@ pub fn run() {
             prune_symlinks,
             extract_archive_file,
             download_mod,
+            get_mod_keybinds,
+            set_mod_keybind,
+            set_mod_toggle_state,
         ])
         .run(tauri::generate_context!())
         .expect("error while running veil");

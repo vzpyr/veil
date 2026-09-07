@@ -15,6 +15,7 @@ import {
   IconDotsVertical,
   IconExternalLink,
   IconFolderSymlink,
+  IconKeyboard,
   IconPhoto,
   IconTrash,
 } from "@tabler/icons-react";
@@ -29,6 +30,7 @@ interface ModCardProps {
   onReveal: (folderPath: string) => void;
   onDelete: (mod: ModItem) => void;
   onOpenConflicts: () => void;
+  onOpenKeybinds: (mod: ModItem) => void;
 }
 
 export default function ModCard({
@@ -39,6 +41,7 @@ export default function ModCard({
   onReveal,
   onDelete,
   onOpenConflicts,
+  onOpenKeybinds,
 }: ModCardProps) {
   const previewUrl = mod.preview_path ? convertFileSrc(mod.preview_path) : null;
 
@@ -120,35 +123,54 @@ export default function ModCard({
             </Text>
           </Tooltip>
 
-          <Menu position="bottom-end" shadow="md" width={180}>
-            <Menu.Target>
-              <ActionIcon variant="subtle" size="sm" color="gray">
-                <IconDotsVertical size={16} />
+          <Group gap={4} wrap="nowrap">
+            <Tooltip label="Keybinds and toggles">
+              <ActionIcon
+                variant="subtle"
+                size="sm"
+                color="gray"
+                onClick={() => onOpenKeybinds(mod)}
+              >
+                <IconKeyboard size={16} />
               </ActionIcon>
-            </Menu.Target>
-            <Menu.Dropdown>
-              <Menu.Item
-                leftSection={<IconFolderSymlink size={14} />}
-                onClick={() => onMoveCategory(mod)}
-              >
-                Move Category
-              </Menu.Item>
-              <Menu.Item
-                leftSection={<IconExternalLink size={14} />}
-                onClick={() => onReveal(mod.folder_path)}
-              >
-                Reveal in Files
-              </Menu.Item>
-              <Menu.Divider />
-              <Menu.Item
-                color="red"
-                leftSection={<IconTrash size={14} />}
-                onClick={() => onDelete(mod)}
-              >
-                Delete Mod
-              </Menu.Item>
-            </Menu.Dropdown>
-          </Menu>
+            </Tooltip>
+
+            <Menu position="bottom-end" shadow="md" width={180}>
+              <Menu.Target>
+                <ActionIcon variant="subtle" size="sm" color="gray">
+                  <IconDotsVertical size={16} />
+                </ActionIcon>
+              </Menu.Target>
+              <Menu.Dropdown>
+                <Menu.Item
+                  leftSection={<IconKeyboard size={14} />}
+                  onClick={() => onOpenKeybinds(mod)}
+                >
+                  Keybinds and Toggles
+                </Menu.Item>
+                <Menu.Item
+                  leftSection={<IconFolderSymlink size={14} />}
+                  onClick={() => onMoveCategory(mod)}
+                >
+                  Move Category
+                </Menu.Item>
+                <Menu.Item
+                  leftSection={<IconExternalLink size={14} />}
+                  onClick={() => onReveal(mod.folder_path)}
+                >
+                  Reveal in Files
+                </Menu.Item>
+                <Menu.Divider />
+                <Menu.Item
+                  color="red"
+                  leftSection={<IconTrash size={14} />}
+                  onClick={() => onDelete(mod)}
+                >
+                  Delete Mod
+                </Menu.Item>
+              </Menu.Dropdown>
+            </Menu>
+          </Group>
         </Group>
 
         <Group justify="space-between" align="center">

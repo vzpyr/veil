@@ -11,6 +11,7 @@ import ConflictDrawer from "./components/ConflictDrawer";
 import { DownloadQueueDrawer } from "./components/DownloadQueueDrawer";
 import { DuplicateModal } from "./components/DuplicateModal";
 import Header from "./components/Header";
+import KeybindDrawer from "./components/KeybindDrawer";
 import ModGrid from "./components/ModGrid";
 import SettingsView from "./components/SettingsView";
 import Sidebar from "./components/Sidebar";
@@ -38,6 +39,9 @@ export default function App() {
   const [conflictDrawerOpen, setConflictDrawerOpen] = useState<boolean>(false);
   const [queueDrawerOpen, setQueueDrawerOpen] = useState<boolean>(false);
   const [downloadQueue, setDownloadQueue] = useState<DownloadQueueItem[]>([]);
+  const [keybindDrawerMod, setKeybindDrawerMod] = useState<ModItem | null>(
+    null,
+  );
   const [duplicateModalState, setDuplicateModalState] = useState<{
     opened: boolean;
     file?: GbModFile;
@@ -597,6 +601,7 @@ export default function App() {
                 onDelete={handleDeleteMod}
                 onOpenConflicts={() => setConflictDrawerOpen(true)}
                 onOpenSettings={() => setActiveTab("settings")}
+                onOpenKeybinds={setKeybindDrawerMod}
               />
             </Box>
           </>
@@ -653,6 +658,13 @@ export default function App() {
         onClearCompleted={handleClearCompleted}
         onCancelItem={handleCancelQueueItem}
         onRetryItem={handleRetryQueueItem}
+      />
+
+      <KeybindDrawer
+        opened={Boolean(keybindDrawerMod)}
+        onClose={() => setKeybindDrawerMod(null)}
+        mod={keybindDrawerMod}
+        modsDir={modsDir}
       />
 
       {duplicateModalState && (

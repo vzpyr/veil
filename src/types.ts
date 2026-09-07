@@ -83,3 +83,27 @@ export interface DownloadQueueItem {
   duplicateAction: "replace" | "keep_both";
   error?: string;
 }
+
+export interface ModKeybind {
+  section: string;
+  label: string;
+  key: string;
+  binding_type: string;
+  variable?: string;
+  values: number[];
+  ini_path: string;
+}
+
+export interface ModVariableState {
+  variable: string;
+  label: string;
+  current_value: number;
+  possible_values: number[];
+  is_persisted: boolean;
+}
+
+export interface ModKeybindData {
+  keybinds: ModKeybind[];
+  variables: ModVariableState[];
+  has_d3dx_user: boolean;
+}

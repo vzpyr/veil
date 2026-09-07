@@ -64,10 +64,10 @@
 
 ## phase 8: mod keybinds and toggle state editor
 
-- [ ] parse 3dmigoto key swap and toggle sections from mod ini files
-- [ ] implement keybind editing and ini persistence
-- [ ] inspect and edit persistent toggle states from ini and d3dx_user
-- [ ] build interactive keybind and toggle drawer in ui
+- [x] parse 3dmigoto key swap and toggle sections from mod ini files
+- [x] implement keybind editing and ini persistence
+- [x] inspect and edit persistent toggle states from ini and d3dx_user
+- [x] build interactive keybind and toggle drawer in ui
 
 ## phase 9: mod update checker and gamebanana mapping
 
