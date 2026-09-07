@@ -1,0 +1,57 @@
+# veil roadmap
+
+## phase 1: project scaffolding and foundation
+
+- [x] initialize ultra barebone git repository and gitignore
+- [x] setup vite with react 19, typescript, and mantine v7
+- [x] setup prettier and formatting configuration
+- [x] create design token system in css and mantine theme
+- [x] configure tauri v2 backend with modular cargo architecture
+- [x] verify phase 1 build, typecheck, and formatting
+
+## phase 2: backend filesystem, symlink engine and mod scanner
+
+- [ ] implement extensible game registry (zzz and endfield definitions)
+- [ ] implement configuration and settings manager in rust
+- [ ] implement symlink engine with safe deletion and orphaned link pruning
+- [ ] implement recursive mod scanner with ini hash extractor
+- [ ] implement category folder operations (create, move, list)
+- [ ] implement unit tests for scanner and ini hash parser
+- [ ] verify phase 2 build and tests
+
+## phase 3: archive extraction and conflict engine
+
+- [ ] implement pure rust archive extractor for zip and sevenz
+- [ ] implement root folder wrapping for loose archive files
+- [ ] implement path traversal sanitization and preview extraction
+- [ ] implement conflict detection engine for colliding hashes
+- [ ] expose tauri commands and type definitions
+- [ ] verify phase 3 build and tests
+
+## phase 4: frontend installed mods view and design system
+
+- [ ] implement app shell layout with game switcher and navigation tabs
+- [ ] implement category sidebar and filter controls
+- [ ] implement mod cards with preview images, toggle switches, and menus
+- [ ] implement category management modal (move or create category)
+- [ ] implement conflict resolution drawer
+- [ ] implement settings view (mod directory picker, auto categorize toggle)
+- [ ] verify phase 4 build and typecheck
+
+## phase 5: gamebanana browser and download manager
+
+- [ ] implement gamebanana api client (feeds, categories, search, sorting)
+- [ ] implement mod profile view (carousel screenshots, description, file list)
+- [ ] implement updates and changelogs view
+- [ ] implement community comments and nested replies
+- [ ] implement author profile card
+- [ ] implement real time download manager with streaming progress and auto extraction
+- [ ] verify phase 5 build and typecheck
+
+## phase 6: verification, typecheck, build and final polish
+
+- [ ] run full format check with prettier
+- [ ] run typescript typecheck
+- [ ] run cargo check and tests
+- [ ] verify code compliance with no comments and no em or en dashes
+- [ ] create initial git commit with conventional format

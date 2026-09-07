@@ -1,0 +1,39 @@
+{
+  "name": "veil",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "tauri": "tauri",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@mantine/carousel": "^7.17.1",
+    "@mantine/core": "^7.17.1",
+    "@mantine/hooks": "^7.17.1",
+    "@mantine/notifications": "^7.17.1",
+    "@tabler/icons-react": "^3.31.0",
+    "@tauri-apps/api": "^2.2.0",
+    "@tauri-apps/plugin-dialog": "^2.2.0",
+    "@tauri-apps/plugin-opener": "^2.2.5",
+    "embla-carousel-react": "^8.5.2",
+    "motion": "^12.4.7",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.2.7",
+    "@types/node": "^22.13.5",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-react": "^4.3.4",
+    "prettier": "^3.5.2",
+    "typescript": "^5.7.3",
+    "vite": "^6.2.0"
+  }
+}

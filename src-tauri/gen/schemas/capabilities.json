@@ -1,0 +1,14 @@
+{
+  "default": {
+    "identifier": "default",
+    "description": "Default capability for veil",
+    "local": true,
+    "windows": ["main"],
+    "permissions": [
+      "core:default",
+      "core:event:default",
+      "opener:default",
+      "dialog:default"
+    ]
+  }
+}
