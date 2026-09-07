@@ -1,6 +1,7 @@
 pub mod archive;
 pub mod config;
 pub mod conflict;
+pub mod gamebanana;
 pub mod games;
 pub mod scanner;
 pub mod symlink;
@@ -8,6 +9,7 @@ pub mod symlink;
 use archive::extract_any_archive;
 use config::{get_config_path, read_config, write_config, AppConfig, GameSettings};
 use conflict::{detect_conflicts, ConflictGroup};
+use gamebanana::download_and_install_mod;
 use games::{get_supported_games, GameDefinition};
 use scanner::{
     create_category, delete_mod, list_categories, move_mod_category, scan_mods, toggle_mod_status,
@@ -176,6 +178,28 @@ fn extract_archive_file(
     Ok(rel_id)
 }
 
+#[tauri::command]
+async fn download_mod(
+    app: AppHandle,
+    download_url: String,
+    mods_dir: String,
+    mod_name: String,
+    category: Option<String>,
+    preview_url: Option<String>,
+    key: String,
+) -> Result<String, String> {
+    download_and_install_mod(
+        app,
+        download_url,
+        mods_dir,
+        mod_name,
+        category,
+        preview_url,
+        key,
+    )
+    .await
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -197,6 +221,7 @@ pub fn run() {
             delete_installed_mod,
             prune_symlinks,
             extract_archive_file,
+            download_mod,
         ])
         .run(tauri::generate_context!())
         .expect("error while running veil");

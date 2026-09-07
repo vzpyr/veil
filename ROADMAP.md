@@ -40,13 +40,13 @@
 
 ## phase 5: gamebanana browser and download manager
 
-- [ ] implement gamebanana api client (feeds, categories, search, sorting)
-- [ ] implement mod profile view (carousel screenshots, description, file list)
-- [ ] implement updates and changelogs view
-- [ ] implement community comments and nested replies
-- [ ] implement author profile card
-- [ ] implement real time download manager with streaming progress and auto extraction
-- [ ] verify phase 5 build and typecheck
+- [x] implement gamebanana api client (feeds, categories, search, sorting)
+- [x] implement mod profile view (carousel screenshots, description, file list)
+- [x] implement updates and changelogs view
+- [x] implement community comments and nested replies
+- [x] implement author profile card
+- [x] implement real time download manager with streaming progress and auto extraction
+- [x] verify phase 5 build and typecheck
 
 ## phase 6: verification, typecheck, build and final polish
 

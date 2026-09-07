@@ -1,8 +1,10 @@
-import { Box, Flex, LoadingOverlay, Stack, Text } from "@mantine/core";
+import { Box, Flex, LoadingOverlay } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import { revealItemInDir } from "@tauri-apps/plugin-opener";
 import { useCallback, useEffect, useState } from "react";
+import GbBrowserView from "./components/browser/GbBrowserView";
 import CategoryModal from "./components/CategoryModal";
 import ConflictDrawer from "./components/ConflictDrawer";
 import Header from "./components/Header";
@@ -13,6 +15,7 @@ import {
   AppConfig,
   CategoryItem,
   ConflictGroup,
+  DownloadProgressPayload,
   GameDefinition,
   ModItem,
 } from "./types";
@@ -29,6 +32,9 @@ export default function App() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [conflictDrawerOpen, setConflictDrawerOpen] = useState<boolean>(false);
+  const [activeDownloads, setActiveDownloads] = useState<
+    Record<string, DownloadProgressPayload>
+  >({});
   const [categoryModal, setCategoryModal] = useState<{
     open: boolean;
     modToMove?: ModItem | null;
@@ -39,6 +45,7 @@ export default function App() {
   const activeSettings =
     activeGame && config ? config.games[activeGame.id] : undefined;
   const modsDir = activeSettings?.mods_dir;
+  const autoCategorize = activeSettings?.auto_categorize ?? true;
 
   const refreshData = useCallback(
     async (dir?: string) => {
@@ -72,6 +79,43 @@ export default function App() {
     },
     [modsDir],
   );
+
+  useEffect(() => {
+    let unlistenProgress: (() => void) | null = null;
+    let unlistenComplete: (() => void) | null = null;
+
+    async function setupListeners() {
+      unlistenProgress = await listen<DownloadProgressPayload>(
+        "download-progress",
+        (event) => {
+          setActiveDownloads((prev) => ({
+            ...prev,
+            [event.payload.key]: event.payload,
+          }));
+        },
+      );
+
+      unlistenComplete = await listen<{
+        key: string;
+        rel_id: string;
+        mod_name: string;
+      }>("download-complete", (event) => {
+        setActiveDownloads((prev) => {
+          const next = { ...prev };
+          delete next[event.payload.key];
+          return next;
+        });
+        refreshData();
+      });
+    }
+
+    setupListeners();
+
+    return () => {
+      if (unlistenProgress) unlistenProgress();
+      if (unlistenComplete) unlistenComplete();
+    };
+  }, [refreshData]);
 
   useEffect(() => {
     async function initialize() {
@@ -355,24 +399,21 @@ export default function App() {
           </>
         )}
 
-        {activeTab === "browser" && (
+        {activeTab === "browser" && activeGame && (
           <Box
-            p="xl"
             style={{
               flex: 1,
               overflowY: "auto",
               backgroundColor: "var(--color-bg-base)",
             }}
           >
-            <Stack align="center" justify="center" h="100%" gap="sm">
-              <Text fw={700} size="xl">
-                GameBanana Browser
-              </Text>
-              <Text c="dimmed" size="sm">
-                Online browsing and download integration will be loaded in Phase
-                5.
-              </Text>
-            </Stack>
+            <GbBrowserView
+              activeGame={activeGame}
+              modsDir={modsDir}
+              autoCategorize={autoCategorize}
+              activeDownloads={activeDownloads}
+              onInstallSuccess={() => refreshData()}
+            />
           </Box>
         )}
 
