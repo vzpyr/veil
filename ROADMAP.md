@@ -30,13 +30,13 @@
 
 ## phase 4: frontend installed mods view and design system
 
-- [ ] implement app shell layout with game switcher and navigation tabs
-- [ ] implement category sidebar and filter controls
-- [ ] implement mod cards with preview images, toggle switches, and menus
-- [ ] implement category management modal (move or create category)
-- [ ] implement conflict resolution drawer
-- [ ] implement settings view (mod directory picker, auto categorize toggle)
-- [ ] verify phase 4 build and typecheck
+- [x] implement app shell layout with game switcher and navigation tabs
+- [x] implement category sidebar and filter controls
+- [x] implement mod cards with preview images, toggle switches, and menus
+- [x] implement category management modal (move or create category)
+- [x] implement conflict resolution drawer
+- [x] implement settings view (mod directory picker, auto categorize toggle)
+- [x] verify phase 4 build and typecheck
 
 ## phase 5: gamebanana browser and download manager
 
