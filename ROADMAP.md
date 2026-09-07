@@ -81,3 +81,17 @@
 - [x] fetch subcategories for root categories with children (character skins, bangboos, etc.)
 - [x] group categories in browser dropdown (character skins, ui, misc)
 - [x] eliminate hardcoded root_category_id dependencies
+
+## phase 11: manual archive installation, filtering, and sorting
+
+- [x] implement manual archive installation button and dialog for local zip and sevenz archives
+- [x] return standardized unsupported format error for unknown or unsupported archives
+- [x] implement enabled, disabled, and all status filter controls
+- [x] implement mod sorting controls for name and active status
+
+## phase 12: category lifecycle, preview standardizer, and game expansion
+
+- [ ] implement category rename and delete with mod preservation
+- [ ] establish clean dedicated veil app icon suite
+- [ ] add genshin impact, honkai: star rail, and wuthering waves to games registry
+- [ ] implement set preview image button with standardized resolution and format

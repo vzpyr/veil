@@ -2,6 +2,7 @@ import { Box, Flex, LoadingOverlay } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+import { open } from "@tauri-apps/plugin-dialog";
 import { revealItemInDir } from "@tauri-apps/plugin-opener";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { GbModFile } from "./api/gamebanana";
@@ -15,6 +16,7 @@ import { DuplicateModal } from "./components/DuplicateModal";
 import Header from "./components/Header";
 import KeybindDrawer from "./components/KeybindDrawer";
 import LinkGameBananaModal from "./components/LinkGameBananaModal";
+import ManualInstallModal from "./components/ManualInstallModal";
 import ModGrid from "./components/ModGrid";
 import SettingsView from "./components/SettingsView";
 import Sidebar from "./components/Sidebar";
@@ -67,6 +69,16 @@ export default function App() {
     open: boolean;
     modToMove?: ModItem | null;
   }>({ open: false, modToMove: null });
+
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "enabled" | "disabled"
+  >("all");
+  const [sortBy, setSortBy] = useState<string>("name-asc");
+  const [manualInstallModalOpen, setManualInstallModalOpen] =
+    useState<boolean>(false);
+  const [manualInstallArchivePath, setManualInstallArchivePath] =
+    useState<string>("");
+  const [isManualInstalling, setIsManualInstalling] = useState<boolean>(false);
 
   const activeGame =
     games.find((g) => g.id === config?.active_game_id) || games[0];
@@ -563,11 +575,75 @@ export default function App() {
     );
   };
 
-  const filteredMods = useMemo(() => {
+  const handleOpenManualInstall = async () => {
+    if (!modsDir) {
+      notifications.show({
+        title: "No Mods Directory",
+        message: "Please configure a mods directory before installing mods.",
+        color: "yellow",
+      });
+      return;
+    }
+    try {
+      const selected = await open({
+        multiple: false,
+        filters: [
+          {
+            name: "Mod Archives",
+            extensions: ["zip", "7z"],
+          },
+        ],
+      });
+      if (selected && typeof selected === "string") {
+        setManualInstallArchivePath(selected);
+        setManualInstallModalOpen(true);
+      }
+    } catch (err) {
+      notifications.show({
+        title: "Selection Error",
+        message: String(err),
+        color: "red",
+      });
+    }
+  };
+
+  const handleConfirmManualInstall = async (
+    modName: string,
+    category: string | null,
+    duplicateAction: string,
+  ) => {
+    if (!modsDir || !manualInstallArchivePath) return;
+    try {
+      setIsManualInstalling(true);
+      await invoke("extract_archive_file", {
+        archivePath: manualInstallArchivePath,
+        modsDir,
+        modName,
+        category,
+        duplicateAction,
+      });
+      await refreshData();
+      notifications.show({
+        title: "Installation Complete",
+        message: `${modName} installed successfully.`,
+        color: "green",
+      });
+    } catch (err) {
+      notifications.show({
+        title: "Extraction Error",
+        message: String(err),
+        color: "red",
+      });
+    } finally {
+      setIsManualInstalling(false);
+    }
+  };
+
+  const categoryAndSearchMods = useMemo(() => {
     return mods.filter((mod) => {
       const matchesCategory =
         selectedCategory === null ||
-        (selectedCategory === "uncategorized"
+        (selectedCategory === "__root__" || selectedCategory === "uncategorized"
           ? !mod.category
           : mod.category === selectedCategory);
 
@@ -579,6 +655,40 @@ export default function App() {
       return matchesCategory && matchesSearch;
     });
   }, [mods, selectedCategory, searchQuery]);
+
+  const totalInScope = categoryAndSearchMods.length;
+  const enabledInScope = categoryAndSearchMods.filter((m) => m.enabled).length;
+  const disabledInScope = totalInScope - enabledInScope;
+
+  const displayedMods = useMemo(() => {
+    const list = categoryAndSearchMods.filter((mod) => {
+      if (statusFilter === "enabled") return mod.enabled;
+      if (statusFilter === "disabled") return !mod.enabled;
+      return true;
+    });
+
+    return [...list].sort((a, b) => {
+      if (sortBy === "name-asc") {
+        return a.name.localeCompare(b.name);
+      }
+      if (sortBy === "name-desc") {
+        return b.name.localeCompare(a.name);
+      }
+      if (sortBy === "enabled-first") {
+        if (a.enabled === b.enabled) {
+          return a.name.localeCompare(b.name);
+        }
+        return a.enabled ? -1 : 1;
+      }
+      if (sortBy === "disabled-first") {
+        if (a.enabled === b.enabled) {
+          return a.name.localeCompare(b.name);
+        }
+        return a.enabled ? 1 : -1;
+      }
+      return 0;
+    });
+  }, [categoryAndSearchMods, statusFilter, sortBy]);
 
   const uncategorizedCount = mods.filter((m) => !m.category).length;
 
@@ -645,10 +755,18 @@ export default function App() {
               }}
             >
               <ModGrid
-                mods={filteredMods}
+                mods={displayedMods}
                 hasModsDir={Boolean(modsDir)}
                 conflicts={conflicts}
                 updatesMap={updatesMap}
+                statusFilter={statusFilter}
+                onStatusFilterChange={setStatusFilter}
+                sortBy={sortBy}
+                onSortByChange={setSortBy}
+                totalCount={totalInScope}
+                enabledCount={enabledInScope}
+                disabledCount={disabledInScope}
+                onOpenManualInstall={handleOpenManualInstall}
                 onToggle={handleToggleMod}
                 onMoveCategory={(mod) =>
                   setCategoryModal({ open: true, modToMove: mod })
@@ -754,6 +872,15 @@ export default function App() {
         modToMove={categoryModal.modToMove}
         onMoveMod={handleMoveMod}
         onCreateCategory={handleCreateCategory}
+      />
+
+      <ManualInstallModal
+        opened={manualInstallModalOpen}
+        onClose={() => setManualInstallModalOpen(false)}
+        archivePath={manualInstallArchivePath}
+        categories={categories}
+        onInstall={handleConfirmManualInstall}
+        isInstalling={isManualInstalling}
       />
 
       {selectedGbModId && (
