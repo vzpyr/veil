@@ -148,7 +148,7 @@ export default function LinkGameBananaModal({
       notifications.show({
         title: "Mod Unlinked",
         message: `Removed GameBanana mapping for ${mod.name}.`,
-        color: "blue",
+        color: "gray",
         icon: <IconCheck size={16} />,
       });
 
@@ -170,6 +170,7 @@ export default function LinkGameBananaModal({
     <Modal
       opened={opened}
       onClose={onClose}
+      radius="lg"
       title={
         <Group gap="xs">
           <IconLink size={20} color="var(--color-accent-primary)" />
@@ -196,6 +197,7 @@ export default function LinkGameBananaModal({
           <TextInput
             label="GameBanana Mod URL or ID"
             placeholder="e.g. 523812 or https://gamebanana.com/mods/523812"
+            radius="md"
             value={inputVal}
             onChange={(e) => setInputVal(e.currentTarget.value)}
             style={{ flex: 1 }}
@@ -207,6 +209,7 @@ export default function LinkGameBananaModal({
           />
           <Button
             variant="light"
+            radius="xl"
             onClick={handleLookup}
             loading={fetching}
             disabled={!inputVal.trim()}
@@ -219,6 +222,7 @@ export default function LinkGameBananaModal({
           <Alert
             color="red"
             variant="light"
+            radius="md"
             icon={<IconAlertCircle size={16} />}
           >
             {error}
@@ -227,7 +231,7 @@ export default function LinkGameBananaModal({
 
         {fetching && (
           <Group justify="center" py="md">
-            <Loader size="sm" color="blue" />
+            <Loader size="sm" color="gray" />
           </Group>
         )}
 
@@ -246,7 +250,7 @@ export default function LinkGameBananaModal({
                   {profile._sName}
                 </Text>
                 {profile._sVersion && (
-                  <Badge size="xs" variant="filled" color="blue">
+                  <Badge size="xs" radius="xl" variant="filled" color="dark">
                     v{profile._sVersion}
                   </Badge>
                 )}
@@ -273,6 +277,7 @@ export default function LinkGameBananaModal({
               color="red"
               variant="subtle"
               size="xs"
+              radius="xl"
               leftSection={<IconTrash size={14} />}
               onClick={handleUnlink}
               loading={submitting}
@@ -284,13 +289,13 @@ export default function LinkGameBananaModal({
           )}
 
           <Group gap="xs">
-            <Button variant="default" size="xs" onClick={onClose}>
+            <Button variant="default" size="xs" radius="xl" onClick={onClose}>
               Cancel
             </Button>
             <Button
               variant="filled"
-              color="blue"
               size="xs"
+              radius="xl"
               leftSection={<IconLink size={14} />}
               onClick={handleLink}
               loading={submitting}

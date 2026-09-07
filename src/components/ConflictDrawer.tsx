@@ -38,6 +38,7 @@ export default function ConflictDrawer({
       onClose={onClose}
       position="right"
       size="md"
+      radius="lg"
       title={
         <Group gap="xs">
           <IconAlertTriangle size={20} color="var(--color-status-warning)" />
@@ -47,10 +48,11 @@ export default function ConflictDrawer({
         </Group>
       }
     >
-      <Stack gap="md" h="100%">
+      <Stack gap="sm" h="100%">
         <Alert
           color="orange"
           variant="light"
+          radius="md"
           icon={<IconAlertTriangle size={16} />}
         >
           Active mods listed below share identical shader or texture hashes.
@@ -64,11 +66,12 @@ export default function ConflictDrawer({
           </Text>
         ) : (
           <ScrollArea style={{ flex: 1 }}>
-            <Stack gap="md">
+            <Stack gap="sm">
               {conflicts.map((c) => (
                 <Card
                   key={c.hash}
-                  p="sm"
+                  p="xs"
+                  radius="md"
                   withBorder
                   style={{
                     backgroundColor: "var(--color-bg-surface-2)",
@@ -79,7 +82,12 @@ export default function ConflictDrawer({
                     <Text size="xs" fw={700} c="dimmed">
                       Colliding Hash:
                     </Text>
-                    <Badge size="xs" color="orange" variant="outline">
+                    <Badge
+                      size="xs"
+                      radius="xl"
+                      color="orange"
+                      variant="outline"
+                    >
                       {c.hash}
                     </Badge>
                   </Group>
@@ -95,6 +103,7 @@ export default function ConflictDrawer({
                         <Card
                           key={modId}
                           p="xs"
+                          radius="sm"
                           withBorder
                           style={{
                             backgroundColor: "var(--color-bg-card)",
@@ -119,7 +128,6 @@ export default function ConflictDrawer({
                               onChange={(e) =>
                                 onToggleMod(mod.id, e.currentTarget.checked)
                               }
-                              color="blue"
                             />
                           </Group>
                         </Card>

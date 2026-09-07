@@ -184,7 +184,7 @@ export default function GbBrowserView({
 
   return (
     <Box
-      p="md"
+      p="sm"
       style={{
         position: "relative",
         minHeight: "100%",
@@ -192,10 +192,11 @@ export default function GbBrowserView({
         flexDirection: "column",
       }}
     >
-      <Group justify="space-between" mb="md" wrap="wrap" gap="sm">
-        <Group gap="sm" style={{ flex: 1, minWidth: 300 }}>
+      <Group justify="space-between" mb="sm" wrap="wrap" gap="xs">
+        <Group gap="xs" style={{ flex: 1, minWidth: 300 }}>
           <TextInput
             size="xs"
+            radius="xl"
             placeholder="Search mods..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.currentTarget.value)}
@@ -209,6 +210,7 @@ export default function GbBrowserView({
               searchQuery ? (
                 <ActionIcon
                   size="xs"
+                  radius="xl"
                   variant="subtle"
                   onClick={handleClearSearch}
                 >
@@ -218,7 +220,12 @@ export default function GbBrowserView({
             }
             style={{ flex: 1 }}
           />
-          <Button size="xs" variant="light" onClick={handleSearchSubmit}>
+          <Button
+            size="xs"
+            radius="xl"
+            variant="light"
+            onClick={handleSearchSubmit}
+          >
             Search
           </Button>
         </Group>
@@ -226,6 +233,7 @@ export default function GbBrowserView({
         <Group gap="xs">
           <Select
             size="xs"
+            radius="xl"
             w={240}
             data={categorySelectData}
             value={selectedCategory || ""}
@@ -242,6 +250,7 @@ export default function GbBrowserView({
 
           <Select
             size="xs"
+            radius="xl"
             w={160}
             data={sortSelectData}
             value={sortOption}
@@ -260,13 +269,13 @@ export default function GbBrowserView({
         <LoadingOverlay visible={isLoading} />
 
         {items.length === 0 && !isLoading ? (
-          <Center h={300}>
+          <Center h={280}>
             <Stack align="center" gap="sm">
-              <IconFolderOff size={48} color="var(--color-text-muted)" />
-              <Text fw={600} size="lg">
+              <IconFolderOff size={44} color="var(--color-text-muted)" />
+              <Text fw={600} size="md">
                 No Mods Found
               </Text>
-              <Text c="dimmed" size="sm">
+              <Text c="dimmed" size="xs">
                 Try a different search query or select another category.
               </Text>
             </Stack>
@@ -274,7 +283,7 @@ export default function GbBrowserView({
         ) : (
           <SimpleGrid
             cols={{ base: 1, sm: 2, md: 3, lg: 4, xl: 5, xxl: 6 }}
-            spacing="md"
+            spacing="sm"
           >
             {items.map((item) => (
               <GbModCard
@@ -287,9 +296,10 @@ export default function GbBrowserView({
         )}
       </Box>
 
-      <Group justify="center" gap="md" mt="xl" py="sm">
+      <Group justify="center" gap="sm" mt="md" py="xs">
         <Button
           size="xs"
+          radius="xl"
           variant="default"
           leftSection={<IconArrowLeft size={14} />}
           disabled={page <= 1 || isLoading}
@@ -302,6 +312,7 @@ export default function GbBrowserView({
         </Text>
         <Button
           size="xs"
+          radius="xl"
           variant="default"
           rightSection={<IconArrowRight size={14} />}
           disabled={isLastPage || isLoading}

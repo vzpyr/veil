@@ -652,7 +652,7 @@ export default function App() {
     notifications.show({
       title: "Added to Download Queue",
       message: `${modName} (${file._sFile}) queued for download.`,
-      color: "blue",
+      color: "gray",
     });
   };
 
@@ -902,6 +902,7 @@ export default function App() {
                   categoryName: catName,
                 })
               }
+              onOpenManualInstall={handleOpenManualInstall}
             />
 
             <Box
@@ -923,7 +924,6 @@ export default function App() {
                 totalCount={totalInScope}
                 enabledCount={enabledInScope}
                 disabledCount={disabledInScope}
-                onOpenManualInstall={handleOpenManualInstall}
                 onToggle={handleToggleMod}
                 onMoveCategory={(mod) =>
                   setCategoryModal({

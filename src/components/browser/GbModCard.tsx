@@ -24,8 +24,8 @@ export default function GbModCard({ item, onSelect }: GbModCardProps) {
 
   return (
     <Card
-      p="sm"
-      radius="md"
+      p="xs"
+      radius="lg"
       withBorder
       style={{
         backgroundColor: "var(--color-bg-card)",
@@ -40,6 +40,9 @@ export default function GbModCard({ item, onSelect }: GbModCardProps) {
           position: "relative",
           aspectRatio: "16 / 9",
           backgroundColor: "var(--color-bg-surface-2)",
+          borderTopLeftRadius: "var(--radius-md)",
+          borderTopRightRadius: "var(--radius-md)",
+          overflow: "hidden",
         }}
       >
         {imageUrl ? (
@@ -52,8 +55,8 @@ export default function GbModCard({ item, onSelect }: GbModCardProps) {
           />
         ) : (
           <Stack h="100%" align="center" justify="center" gap="xs">
-            <IconPhoto size={36} color="var(--color-text-muted)" />
-            <Text size="xs" c="dimmed">
+            <IconPhoto size={32} color="var(--color-text-muted)" />
+            <Text size="2xs" c="dimmed">
               No preview
             </Text>
           </Stack>
@@ -62,16 +65,17 @@ export default function GbModCard({ item, onSelect }: GbModCardProps) {
         {item._aCategory && (
           <Badge
             size="xs"
+            radius="xl"
             variant="filled"
             color="dark"
-            style={{ position: "absolute", top: 8, left: 8 }}
+            style={{ position: "absolute", top: 6, left: 6 }}
           >
             {item._aCategory._sName}
           </Badge>
         )}
       </Card.Section>
 
-      <Stack gap="xs" mt="sm">
+      <Stack gap="xs" mt="xs">
         <Tooltip label={item._sName}>
           <Text fw={600} size="sm" truncate>
             {item._sName}

@@ -9,11 +9,7 @@ import {
   Stack,
   Text,
 } from "@mantine/core";
-import {
-  IconFolderOff,
-  IconPackageImport,
-  IconSettings,
-} from "@tabler/icons-react";
+import { IconFolderOff, IconSettings } from "@tabler/icons-react";
 import { ConflictGroup, ModItem, ModUpdateInfo } from "../types";
 import ModCard from "./ModCard";
 
@@ -29,7 +25,6 @@ interface ModGridProps {
   totalCount: number;
   enabledCount: number;
   disabledCount: number;
-  onOpenManualInstall: () => void;
   onToggle: (modId: string, enabled: boolean) => void;
   onMoveCategory: (mod: ModItem) => void;
   onReveal: (folderPath: string) => void;
@@ -54,7 +49,6 @@ export default function ModGrid({
   totalCount,
   enabledCount,
   disabledCount,
-  onOpenManualInstall,
   onToggle,
   onMoveCategory,
   onReveal,
@@ -99,23 +93,61 @@ export default function ModGrid({
   }
 
   return (
-    <Box p="md">
-      <Group justify="space-between" mb="md" wrap="wrap" gap="sm">
+    <Box p="sm">
+      <Group justify="space-between" mb="sm" wrap="wrap" gap="xs">
         <SegmentedControl
           size="xs"
+          radius="xl"
           value={statusFilter}
           onChange={(val) =>
             onStatusFilterChange(val as "all" | "enabled" | "disabled")
           }
           data={[
-            { label: `All (${totalCount})`, value: "all" },
-            { label: `Enabled (${enabledCount})`, value: "enabled" },
-            { label: `Disabled (${disabledCount})`, value: "disabled" },
+            {
+              value: "all",
+              label: (
+                <Center
+                  style={{
+                    padding: "0 var(--space-xs)",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  All ({totalCount})
+                </Center>
+              ),
+            },
+            {
+              value: "enabled",
+              label: (
+                <Center
+                  style={{
+                    padding: "0 var(--space-xs)",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  Enabled ({enabledCount})
+                </Center>
+              ),
+            },
+            {
+              value: "disabled",
+              label: (
+                <Center
+                  style={{
+                    padding: "0 var(--space-xs)",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  Disabled ({disabledCount})
+                </Center>
+              ),
+            },
           ]}
         />
         <Group gap="xs">
           <Select
             size="xs"
+            radius="xl"
             w={160}
             value={sortBy}
             onChange={(val) => onSortByChange(val || "name-asc")}
@@ -127,24 +159,17 @@ export default function ModGrid({
               { value: "disabled-first", label: "Disabled first" },
             ]}
           />
-          <Button
-            size="xs"
-            leftSection={<IconPackageImport size={16} />}
-            onClick={onOpenManualInstall}
-          >
-            Install Mod
-          </Button>
         </Group>
       </Group>
 
       {mods.length === 0 ? (
-        <Center py={80}>
+        <Center py="2xl">
           <Stack align="center" gap="sm">
-            <IconFolderOff size={48} color="var(--color-text-muted)" />
-            <Text fw={600} size="lg">
+            <IconFolderOff size={44} color="var(--color-text-muted)" />
+            <Text fw={600} size="md">
               No Mods Found
             </Text>
-            <Text c="dimmed" size="sm" ta="center" maw={400}>
+            <Text c="dimmed" size="xs" ta="center" maw={380}>
               No mods match your current filter or category. Download mods from
               GameBanana, import an archive, or place folders into your
               DISABLED_veil directory.
@@ -152,7 +177,7 @@ export default function ModGrid({
           </Stack>
         </Center>
       ) : (
-        <SimpleGrid cols={{ base: 1, sm: 2, md: 3, lg: 4, xl: 5 }} spacing="md">
+        <SimpleGrid cols={{ base: 1, sm: 2, md: 3, lg: 4, xl: 5 }} spacing="sm">
           {mods.map((mod) => (
             <ModCard
               key={mod.id}

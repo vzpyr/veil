@@ -57,15 +57,15 @@ export default function ModCard({
 
   return (
     <Card
-      p="sm"
-      radius="md"
+      p="xs"
+      radius="lg"
       withBorder
       style={{
         backgroundColor: "var(--color-bg-card)",
         borderColor: inConflict
           ? "var(--color-status-warning)"
           : mod.enabled
-            ? "var(--color-accent-primary)"
+            ? "var(--color-border-strong)"
             : "var(--color-border-subtle)",
         transition: "var(--transition-fast)",
       }}
@@ -75,6 +75,9 @@ export default function ModCard({
           position: "relative",
           aspectRatio: "16 / 9",
           backgroundColor: "var(--color-bg-surface-2)",
+          borderTopLeftRadius: "var(--radius-md)",
+          borderTopRightRadius: "var(--radius-md)",
+          overflow: "hidden",
         }}
       >
         {previewUrl ? (
@@ -87,8 +90,8 @@ export default function ModCard({
           />
         ) : (
           <Stack h="100%" align="center" justify="center" gap="xs">
-            <IconPhoto size={36} color="var(--color-text-muted)" />
-            <Text size="xs" c="dimmed">
+            <IconPhoto size={32} color="var(--color-text-muted)" />
+            <Text size="2xs" c="dimmed">
               No preview image
             </Text>
           </Stack>
@@ -97,15 +100,15 @@ export default function ModCard({
         <Group
           style={{
             position: "absolute",
-            top: 8,
-            left: 8,
-            right: 8,
+            top: 6,
+            left: 6,
+            right: 6,
             justifyContent: "space-between",
           }}
         >
           <Group gap={4}>
             {mod.category && (
-              <Badge size="xs" variant="filled" color="dark">
+              <Badge size="xs" radius="xl" variant="filled" color="dark">
                 {mod.category}
               </Badge>
             )}
@@ -113,6 +116,7 @@ export default function ModCard({
               <Tooltip label="Update available on GameBanana. Click to view release.">
                 <Badge
                   size="xs"
+                  radius="xl"
                   color="teal"
                   variant="filled"
                   leftSection={<IconArrowBadgeUp size={14} />}
@@ -134,6 +138,7 @@ export default function ModCard({
             <Tooltip label="Active hash conflict detected. Click to resolve.">
               <Badge
                 size="xs"
+                radius="xl"
                 color="orange"
                 variant="filled"
                 leftSection={<IconAlertTriangle size={12} />}
@@ -150,7 +155,7 @@ export default function ModCard({
         </Group>
       </Card.Section>
 
-      <Stack gap="xs" mt="sm">
+      <Stack gap="xs" mt="xs">
         <Group justify="space-between" wrap="nowrap">
           <Tooltip label={mod.name}>
             <Text fw={600} size="sm" truncate>
@@ -158,11 +163,12 @@ export default function ModCard({
             </Text>
           </Tooltip>
 
-          <Group gap={4} wrap="nowrap">
+          <Group gap={2} wrap="nowrap">
             <Tooltip label="Keybinds and toggles">
               <ActionIcon
                 variant="subtle"
                 size="sm"
+                radius="xl"
                 color="gray"
                 onClick={() => onOpenKeybinds(mod)}
               >
@@ -172,7 +178,7 @@ export default function ModCard({
 
             <Menu position="bottom-end" shadow="md" width={190}>
               <Menu.Target>
-                <ActionIcon variant="subtle" size="sm" color="gray">
+                <ActionIcon variant="subtle" size="sm" radius="xl" color="gray">
                   <IconDotsVertical size={16} />
                 </ActionIcon>
               </Menu.Target>
@@ -233,11 +239,11 @@ export default function ModCard({
 
         <Group justify="space-between" align="center">
           <Group gap={4}>
-            <Badge size="xs" variant="outline" color="gray">
+            <Badge size="xs" radius="xl" variant="outline" color="gray">
               {mod.hashes.length} {mod.hashes.length === 1 ? "hash" : "hashes"}
             </Badge>
             {mod.version && (
-              <Badge size="xs" variant="subtle" color="blue">
+              <Badge size="xs" radius="xl" variant="subtle" color="gray">
                 v{mod.version}
               </Badge>
             )}
@@ -247,7 +253,6 @@ export default function ModCard({
             size="sm"
             checked={mod.enabled}
             onChange={(e) => onToggle(mod.id, e.currentTarget.checked)}
-            color="blue"
           />
         </Group>
       </Stack>

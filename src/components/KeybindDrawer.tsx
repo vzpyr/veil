@@ -359,6 +359,7 @@ export default function KeybindDrawer({
       }}
       position="right"
       size="lg"
+      radius="lg"
       title={
         <Group gap="xs">
           <IconKeyboard size={20} color="var(--color-accent-primary)" />
@@ -368,10 +369,10 @@ export default function KeybindDrawer({
         </Group>
       }
     >
-      <Stack gap="md" h="100%">
+      <Stack gap="sm" h="100%">
         {mod && (
           <Card
-            p="sm"
+            p="xs"
             radius="md"
             style={{
               backgroundColor: "var(--color-bg-surface-2)",
@@ -384,7 +385,7 @@ export default function KeybindDrawer({
                   {mod.name}
                 </Text>
                 {mod.category && (
-                  <Badge size="xs" variant="filled" color="dark">
+                  <Badge size="xs" radius="xl" variant="filled" color="dark">
                     {mod.category}
                   </Badge>
                 )}
@@ -392,6 +393,7 @@ export default function KeybindDrawer({
               <Tooltip label="Refresh keybinds and toggle states">
                 <ActionIcon
                   variant="subtle"
+                  radius="xl"
                   color="gray"
                   onClick={loadData}
                   loading={loading}
@@ -403,14 +405,19 @@ export default function KeybindDrawer({
           </Card>
         )}
 
-        <Alert color="blue" variant="light" icon={<IconInfoCircle size={16} />}>
+        <Alert
+          color="gray"
+          variant="light"
+          radius="md"
+          icon={<IconInfoCircle size={16} />}
+        >
           Toggle states are persisted to d3dx_user.ini in your loader root
           folder. Keybind remappings update the mod configuration directly.
         </Alert>
 
         {loading ? (
           <Center py="xl">
-            <Loader size="sm" color="blue" />
+            <Loader size="sm" color="gray" />
           </Center>
         ) : !hasContent ? (
           <Center py="xl">
@@ -427,7 +434,7 @@ export default function KeybindDrawer({
           </Center>
         ) : (
           <ScrollArea style={{ flex: 1 }}>
-            <Stack gap="lg" pr="xs">
+            <Stack gap="md" pr="xs">
               {data && data.variables.length > 0 && (
                 <Stack gap="xs">
                   <Text fw={700} size="sm" c="dimmed" tt="uppercase">
@@ -441,7 +448,7 @@ export default function KeybindDrawer({
                     return (
                       <Card
                         key={v.variable}
-                        p="sm"
+                        p="xs"
                         radius="md"
                         style={{
                           backgroundColor: "var(--color-bg-card)",
@@ -468,11 +475,11 @@ export default function KeybindDrawer({
                                   e.currentTarget.checked ? 1 : 0,
                                 )
                               }
-                              color="blue"
                             />
                           ) : (
                             <SegmentedControl
                               size="xs"
+                              radius="xl"
                               value={String(v.current_value)}
                               onChange={(val) =>
                                 handleToggleVariable(v.variable, Number(val))
@@ -501,7 +508,7 @@ export default function KeybindDrawer({
                     return (
                       <Card
                         key={`${k.ini_path}-${k.section}`}
-                        p="sm"
+                        p="xs"
                         radius="md"
                         style={{
                           backgroundColor: isRecording
@@ -526,7 +533,12 @@ export default function KeybindDrawer({
                           <Group gap="xs" align="center">
                             {isRecording ? (
                               <Group gap="xs">
-                                <Badge color="blue" variant="filled" size="sm">
+                                <Badge
+                                  color="dark"
+                                  radius="xl"
+                                  variant="filled"
+                                  size="sm"
+                                >
                                   {currentModifiers.ctrl && "Ctrl + "}
                                   {currentModifiers.alt && "Alt + "}
                                   {currentModifiers.shift && "Shift + "}
@@ -534,6 +546,7 @@ export default function KeybindDrawer({
                                 </Badge>
                                 <ActionIcon
                                   size="sm"
+                                  radius="xl"
                                   variant="light"
                                   color="red"
                                   title="Cancel rebind"
@@ -548,6 +561,7 @@ export default function KeybindDrawer({
                                 <Button
                                   variant="light"
                                   size="xs"
+                                  radius="xl"
                                   onClick={() => {
                                     setRecordingIndex(index);
                                     setCurrentModifiers({

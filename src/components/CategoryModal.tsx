@@ -107,6 +107,7 @@ export default function CategoryModal({
     <Modal
       opened={opened}
       onClose={onClose}
+      radius="lg"
       title={
         <Text fw={700} size="md">
           {getTitle()}
@@ -118,6 +119,7 @@ export default function CategoryModal({
           <Select
             label="Destination Category"
             placeholder="Select a category"
+            radius="md"
             data={categoryOptions}
             value={selectedCategory}
             onChange={setSelectedCategory}
@@ -129,6 +131,7 @@ export default function CategoryModal({
           <TextInput
             label="Category Name"
             placeholder="Enter category name (for example Jane Doe)"
+            radius="md"
             value={nameInput}
             onChange={(e) => setNameInput(e.currentTarget.value)}
             onKeyDown={(e) => {
@@ -164,11 +167,12 @@ export default function CategoryModal({
         )}
 
         <Group justify="flex-end" gap="xs">
-          <Button variant="default" size="xs" onClick={onClose}>
+          <Button variant="default" size="xs" radius="xl" onClick={onClose}>
             Cancel
           </Button>
           <Button
             size="xs"
+            radius="xl"
             color={mode === "delete" ? "red" : undefined}
             onClick={handleConfirm}
           >

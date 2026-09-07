@@ -1,5 +1,4 @@
 import {
-  Alert,
   Box,
   Button,
   Card,
@@ -9,11 +8,7 @@ import {
   Text,
   TextInput,
 } from "@mantine/core";
-import {
-  IconFolder,
-  IconFolderOpen,
-  IconInfoCircle,
-} from "@tabler/icons-react";
+import { IconFolder, IconFolderOpen } from "@tabler/icons-react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { revealItemInDir } from "@tauri-apps/plugin-opener";
 import { GameDefinition, GameSettings } from "../types";
@@ -50,10 +45,10 @@ export default function SettingsView({
   };
 
   return (
-    <Box p="lg" maw={720} mx="auto">
-      <Stack gap="lg">
+    <Box p="md" maw={680} mx="auto">
+      <Stack gap="md">
         <div>
-          <Text fw={700} size="lg">
+          <Text fw={700} size="md">
             {activeGame.name} Settings
           </Text>
           <Text c="dimmed" size="xs">
@@ -62,14 +57,15 @@ export default function SettingsView({
         </div>
 
         <Card
-          p="md"
+          p="sm"
+          radius="lg"
           withBorder
           style={{
             backgroundColor: "var(--color-bg-card)",
             borderColor: "var(--color-border-subtle)",
           }}
         >
-          <Stack gap="md">
+          <Stack gap="sm">
             <div>
               <Text fw={600} size="sm">
                 Game Mods Directory
@@ -80,40 +76,42 @@ export default function SettingsView({
               </Text>
             </div>
 
-            <TextInput
-              size="sm"
-              value={settings.mods_dir || ""}
-              placeholder="No directory selected"
-              readOnly
-              leftSection={<IconFolder size={16} />}
-              rightSectionWidth={180}
-              rightSection={
-                <Group gap="xs" pr="xs">
-                  {settings.mods_dir && (
-                    <Button
-                      size="xs"
-                      variant="subtle"
-                      leftSection={<IconFolderOpen size={14} />}
-                      onClick={handleOpenFolder}
-                    >
-                      Reveal
-                    </Button>
-                  )}
-                  <Button
-                    size="xs"
-                    variant="light"
-                    onClick={handleBrowseFolder}
-                  >
-                    Browse
-                  </Button>
-                </Group>
-              }
-            />
+            <Group gap="xs" align="center" wrap="nowrap">
+              <TextInput
+                size="xs"
+                radius="xl"
+                value={settings.mods_dir || ""}
+                placeholder="No directory selected"
+                readOnly
+                leftSection={<IconFolder size={16} />}
+                style={{ flex: 1 }}
+              />
+              {settings.mods_dir && (
+                <Button
+                  size="xs"
+                  radius="xl"
+                  variant="light"
+                  leftSection={<IconFolderOpen size={14} />}
+                  onClick={handleOpenFolder}
+                >
+                  Reveal
+                </Button>
+              )}
+              <Button
+                size="xs"
+                radius="xl"
+                variant="light"
+                onClick={handleBrowseFolder}
+              >
+                Browse
+              </Button>
+            </Group>
           </Stack>
         </Card>
 
         <Card
-          p="md"
+          p="sm"
+          radius="lg"
           withBorder
           style={{
             backgroundColor: "var(--color-bg-card)",
@@ -135,16 +133,9 @@ export default function SettingsView({
               size="md"
               checked={settings.auto_categorize}
               onChange={(e) => onUpdateAutoCategorize(e.currentTarget.checked)}
-              color="blue"
             />
           </Group>
         </Card>
-
-        <Alert color="blue" variant="light" icon={<IconInfoCircle size={16} />}>
-          Veil organizes mods cleanly inside your chosen directory. Staging mods
-          reside in DISABLED_veil where 3DMigoto ignores them. When enabled, a
-          directory symlink is placed into veil for 3DMigoto to load.
-        </Alert>
       </Stack>
     </Box>
   );

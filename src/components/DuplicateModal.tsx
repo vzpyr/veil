@@ -23,13 +23,13 @@ export function DuplicateModal({
       onClose={onClose}
       title={
         <Group gap="xs">
-          <IconAlertTriangle size={18} color="var(--color-warning)" />
+          <IconAlertTriangle size={18} color="var(--color-status-warning)" />
           <Text fw={700} size="md">
             Mod Already Installed
           </Text>
         </Group>
       }
-      radius="md"
+      radius="lg"
       size="md"
     >
       <Stack gap="md">
@@ -44,9 +44,9 @@ export function DuplicateModal({
         {existingMod && (
           <Paper
             p="xs"
-            radius="sm"
+            radius="md"
             style={{
-              backgroundColor: "var(--color-surface-subtle)",
+              backgroundColor: "var(--color-bg-surface-2)",
               border: "1px solid var(--color-border-subtle)",
             }}
           >
@@ -54,7 +54,7 @@ export function DuplicateModal({
               <Text size="xs" c="dimmed">
                 Existing Location
               </Text>
-              <Badge size="xs" variant="outline" color="gray">
+              <Badge size="xs" radius="xl" variant="outline" color="gray">
                 {existingMod.category || "Uncategorized"}
               </Badge>
             </Group>
@@ -72,7 +72,8 @@ export function DuplicateModal({
           <Button
             justify="flex-start"
             variant="light"
-            color="blue"
+            color="gray"
+            radius="lg"
             h="auto"
             py="xs"
             leftSection={<IconRefresh size={18} />}
@@ -95,6 +96,7 @@ export function DuplicateModal({
           <Button
             justify="flex-start"
             variant="default"
+            radius="lg"
             h="auto"
             py="xs"
             leftSection={<IconCopy size={18} />}
@@ -115,7 +117,13 @@ export function DuplicateModal({
         </Stack>
 
         <Group justify="flex-end" mt="xs">
-          <Button variant="subtle" color="gray" size="xs" onClick={onClose}>
+          <Button
+            variant="subtle"
+            color="gray"
+            size="xs"
+            radius="xl"
+            onClick={onClose}
+          >
             Cancel
           </Button>
         </Group>

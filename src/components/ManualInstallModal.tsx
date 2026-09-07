@@ -71,6 +71,7 @@ export default function ManualInstallModal({
     <Modal
       opened={opened}
       onClose={onClose}
+      radius="lg"
       title={
         <Text fw={700} size="md">
           Install Mod from Archive
@@ -81,6 +82,7 @@ export default function ManualInstallModal({
         <TextInput
           label="Mod Name"
           description="Folder name where the mod files will be placed"
+          radius="md"
           value={modName}
           onChange={(e) => setModName(e.currentTarget.value)}
           required
@@ -89,6 +91,7 @@ export default function ManualInstallModal({
         <Select
           label="Category"
           description="Target category folder inside mods directory"
+          radius="md"
           data={categoryOptions}
           value={selectedCategory}
           onChange={setSelectedCategory}
@@ -98,6 +101,7 @@ export default function ManualInstallModal({
         <Select
           label="Duplicate Handling"
           description="Action to take if a folder with this name already exists"
+          radius="md"
           data={duplicateOptions}
           value={duplicateAction}
           onChange={(val) => setDuplicateAction(val || "replace")}
@@ -108,6 +112,7 @@ export default function ManualInstallModal({
           <Button
             variant="default"
             size="xs"
+            radius="xl"
             onClick={onClose}
             disabled={isInstalling}
           >
@@ -115,6 +120,7 @@ export default function ManualInstallModal({
           </Button>
           <Button
             size="xs"
+            radius="xl"
             onClick={handleConfirm}
             loading={isInstalling}
             disabled={!modName.trim()}

@@ -152,7 +152,7 @@ export default function GbModModal({
       opened={opened}
       onClose={onClose}
       size="xl"
-      radius="md"
+      radius="lg"
       title={
         profile ? (
           <Group gap="xs">
@@ -160,12 +160,12 @@ export default function GbModModal({
               {profile._sName}
             </Text>
             {profile._aCategory && (
-              <Badge size="xs" variant="light" color="blue">
+              <Badge size="xs" radius="xl" variant="light" color="gray">
                 {profile._aCategory._sName}
               </Badge>
             )}
             {profile._sVersion && (
-              <Badge size="xs" variant="outline" color="gray">
+              <Badge size="xs" radius="xl" variant="outline" color="gray">
                 v{profile._sVersion}
               </Badge>
             )}
@@ -181,13 +181,13 @@ export default function GbModModal({
         <LoadingOverlay visible={isLoading} />
 
         {profile && (
-          <Stack gap="md">
+          <Stack gap="sm">
             {images.length > 0 && (
               <Carousel
                 withIndicators
                 height={260}
                 slideSize="100%"
-                slideGap="md"
+                slideGap="sm"
                 loop
               >
                 {images.map((img, idx) => (
@@ -198,7 +198,7 @@ export default function GbModModal({
                       fit="contain"
                       style={{
                         backgroundColor: "var(--color-bg-surface-1)",
-                        borderRadius: "var(--radius-sm)",
+                        borderRadius: "var(--radius-md)",
                       }}
                     />
                   </Carousel.Slide>
@@ -208,6 +208,7 @@ export default function GbModModal({
 
             <Card
               p="xs"
+              radius="md"
               withBorder
               style={{
                 backgroundColor: "var(--color-bg-surface-2)",
@@ -248,7 +249,12 @@ export default function GbModModal({
               </Group>
             </Card>
 
-            <Tabs value={activeTab} onChange={setActiveTab}>
+            <Tabs
+              value={activeTab}
+              onChange={setActiveTab}
+              variant="pills"
+              radius="xl"
+            >
               <Tabs.List>
                 <Tabs.Tab
                   value="files"
@@ -277,7 +283,7 @@ export default function GbModModal({
               </Tabs.List>
 
               <Tabs.Panel value="files" pt="sm">
-                <Stack gap="sm">
+                <Stack gap="xs">
                   {files.length > 0 ? (
                     files.map((f) => {
                       const downloadKey = String(f._idRow);
@@ -293,7 +299,8 @@ export default function GbModModal({
                       return (
                         <Card
                           key={f._idRow}
-                          p="sm"
+                          p="xs"
+                          radius="md"
                           withBorder
                           style={{
                             backgroundColor: "var(--color-bg-card)",
@@ -310,7 +317,12 @@ export default function GbModModal({
                                 {f._sFile}
                               </Text>
                               <Group gap="xs">
-                                <Badge size="xs" variant="outline" color="gray">
+                                <Badge
+                                  size="xs"
+                                  radius="xl"
+                                  variant="outline"
+                                  color="gray"
+                                >
                                   {formatBytes(f._nFilesize)}
                                 </Badge>
                                 <Text size="2xs" c="dimmed">
@@ -326,6 +338,7 @@ export default function GbModModal({
 
                             <Button
                               size="xs"
+                              radius="xl"
                               variant="light"
                               color={
                                 isCompleted
@@ -334,7 +347,7 @@ export default function GbModModal({
                                     ? "red"
                                     : isQueued
                                       ? "yellow"
-                                      : "blue"
+                                      : "gray"
                               }
                               leftSection={
                                 isCompleted ? (
@@ -385,7 +398,8 @@ export default function GbModModal({
                                 value={queueItem.progress.percentage}
                                 size="xs"
                                 animated
-                                color="blue"
+                                color="gray"
+                                radius="xl"
                               />
                             </Box>
                           )}
@@ -396,9 +410,10 @@ export default function GbModModal({
                                 value={100}
                                 size="xs"
                                 animated
-                                color="cyan"
+                                color="gray"
+                                radius="xl"
                               />
-                              <Text size="2xs" c="cyan" ta="right" mt={4}>
+                              <Text size="2xs" c="dimmed" ta="right" mt={4}>
                                 Extracting and installing archive...
                               </Text>
                             </Box>
@@ -436,11 +451,12 @@ export default function GbModModal({
               <Tabs.Panel value="updates" pt="sm">
                 <ScrollArea h={320} p="xs">
                   {updates.length > 0 ? (
-                    <Stack gap="md">
+                    <Stack gap="xs">
                       {updates.map((u) => (
                         <Card
                           key={u._idRow}
-                          p="sm"
+                          p="xs"
+                          radius="md"
                           withBorder
                           style={{
                             backgroundColor: "var(--color-bg-card)",
@@ -453,7 +469,7 @@ export default function GbModModal({
                                 {u._sName || "Update"}
                               </Text>
                               {u._sVersion && (
-                                <Badge size="xs" color="blue">
+                                <Badge size="xs" radius="xl" color="gray">
                                   v{u._sVersion}
                                 </Badge>
                               )}
@@ -477,7 +493,12 @@ export default function GbModModal({
                             <Stack gap={2}>
                               {u._aChangeLog.map((log, lIdx) => (
                                 <Group key={lIdx} gap="xs">
-                                  <Badge size="xs" variant="dot" color="gray">
+                                  <Badge
+                                    size="xs"
+                                    radius="xl"
+                                    variant="dot"
+                                    color="gray"
+                                  >
                                     {log.cat}
                                   </Badge>
                                   <Text size="xs">{log.text}</Text>
@@ -499,11 +520,12 @@ export default function GbModModal({
               <Tabs.Panel value="comments" pt="sm">
                 <ScrollArea h={320} p="xs">
                   {posts.length > 0 ? (
-                    <Stack gap="md">
+                    <Stack gap="xs">
                       {posts.map((p) => (
                         <Card
                           key={p._idRow}
-                          p="sm"
+                          p="xs"
+                          radius="md"
                           withBorder
                           style={{
                             backgroundColor: "var(--color-bg-card)",
@@ -539,6 +561,7 @@ export default function GbModModal({
                               <Box mt="xs">
                                 <Button
                                   size="compact-xs"
+                                  radius="xl"
                                   variant="subtle"
                                   onClick={() => handleToggleReplies(p._idRow)}
                                 >

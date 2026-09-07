@@ -1,36 +1,36 @@
 import { createTheme, MantineColorsTuple } from "@mantine/core";
 
-const veilBlue: MantineColorsTuple = [
-  "#eff6ff",
-  "#dbeafe",
-  "#bfdbfe",
-  "#93c5fd",
-  "#60a5fa",
-  "#3b82f6",
-  "#2563eb",
-  "#1d4ed8",
-  "#1e40af",
-  "#1e3a8a",
+const veilDark: MantineColorsTuple = [
+  "#f3f5f8",
+  "#d2d6de",
+  "#9da4b2",
+  "#6b7382",
+  "#4b5362",
+  "#2f3542",
+  "#222731",
+  "#1b1f26",
+  "#14171d",
+  "#0e1116",
 ];
 
-const veilDark: MantineColorsTuple = [
-  "#f1f5f9",
-  "#cbd5e1",
-  "#94a3b8",
-  "#64748b",
-  "#475569",
-  "#334155",
-  "#222830",
-  "#191e24",
-  "#12151a",
-  "#0b0d10",
+const veilGray: MantineColorsTuple = [
+  "#fafbfc",
+  "#f3f5f8",
+  "#e6e9ee",
+  "#d2d6de",
+  "#9da4b2",
+  "#6b7382",
+  "#4b5362",
+  "#333947",
+  "#1b1f26",
+  "#0e1116",
 ];
 
 export const theme = createTheme({
-  primaryColor: "blue",
+  primaryColor: "gray",
   colors: {
-    blue: veilBlue,
     dark: veilDark,
+    gray: veilGray,
   },
   breakpoints: {
     xs: "36em",
@@ -42,8 +42,10 @@ export const theme = createTheme({
   },
   fontFamily: "var(--font-family-sans)",
   fontFamilyMonospace: "var(--font-family-mono)",
-  defaultRadius: "sm",
+  defaultRadius: "md",
   spacing: {
+    "3xs": "var(--space-3xs)",
+    "2xs": "var(--space-2xs)",
     xs: "var(--space-xs)",
     sm: "var(--space-sm)",
     md: "var(--space-md)",
@@ -56,12 +58,78 @@ export const theme = createTheme({
     md: "var(--radius-md)",
     lg: "var(--radius-lg)",
     xl: "var(--radius-xl)",
+    pill: "var(--radius-pill)",
   },
   fontSizes: {
+    "3xs": "var(--font-size-3xs)",
+    "2xs": "var(--font-size-2xs)",
     xs: "var(--font-size-xs)",
     sm: "var(--font-size-sm)",
     md: "var(--font-size-md)",
     lg: "var(--font-size-lg)",
     xl: "var(--font-size-xl)",
+  },
+  components: {
+    Button: {
+      defaultProps: {
+        radius: "xl",
+      },
+    },
+    Badge: {
+      defaultProps: {
+        radius: "xl",
+      },
+    },
+    SegmentedControl: {
+      defaultProps: {
+        radius: "xl",
+        withItemsBorders: false,
+      },
+    },
+    TextInput: {
+      defaultProps: {
+        radius: "md",
+      },
+    },
+    Select: {
+      defaultProps: {
+        radius: "md",
+      },
+    },
+    Card: {
+      defaultProps: {
+        radius: "lg",
+      },
+    },
+    Modal: {
+      defaultProps: {
+        radius: "lg",
+      },
+    },
+    Drawer: {
+      defaultProps: {
+        radius: "lg",
+      },
+    },
+    Paper: {
+      defaultProps: {
+        radius: "md",
+      },
+    },
+    ActionIcon: {
+      defaultProps: {
+        radius: "xl",
+      },
+    },
+    Tabs: {
+      defaultProps: {
+        radius: "xl",
+      },
+    },
+    Switch: {
+      defaultProps: {
+        radius: "xl",
+      },
+    },
   },
 });

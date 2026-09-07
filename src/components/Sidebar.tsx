@@ -10,15 +10,16 @@ import {
   Stack,
   Text,
   TextInput,
-  Tooltip,
 } from "@mantine/core";
 import {
+  IconArchive,
+  IconArchiveFilled,
   IconDotsVertical,
   IconEdit,
   IconFolder,
   IconFolderFilled,
   IconFolderPlus,
-  IconInbox,
+  IconPackageImport,
   IconSearch,
   IconTrash,
   IconX,
@@ -36,6 +37,7 @@ interface SidebarProps {
   onOpenCreateCategory: () => void;
   onRenameCategory: (categoryName: string) => void;
   onDeleteCategory: (categoryName: string) => void;
+  onOpenManualInstall: () => void;
 }
 
 export default function Sidebar({
@@ -49,13 +51,14 @@ export default function Sidebar({
   onOpenCreateCategory,
   onRenameCategory,
   onDeleteCategory,
+  onOpenManualInstall,
 }: SidebarProps) {
   return (
     <Stack
-      w={260}
+      w="var(--sidebar-width)"
       h="100%"
-      p="sm"
-      gap="sm"
+      p="xs"
+      gap="xs"
       style={{
         backgroundColor: "var(--color-bg-surface-1)",
         borderRight: "1px solid var(--color-border-subtle)",
@@ -63,6 +66,7 @@ export default function Sidebar({
     >
       <TextInput
         size="xs"
+        radius="xl"
         placeholder="Filter mods..."
         value={searchQuery}
         onChange={(e) => onSearchChange(e.currentTarget.value)}
@@ -71,6 +75,7 @@ export default function Sidebar({
           searchQuery ? (
             <ActionIcon
               size="xs"
+              radius="xl"
               variant="subtle"
               onClick={() => onSearchChange("")}
             >
@@ -80,19 +85,20 @@ export default function Sidebar({
         }
       />
 
-      <Group justify="space-between" px="xs" mt="xs">
-        <Text size="xs" fw={700} c="dimmed" tt="uppercase">
+      <Box px="xs" mt="3xs">
+        <Text
+          size="3xs"
+          fw={700}
+          c="dimmed"
+          tt="uppercase"
+          style={{ letterSpacing: "0.08em" }}
+        >
           Categories
         </Text>
-        <Tooltip label="Create new category">
-          <ActionIcon size="xs" variant="subtle" onClick={onOpenCreateCategory}>
-            <IconFolderPlus size={14} />
-          </ActionIcon>
-        </Tooltip>
-      </Group>
+      </Box>
 
       <ScrollArea style={{ flex: 1 }}>
-        <Stack gap="2xs">
+        <Stack gap="3xs">
           <NavLink
             label="All Mods"
             active={selectedCategory === null}
@@ -105,24 +111,29 @@ export default function Sidebar({
               )
             }
             rightSection={
-              <Badge size="xs" variant="light" color="gray">
+              <Badge size="xs" radius="xl" variant="light" color="gray">
                 {totalModsCount}
               </Badge>
             }
-            style={{ borderRadius: "var(--radius-sm)" }}
+            style={{ borderRadius: "var(--radius-pill)" }}
           />
 
           <NavLink
             label="Uncategorized"
             active={selectedCategory === "__root__"}
             onClick={() => onSelectCategory("__root__")}
-            leftSection={<IconInbox size={16} />}
+            leftSection={
+              selectedCategory === "__root__" ? (
+                <IconArchiveFilled size={16} />
+              ) : (
+                <IconArchive size={16} />
+              )
+            }
             rightSection={
-              <Badge size="xs" variant="light" color="gray">
+              <Badge size="xs" radius="xl" variant="light" color="gray">
                 {uncategorizedCount}
               </Badge>
             }
-            style={{ borderRadius: "var(--radius-sm)" }}
           />
 
           {categories.map((cat) => (
@@ -133,20 +144,21 @@ export default function Sidebar({
               onClick={() => onSelectCategory(cat.name)}
               leftSection={
                 selectedCategory === cat.name ? (
-                  <IconFolderFilled size={16} />
+                  <IconArchiveFilled size={16} />
                 ) : (
-                  <IconFolder size={16} />
+                  <IconArchive size={16} />
                 )
               }
               rightSection={
                 <Group gap={4} wrap="nowrap">
-                  <Badge size="xs" variant="light" color="gray">
+                  <Badge size="xs" radius="xl" variant="light" color="gray">
                     {cat.mod_count}
                   </Badge>
                   <Menu position="bottom-end" withinPortal>
                     <Menu.Target>
                       <ActionIcon
                         size="xs"
+                        radius="xl"
                         variant="subtle"
                         onClick={(e) => e.stopPropagation()}
                       >
@@ -177,7 +189,7 @@ export default function Sidebar({
                   </Menu>
                 </Group>
               }
-              style={{ borderRadius: "var(--radius-sm)" }}
+              style={{ borderRadius: "var(--radius-pill)" }}
             />
           ))}
         </Stack>
@@ -187,15 +199,27 @@ export default function Sidebar({
         pt="xs"
         style={{ borderTop: "1px solid var(--color-border-subtle)" }}
       >
-        <Button
-          fullWidth
-          variant="light"
-          size="xs"
-          leftSection={<IconFolderPlus size={14} />}
-          onClick={onOpenCreateCategory}
-        >
-          New Category
-        </Button>
+        <Stack gap="xs">
+          <Button
+            fullWidth
+            variant="light"
+            size="xs"
+            radius="xl"
+            leftSection={<IconFolderPlus size={14} />}
+            onClick={onOpenCreateCategory}
+          >
+            New Category
+          </Button>
+          <Button
+            fullWidth
+            size="xs"
+            radius="xl"
+            leftSection={<IconPackageImport size={14} />}
+            onClick={onOpenManualInstall}
+          >
+            Install Mod
+          </Button>
+        </Stack>
       </Box>
     </Stack>
   );

@@ -2,6 +2,7 @@ import {
   ActionIcon,
   Badge,
   Button,
+  Center,
   Group,
   SegmentedControl,
   Select,
@@ -61,49 +62,76 @@ export default function Header({
     {
       value: "installed",
       label: (
-        <Group gap="xs">
-          <IconFolder size={16} />
-          <Text size="sm">Installed</Text>
-        </Group>
+        <Center
+          style={{
+            width: "100%",
+            gap: "var(--space-2xs)",
+            whiteSpace: "nowrap",
+            padding: "0 var(--space-xs)",
+          }}
+        >
+          <IconFolder size={15} />
+          <Text size="xs" fw={600}>
+            Installed
+          </Text>
+        </Center>
       ),
     },
     {
       value: "browser",
       label: (
-        <Group gap="xs">
-          <IconWorld size={16} />
-          <Text size="sm">GameBanana</Text>
-        </Group>
+        <Center
+          style={{
+            width: "100%",
+            gap: "var(--space-2xs)",
+            whiteSpace: "nowrap",
+            padding: "0 var(--space-xs)",
+          }}
+        >
+          <IconWorld size={15} />
+          <Text size="xs" fw={600}>
+            GameBanana
+          </Text>
+        </Center>
       ),
     },
     {
       value: "settings",
       label: (
-        <Group gap="xs">
-          <IconSettings size={16} />
-          <Text size="sm">Settings</Text>
-        </Group>
+        <Center
+          style={{
+            width: "100%",
+            gap: "var(--space-2xs)",
+            whiteSpace: "nowrap",
+            padding: "0 var(--space-xs)",
+          }}
+        >
+          <IconSettings size={15} />
+          <Text size="xs" fw={600}>
+            Settings
+          </Text>
+        </Center>
       ),
     },
   ];
 
   return (
     <Group
-      h={60}
-      px="md"
+      h="var(--header-height)"
+      px="sm"
       justify="space-between"
       style={{
         backgroundColor: "var(--color-bg-surface-1)",
         borderBottom: "1px solid var(--color-border-subtle)",
       }}
     >
-      <Group gap="md">
+      <Group gap="sm">
         <Text
           fw={800}
-          size="lg"
+          size="md"
           style={{
-            letterSpacing: "0.05em",
-            color: "var(--color-accent-text)",
+            letterSpacing: "0.08em",
+            color: "var(--color-text-primary)",
           }}
         >
           veil
@@ -111,7 +139,8 @@ export default function Header({
 
         <Select
           size="xs"
-          w={220}
+          w={210}
+          radius="xl"
           data={gameSelectData}
           value={activeGameId}
           onChange={(val) => val && onSelectGame(val)}
@@ -124,7 +153,9 @@ export default function Header({
       </Group>
 
       <SegmentedControl
-        size="xs"
+        size="sm"
+        radius="xl"
+        withItemsBorders={false}
         value={activeTab}
         onChange={onSelectTab}
         data={tabData}
@@ -135,13 +166,20 @@ export default function Header({
           <Tooltip label={`${conflicts.length} mod conflicts detected`}>
             <Button
               size="xs"
+              radius="xl"
               color="orange"
               variant="light"
               leftSection={<IconAlertTriangle size={14} />}
               onClick={onOpenConflicts}
             >
               Conflicts
-              <Badge size="xs" color="orange" ml="xs" variant="filled">
+              <Badge
+                size="xs"
+                radius="xl"
+                color="orange"
+                ml="xs"
+                variant="filled"
+              >
                 {conflicts.length}
               </Badge>
             </Button>
@@ -151,8 +189,9 @@ export default function Header({
         <Tooltip label="Download Queue">
           <ActionIcon
             variant={activeDownloadCount > 0 ? "light" : "default"}
-            color={activeDownloadCount > 0 ? "blue" : undefined}
+            color={activeDownloadCount > 0 ? "gray" : undefined}
             size="md"
+            radius="xl"
             onClick={onOpenDownloadQueue}
             style={{ position: "relative" }}
           >
@@ -161,7 +200,7 @@ export default function Header({
               <Badge
                 size="xs"
                 circle
-                color="blue"
+                color="dark"
                 style={{
                   position: "absolute",
                   top: -4,
@@ -182,8 +221,9 @@ export default function Header({
           <Tooltip label="Check mod updates">
             <ActionIcon
               variant={updatesCount > 0 ? "light" : "default"}
-              color={updatesCount > 0 ? "teal" : undefined}
+              color={updatesCount > 0 ? "gray" : undefined}
               size="md"
+              radius="xl"
               onClick={onCheckUpdates}
               loading={isCheckingUpdates}
               style={{ position: "relative" }}
@@ -193,7 +233,7 @@ export default function Header({
                 <Badge
                   size="xs"
                   circle
-                  color="teal"
+                  color="dark"
                   style={{
                     position: "absolute",
                     top: -4,
@@ -215,6 +255,7 @@ export default function Header({
           <ActionIcon
             variant="default"
             size="md"
+            radius="xl"
             onClick={onRefresh}
             loading={isRefreshing}
           >
