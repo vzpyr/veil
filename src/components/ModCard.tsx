@@ -73,12 +73,18 @@ export default function ModCard({
       <Card.Section
         style={{
           position: "relative",
-          height: 160,
+          aspectRatio: "16 / 9",
           backgroundColor: "var(--color-bg-surface-2)",
         }}
       >
         {previewUrl ? (
-          <Image src={previewUrl} h={160} fit="cover" alt={mod.name} />
+          <Image
+            src={previewUrl}
+            h="100%"
+            w="100%"
+            fit="cover"
+            alt={mod.name}
+          />
         ) : (
           <Stack h="100%" align="center" justify="center" gap="xs">
             <IconPhoto size={36} color="var(--color-text-muted)" />
