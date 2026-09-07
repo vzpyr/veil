@@ -1,16 +1,20 @@
+pub mod archive;
 pub mod config;
+pub mod conflict;
 pub mod games;
 pub mod scanner;
 pub mod symlink;
 
+use archive::extract_any_archive;
 use config::{get_config_path, read_config, write_config, AppConfig, GameSettings};
+use conflict::{detect_conflicts, ConflictGroup};
 use games::{get_supported_games, GameDefinition};
 use scanner::{
     create_category, delete_mod, list_categories, move_mod_category, scan_mods, toggle_mod_status,
     CategoryItem, ModItem,
 };
 use std::path::Path;
-use symlink::{ensure_veil_dirs, prune_orphaned_symlinks};
+use symlink::{ensure_veil_dirs, get_disabled_dir, prune_orphaned_symlinks};
 use tauri::AppHandle;
 
 #[tauri::command]
@@ -94,6 +98,14 @@ fn scan_installed_mods(mods_dir: String) -> Result<Vec<ModItem>, String> {
 }
 
 #[tauri::command]
+fn get_mod_conflicts(mods_dir: String) -> Result<Vec<ConflictGroup>, String> {
+    let path = Path::new(&mods_dir);
+    ensure_veil_dirs(path)?;
+    let mods = scan_mods(path)?;
+    Ok(detect_conflicts(&mods))
+}
+
+#[tauri::command]
 fn get_categories(mods_dir: String) -> Result<Vec<CategoryItem>, String> {
     let path = Path::new(&mods_dir);
     ensure_veil_dirs(path)?;
@@ -134,6 +146,36 @@ fn prune_symlinks(mods_dir: String) -> Result<usize, String> {
     prune_orphaned_symlinks(path)
 }
 
+#[tauri::command]
+fn extract_archive_file(
+    archive_path: String,
+    mods_dir: String,
+    mod_name: String,
+    category: Option<String>,
+) -> Result<String, String> {
+    let path = Path::new(&mods_dir);
+    ensure_veil_dirs(path)?;
+
+    let disabled_dir = get_disabled_dir(path);
+    let target_parent_dir = match &category {
+        Some(cat) if !cat.trim().is_empty() => {
+            let cat_dir = disabled_dir.join(cat.trim().replace(['/', '\\'], ""));
+            std::fs::create_dir_all(&cat_dir).map_err(|e| e.to_string())?;
+            cat_dir
+        }
+        _ => disabled_dir.clone(),
+    };
+
+    let extracted = extract_any_archive(Path::new(&archive_path), &target_parent_dir, &mod_name)?;
+    let rel_id = extracted
+        .strip_prefix(&disabled_dir)
+        .map_err(|e| e.to_string())?
+        .to_string_lossy()
+        .replace('\\', "/");
+
+    Ok(rel_id)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -147,12 +189,14 @@ pub fn run() {
             set_game_mods_dir,
             set_game_auto_categorize,
             scan_installed_mods,
+            get_mod_conflicts,
             get_categories,
             toggle_mod,
             move_mod,
             create_new_category,
             delete_installed_mod,
             prune_symlinks,
+            extract_archive_file,
         ])
         .run(tauri::generate_context!())
         .expect("error while running veil");

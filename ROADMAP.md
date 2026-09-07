@@ -21,12 +21,12 @@
 
 ## phase 3: archive extraction and conflict engine
 
-- [ ] implement pure rust archive extractor for zip and sevenz
-- [ ] implement root folder wrapping for loose archive files
-- [ ] implement path traversal sanitization and preview extraction
-- [ ] implement conflict detection engine for colliding hashes
-- [ ] expose tauri commands and type definitions
-- [ ] verify phase 3 build and tests
+- [x] implement pure rust archive extractor for zip and sevenz
+- [x] implement root folder wrapping for loose archive files
+- [x] implement path traversal sanitization and preview extraction
+- [x] implement conflict detection engine for colliding hashes
+- [x] expose tauri commands and type definitions
+- [x] verify phase 3 build and tests
 
 ## phase 4: frontend installed mods view and design system
 
