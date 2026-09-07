@@ -230,7 +230,7 @@ export function DownloadQueueDrawer({
                           {item.progress.speed}
                         </Text>
                         <Text size="2xs" c="dimmed">
-                          {Math.round(item.progress.percentage)}% • ETA:{" "}
+                          {Math.round(item.progress.percentage)}% | ETA:{" "}
                           {item.progress.eta}
                         </Text>
                       </Group>
