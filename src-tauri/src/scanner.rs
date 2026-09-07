@@ -604,21 +604,10 @@ pub fn link_mod(
             mod_folder.display()
         ));
     }
-    let downloaded_at = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .unwrap_or_default()
-        .as_secs();
-    let mod_name = mod_folder
-        .file_name()
-        .and_then(|n| n.to_str())
-        .unwrap_or("")
-        .to_string();
     let meta = serde_json::json!({
         "gamebanana_id": gamebanana_id,
         "file_id": file_id,
         "version": version,
-        "mod_name": mod_name,
-        "downloaded_at": downloaded_at
     });
     fs::write(
         mod_folder.join(".veil.json"),

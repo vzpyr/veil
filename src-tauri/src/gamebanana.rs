@@ -222,17 +222,10 @@ pub async fn download_and_install_mod(
         }
     }
 
-    let downloaded_at = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .unwrap_or_default()
-        .as_secs();
-
     let meta = serde_json::json!({
         "gamebanana_id": item_id,
         "file_id": file_id,
         "version": version,
-        "mod_name": mod_name,
-        "downloaded_at": downloaded_at
     });
     let _ = fs::write(
         extracted_dir.join(".veil.json"),
