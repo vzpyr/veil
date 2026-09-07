@@ -7,10 +7,7 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "tauri": "tauri",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
-    "typecheck": "tsc --noEmit"
+    "tauri": "tauri"
   },
   "dependencies": {
     "@mantine/carousel": "^7.17.1",
