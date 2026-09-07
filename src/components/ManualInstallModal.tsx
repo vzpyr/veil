@@ -48,7 +48,7 @@ export default function ManualInstallModal({
   }, [archivePath]);
 
   const categoryOptions = [
-    { value: "__root__", label: "Uncategorized (Root)" },
+    { value: "__root__", label: "Uncategorized" },
     ...categories.map((c) => ({ value: c.name, label: c.name })),
   ];
 

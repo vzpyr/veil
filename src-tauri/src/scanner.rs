@@ -1,4 +1,6 @@
-use crate::symlink::{create_mod_symlink, get_active_dir, get_disabled_dir, remove_mod_symlink};
+use crate::symlink::{
+    create_mod_symlink, get_active_dir, get_disabled_dir, remove_mod_symlink, UNCATEGORIZED_DIR_NAME,
+};
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::fs;
@@ -175,12 +177,63 @@ fn contains_subdirectories(dir: &Path) -> bool {
     false
 }
 
+fn is_loose_mod_folder(dir: &Path) -> bool {
+    if dir.join(".veil.json").is_file() {
+        return true;
+    }
+    if find_preview_image(dir).is_some() {
+        return true;
+    }
+    if has_direct_ini_or_assets(dir) {
+        return true;
+    }
+    if !contains_subdirectories(dir) {
+        return true;
+    }
+    false
+}
+
 pub fn scan_mods(mods_dir: &Path) -> Result<Vec<ModItem>, String> {
     let disabled_dir = get_disabled_dir(mods_dir);
     let active_dir = get_active_dir(mods_dir);
 
     if !disabled_dir.exists() {
         return Ok(Vec::new());
+    }
+
+    let uncategorized_dir = disabled_dir.join(UNCATEGORIZED_DIR_NAME);
+    let active_uncategorized_dir = active_dir.join(UNCATEGORIZED_DIR_NAME);
+    let _ = fs::create_dir_all(&uncategorized_dir);
+
+    if let Ok(entries) = fs::read_dir(&disabled_dir) {
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if !path.is_dir() {
+                continue;
+            }
+            let name = match path.file_name().and_then(|n| n.to_str()) {
+                Some(n) => n.to_string(),
+                None => continue,
+            };
+            if name.eq_ignore_ascii_case(UNCATEGORIZED_DIR_NAME) {
+                continue;
+            }
+            if is_loose_mod_folder(&path) {
+                let target_dest = uncategorized_dir.join(&name);
+                if !target_dest.exists() {
+                    let old_active = active_dir.join(&name);
+                    let was_enabled = old_active.symlink_metadata().is_ok();
+                    if was_enabled {
+                        let _ = remove_mod_symlink(&old_active);
+                    }
+                    if fs::rename(&path, &target_dest).is_ok() && was_enabled {
+                        let _ = fs::create_dir_all(&active_uncategorized_dir);
+                        let new_active = active_uncategorized_dir.join(&name);
+                        let _ = create_mod_symlink(&target_dest, &new_active);
+                    }
+                }
+            }
+        }
     }
 
     let mut mods = Vec::new();
@@ -192,24 +245,46 @@ pub fn scan_mods(mods_dir: &Path) -> Result<Vec<ModItem>, String> {
             continue;
         }
 
-        let folder_name = match path.file_name().and_then(|n| n.to_str()) {
+        let cat_folder_name = match path.file_name().and_then(|n| n.to_str()) {
             Some(n) => n.to_string(),
             None => continue,
         };
 
-        if has_direct_ini_or_assets(&path) || !contains_subdirectories(&path) {
-            let rel_id = folder_name.clone();
+        let is_uncategorized = cat_folder_name.eq_ignore_ascii_case(UNCATEGORIZED_DIR_NAME);
+        let category_opt = if is_uncategorized {
+            None
+        } else {
+            Some(cat_folder_name.clone())
+        };
+
+        let sub_entries = match fs::read_dir(&path) {
+            Ok(se) => se,
+            Err(_) => continue,
+        };
+
+        for sub_entry in sub_entries.flatten() {
+            let sub_path = sub_entry.path();
+            if !sub_path.is_dir() {
+                continue;
+            }
+
+            let sub_name = match sub_path.file_name().and_then(|n| n.to_str()) {
+                Some(n) => n.to_string(),
+                None => continue,
+            };
+
+            let rel_id = format!("{}/{}", cat_folder_name, sub_name);
             let active_symlink = active_dir.join(&rel_id);
             let is_enabled = active_symlink.symlink_metadata().is_ok();
-            let preview = find_preview_image(&path);
-            let hashes = collect_hashes_from_folder(&path);
+            let preview = find_preview_image(&sub_path);
+            let hashes = collect_hashes_from_folder(&sub_path);
+            let (gb_id, ver, fid) = read_veil_metadata(&sub_path);
 
-            let (gb_id, ver, fid) = read_veil_metadata(&path);
             mods.push(ModItem {
                 id: rel_id,
-                name: folder_name,
-                category: None,
-                folder_path: path.to_string_lossy().to_string(),
+                name: sub_name,
+                category: category_opt.clone(),
+                folder_path: sub_path.to_string_lossy().to_string(),
                 enabled: is_enabled,
                 preview_path: preview,
                 hashes,
@@ -217,44 +292,6 @@ pub fn scan_mods(mods_dir: &Path) -> Result<Vec<ModItem>, String> {
                 version: ver,
                 file_id: fid,
             });
-        } else {
-            let category_name = folder_name;
-            let sub_entries = match fs::read_dir(&path) {
-                Ok(se) => se,
-                Err(_) => continue,
-            };
-
-            for sub_entry in sub_entries.flatten() {
-                let sub_path = sub_entry.path();
-                if !sub_path.is_dir() {
-                    continue;
-                }
-
-                let sub_name = match sub_path.file_name().and_then(|n| n.to_str()) {
-                    Some(n) => n.to_string(),
-                    None => continue,
-                };
-
-                let rel_id = format!("{}/{}", category_name, sub_name);
-                let active_symlink = active_dir.join(&rel_id);
-                let is_enabled = active_symlink.symlink_metadata().is_ok();
-                let preview = find_preview_image(&sub_path);
-                let hashes = collect_hashes_from_folder(&sub_path);
-                let (gb_id, ver, fid) = read_veil_metadata(&sub_path);
-
-                mods.push(ModItem {
-                    id: rel_id,
-                    name: sub_name,
-                    category: Some(category_name.clone()),
-                    folder_path: sub_path.to_string_lossy().to_string(),
-                    enabled: is_enabled,
-                    preview_path: preview,
-                    hashes,
-                    gamebanana_id: gb_id,
-                    version: ver,
-                    file_id: fid,
-                });
-            }
         }
     }
 
@@ -273,8 +310,11 @@ pub fn list_categories(mods_dir: &Path) -> Result<Vec<CategoryItem>, String> {
 
     for entry in entries.flatten() {
         let path = entry.path();
-        if path.is_dir() && !has_direct_ini_or_assets(&path) {
+        if path.is_dir() {
             if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
+                if name.eq_ignore_ascii_case(UNCATEGORIZED_DIR_NAME) {
+                    continue;
+                }
                 let sub_count = fs::read_dir(&path)
                     .map(|entries| entries.flatten().filter(|e| e.path().is_dir()).count())
                     .unwrap_or(0);
@@ -296,6 +336,9 @@ pub fn create_category(mods_dir: &Path, category_name: &str) -> Result<(), Strin
     if sanitized.is_empty() {
         return Err("Category name cannot be empty".to_string());
     }
+    if sanitized.eq_ignore_ascii_case(UNCATEGORIZED_DIR_NAME) {
+        return Err("Cannot use reserved category name 'Uncategorized'".to_string());
+    }
     let cat_dir = get_disabled_dir(mods_dir).join(&sanitized);
     fs::create_dir_all(&cat_dir).map_err(|err| err.to_string())?;
     Ok(())
@@ -307,6 +350,12 @@ pub fn rename_category(mods_dir: &Path, old_name: &str, new_name: &str) -> Resul
 
     if sanitized_old.is_empty() || sanitized_new.is_empty() {
         return Err("Category name cannot be empty".to_string());
+    }
+    if sanitized_old.eq_ignore_ascii_case(UNCATEGORIZED_DIR_NAME) {
+        return Err("Cannot rename the reserved Uncategorized category".to_string());
+    }
+    if sanitized_new.eq_ignore_ascii_case(UNCATEGORIZED_DIR_NAME) {
+        return Err("Cannot use reserved category name 'Uncategorized'".to_string());
     }
 
     if sanitized_old == sanitized_new {
@@ -372,6 +421,9 @@ pub fn delete_category(
     if sanitized.is_empty() {
         return Err("Category name cannot be empty".to_string());
     }
+    if sanitized.eq_ignore_ascii_case(UNCATEGORIZED_DIR_NAME) {
+        return Err("Cannot delete the reserved Uncategorized category".to_string());
+    }
 
     let disabled_dir = get_disabled_dir(mods_dir);
     let active_dir = get_active_dir(mods_dir);
@@ -394,6 +446,10 @@ pub fn delete_category(
         }
         fs::remove_dir_all(&cat_dir).map_err(|e| e.to_string())?;
     } else {
+        let uncategorized_dir = disabled_dir.join(UNCATEGORIZED_DIR_NAME);
+        let active_uncategorized_dir = active_dir.join(UNCATEGORIZED_DIR_NAME);
+        fs::create_dir_all(&uncategorized_dir).map_err(|e| e.to_string())?;
+
         let entries = fs::read_dir(&cat_dir).map_err(|e| e.to_string())?;
         for entry in entries.flatten() {
             let path = entry.path();
@@ -402,7 +458,7 @@ pub fn delete_category(
                     Some(n) => n.to_string(),
                     None => continue,
                 };
-                let dest = disabled_dir.join(&mod_name);
+                let dest = uncategorized_dir.join(&mod_name);
                 if !dest.exists() {
                     let active_symlink = active_cat_dir.join(&mod_name);
                     let was_enabled = active_symlink.symlink_metadata().is_ok();
@@ -410,7 +466,8 @@ pub fn delete_category(
                         let _ = remove_mod_symlink(&active_symlink);
                     }
                     if fs::rename(&path, &dest).is_ok() && was_enabled {
-                        let new_symlink = active_dir.join(&mod_name);
+                        let _ = fs::create_dir_all(&active_uncategorized_dir);
+                        let new_symlink = active_uncategorized_dir.join(&mod_name);
                         let _ = create_mod_symlink(&dest, &new_symlink);
                     }
                 }
@@ -481,18 +538,22 @@ pub fn move_mod_category(
         None => return Err("Invalid mod folder name".to_string()),
     };
 
-    let new_rel_path = match &target_category {
+    let target_cat_name = match &target_category {
         Some(cat) => {
-            let sanitized_cat = cat.trim().replace(['/', '\\'], "");
-            if sanitized_cat.is_empty() {
-                mod_folder_name.clone()
+            let sanitized = cat.trim().replace(['/', '\\'], "");
+            if sanitized.is_empty()
+                || sanitized.eq_ignore_ascii_case("__root__")
+                || sanitized.eq_ignore_ascii_case(UNCATEGORIZED_DIR_NAME)
+            {
+                UNCATEGORIZED_DIR_NAME.to_string()
             } else {
-                format!("{}/{}", sanitized_cat, mod_folder_name)
+                sanitized
             }
         }
-        None => mod_folder_name.clone(),
+        None => UNCATEGORIZED_DIR_NAME.to_string(),
     };
 
+    let new_rel_path = format!("{}/{}", target_cat_name, mod_folder_name);
     let new_source = disabled_dir.join(&new_rel_path);
     if old_source == new_source {
         return Ok(new_rel_path);
@@ -519,7 +580,9 @@ pub fn move_mod_category(
     fs::rename(&old_source, &new_source).map_err(|err| err.to_string())?;
 
     if let Some(old_parent) = old_source.parent() {
-        if old_parent != disabled_dir {
+        if old_parent != disabled_dir
+            && old_parent.file_name().and_then(|n| n.to_str()) != Some(UNCATEGORIZED_DIR_NAME)
+        {
             if let Ok(mut remaining) = fs::read_dir(old_parent) {
                 if remaining.next().is_none() {
                     let _ = fs::remove_dir(old_parent);
@@ -551,7 +614,9 @@ pub fn delete_mod(mods_dir: &Path, mod_rel_path: &str) -> Result<(), String> {
     }
 
     if let Some(parent) = source_dir.parent() {
-        if parent != disabled_dir {
+        if parent != disabled_dir
+            && parent.file_name().and_then(|n| n.to_str()) != Some(UNCATEGORIZED_DIR_NAME)
+        {
             if let Ok(mut remaining) = fs::read_dir(parent) {
                 if remaining.next().is_none() {
                     let _ = fs::remove_dir(parent);
@@ -660,7 +725,9 @@ mod tests {
         fs::create_dir_all(&mod_a_dir).unwrap();
         fs::write(mod_a_dir.join("mod.ini"), "hash = ffeeddcc").unwrap();
 
-        let mod_b_dir = get_disabled_dir(mods_dir).join("CustomHUD");
+        let mod_b_dir = get_disabled_dir(mods_dir)
+            .join(crate::symlink::UNCATEGORIZED_DIR_NAME)
+            .join("CustomHUD");
         fs::create_dir_all(&mod_b_dir).unwrap();
         fs::write(mod_b_dir.join("hud.ini"), "hash = 11223344").unwrap();
 
@@ -669,6 +736,7 @@ mod tests {
 
         let hud = scanned.iter().find(|m| m.name == "CustomHUD").unwrap();
         assert_eq!(hud.category, None);
+        assert_eq!(hud.id, "Uncategorized/CustomHUD");
         assert!(!hud.enabled);
         assert_eq!(hud.hashes, vec!["11223344"]);
 
@@ -702,7 +770,9 @@ mod tests {
 
         crate::symlink::ensure_veil_dirs(mods_dir).unwrap();
 
-        let mod_dir = get_disabled_dir(mods_dir).join("Nicole Mod");
+        let mod_dir = get_disabled_dir(mods_dir)
+            .join(crate::symlink::UNCATEGORIZED_DIR_NAME)
+            .join("Nicole Mod");
         fs::create_dir_all(&mod_dir).unwrap();
         fs::write(mod_dir.join("nicole.ini"), "hash = 12345678").unwrap();
 
@@ -713,7 +783,7 @@ mod tests {
 
         link_mod(
             mods_dir,
-            "Nicole Mod",
+            "Uncategorized/Nicole Mod",
             456789,
             Some("2.0.0".to_string()),
             Some(98765),
@@ -725,7 +795,7 @@ mod tests {
         assert_eq!(linked_scan[0].version, Some("2.0.0".to_string()));
         assert_eq!(linked_scan[0].file_id, Some(98765));
 
-        unlink_mod(mods_dir, "Nicole Mod").unwrap();
+        unlink_mod(mods_dir, "Uncategorized/Nicole Mod").unwrap();
 
         let unlinked_scan = scan_mods(mods_dir).unwrap();
         assert_eq!(unlinked_scan[0].gamebanana_id, None);
@@ -765,10 +835,14 @@ mod tests {
         assert!(new_active_symlink.symlink_metadata().is_ok());
 
         delete_category(mods_dir, "NewCategory", false).unwrap();
-        let preserved_mod = get_disabled_dir(mods_dir).join("TestMod");
+        let preserved_mod = get_disabled_dir(mods_dir)
+            .join(crate::symlink::UNCATEGORIZED_DIR_NAME)
+            .join("TestMod");
         assert!(preserved_mod.exists());
 
-        let preserved_active = crate::symlink::get_active_dir(mods_dir).join("TestMod");
+        let preserved_active = crate::symlink::get_active_dir(mods_dir)
+            .join(crate::symlink::UNCATEGORIZED_DIR_NAME)
+            .join("TestMod");
         assert!(preserved_active.symlink_metadata().is_ok());
     }
 
@@ -778,14 +852,38 @@ mod tests {
         let mods_dir = temp.path();
 
         crate::symlink::ensure_veil_dirs(mods_dir).unwrap();
-        let mod_dir = get_disabled_dir(mods_dir).join("PreviewMod");
+        let mod_dir = get_disabled_dir(mods_dir)
+            .join(crate::symlink::UNCATEGORIZED_DIR_NAME)
+            .join("PreviewMod");
         fs::create_dir_all(&mod_dir).unwrap();
         fs::write(mod_dir.join("preview.jpg"), b"old").unwrap();
 
         let dummy_bytes = b"fake_png_data";
-        let path = set_mod_preview(mods_dir, "PreviewMod", dummy_bytes).unwrap();
+        let path = set_mod_preview(mods_dir, "Uncategorized/PreviewMod", dummy_bytes).unwrap();
         assert!(path.ends_with("preview.png"));
         assert!(!mod_dir.join("preview.jpg").exists());
         assert_eq!(fs::read(mod_dir.join("preview.png")).unwrap(), dummy_bytes);
+    }
+
+    #[test]
+    fn test_loose_mod_auto_migration() {
+        let temp = tempdir().unwrap();
+        let mods_dir = temp.path();
+
+        crate::symlink::ensure_veil_dirs(mods_dir).unwrap();
+        let loose_mod = get_disabled_dir(mods_dir).join("LooseMod");
+        fs::create_dir_all(&loose_mod).unwrap();
+        fs::write(loose_mod.join("mod.ini"), "hash = loosehash").unwrap();
+
+        let scanned = scan_mods(mods_dir).unwrap();
+        assert_eq!(scanned.len(), 1);
+        assert_eq!(scanned[0].name, "LooseMod");
+        assert_eq!(scanned[0].category, None);
+        assert_eq!(scanned[0].id, "Uncategorized/LooseMod");
+        assert!(get_disabled_dir(mods_dir)
+            .join(crate::symlink::UNCATEGORIZED_DIR_NAME)
+            .join("LooseMod")
+            .exists());
+        assert!(!loose_mod.exists());
     }
 }

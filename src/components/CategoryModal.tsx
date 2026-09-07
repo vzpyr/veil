@@ -57,7 +57,7 @@ export default function CategoryModal({
   }, [mode, categoryName, modToMove, opened]);
 
   const categoryOptions = [
-    { value: "__root__", label: "Uncategorized (Root)" },
+    { value: "__root__", label: "Uncategorized" },
     ...categories.map((c) => ({ value: c.name, label: c.name })),
   ];
 
@@ -67,14 +67,20 @@ export default function CategoryModal({
       onMoveMod(modToMove.id, target);
       onClose();
     } else if (mode === "create") {
-      if (nameInput.trim()) {
-        onCreateCategory(nameInput.trim());
+      const trimmed = nameInput.trim();
+      if (trimmed && trimmed.toLowerCase() !== "uncategorized") {
+        onCreateCategory(trimmed);
         setNameInput("");
         onClose();
       }
     } else if (mode === "rename" && categoryName) {
-      if (nameInput.trim() && nameInput.trim() !== categoryName) {
-        onRenameCategory(categoryName, nameInput.trim());
+      const trimmed = nameInput.trim();
+      if (
+        trimmed &&
+        trimmed !== categoryName &&
+        trimmed.toLowerCase() !== "uncategorized"
+      ) {
+        onRenameCategory(categoryName, trimmed);
         onClose();
       }
     } else if (mode === "delete" && categoryName) {
@@ -151,7 +157,7 @@ export default function CategoryModal({
             {!deleteMods && (
               <Text size="xs" c="dimmed">
                 Mods inside this category will be preserved and moved to
-                Uncategorized (Root).
+                Uncategorized.
               </Text>
             )}
           </Stack>

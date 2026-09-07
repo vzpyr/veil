@@ -3,6 +3,7 @@ use std::path::{Path, PathBuf};
 
 pub const DISABLED_DIR_NAME: &str = "DISABLED_veil";
 pub const ACTIVE_DIR_NAME: &str = "veil";
+pub const UNCATEGORIZED_DIR_NAME: &str = "Uncategorized";
 
 pub fn get_disabled_dir(mods_dir: &Path) -> PathBuf {
     mods_dir.join(DISABLED_DIR_NAME)
@@ -23,6 +24,7 @@ pub fn ensure_veil_dirs(mods_dir: &Path) -> Result<(), String> {
     let active_dir = get_active_dir(mods_dir);
     fs::create_dir_all(&disabled_dir).map_err(|err| err.to_string())?;
     fs::create_dir_all(&active_dir).map_err(|err| err.to_string())?;
+    fs::create_dir_all(disabled_dir.join(UNCATEGORIZED_DIR_NAME)).map_err(|err| err.to_string())?;
     Ok(())
 }
 

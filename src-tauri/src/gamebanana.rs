@@ -1,5 +1,5 @@
 use crate::archive::extract_any_archive;
-use crate::symlink::{ensure_veil_dirs, get_disabled_dir};
+use crate::symlink::{ensure_veil_dirs, get_disabled_dir, UNCATEGORIZED_DIR_NAME};
 use futures_util::StreamExt;
 use reqwest::Client;
 use serde::Serialize;
@@ -71,12 +71,26 @@ pub async fn download_and_install_mod(
 
     let disabled_dir = get_disabled_dir(mods_path);
     let target_parent_dir = match &category {
-        Some(cat) if !cat.trim().is_empty() => {
-            let cat_dir = disabled_dir.join(cat.trim().replace(['/', '\\'], ""));
+        Some(cat) => {
+            let sanitized = cat.trim().replace(['/', '\\'], "");
+            if sanitized.is_empty()
+                || sanitized.eq_ignore_ascii_case("__root__")
+                || sanitized.eq_ignore_ascii_case(UNCATEGORIZED_DIR_NAME)
+            {
+                let cat_dir = disabled_dir.join(UNCATEGORIZED_DIR_NAME);
+                fs::create_dir_all(&cat_dir).map_err(|e| e.to_string())?;
+                cat_dir
+            } else {
+                let cat_dir = disabled_dir.join(&sanitized);
+                fs::create_dir_all(&cat_dir).map_err(|e| e.to_string())?;
+                cat_dir
+            }
+        }
+        None => {
+            let cat_dir = disabled_dir.join(UNCATEGORIZED_DIR_NAME);
             fs::create_dir_all(&cat_dir).map_err(|e| e.to_string())?;
             cat_dir
         }
-        _ => disabled_dir.clone(),
     };
 
     let temp_download_dir = mods_path.join(".veil_temp");

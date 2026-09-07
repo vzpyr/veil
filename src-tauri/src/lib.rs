@@ -21,7 +21,7 @@ use scanner::{
     ModItem,
 };
 use std::path::Path;
-use symlink::{ensure_veil_dirs, get_disabled_dir, prune_orphaned_symlinks};
+use symlink::{ensure_veil_dirs, get_disabled_dir, prune_orphaned_symlinks, UNCATEGORIZED_DIR_NAME};
 use tauri::AppHandle;
 
 #[tauri::command]
@@ -166,12 +166,26 @@ fn extract_archive_file(
 
     let disabled_dir = get_disabled_dir(path);
     let target_parent_dir = match &category {
-        Some(cat) if !cat.trim().is_empty() => {
-            let cat_dir = disabled_dir.join(cat.trim().replace(['/', '\\'], ""));
+        Some(cat) => {
+            let sanitized = cat.trim().replace(['/', '\\'], "");
+            if sanitized.is_empty()
+                || sanitized.eq_ignore_ascii_case("__root__")
+                || sanitized.eq_ignore_ascii_case(UNCATEGORIZED_DIR_NAME)
+            {
+                let cat_dir = disabled_dir.join(UNCATEGORIZED_DIR_NAME);
+                std::fs::create_dir_all(&cat_dir).map_err(|e| e.to_string())?;
+                cat_dir
+            } else {
+                let cat_dir = disabled_dir.join(&sanitized);
+                std::fs::create_dir_all(&cat_dir).map_err(|e| e.to_string())?;
+                cat_dir
+            }
+        }
+        None => {
+            let cat_dir = disabled_dir.join(UNCATEGORIZED_DIR_NAME);
             std::fs::create_dir_all(&cat_dir).map_err(|e| e.to_string())?;
             cat_dir
         }
-        _ => disabled_dir.clone(),
     };
 
     let action = duplicate_action.unwrap_or_else(|| "replace".to_string());
