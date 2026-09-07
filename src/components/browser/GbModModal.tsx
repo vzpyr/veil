@@ -139,6 +139,14 @@ export default function GbModModal({
     ? `${images[0]._sBaseUrl}/${images[0]._sFile530 || images[0]._sFile}`
     : undefined;
 
+  const files = profile?._aFiles
+    ? [...profile._aFiles].sort((a, b) => {
+        const dateDiff = (b._tsDateAdded || 0) - (a._tsDateAdded || 0);
+        if (dateDiff !== 0) return dateDiff;
+        return b._idRow - a._idRow;
+      })
+    : [];
+
   return (
     <Modal
       opened={opened}
@@ -246,7 +254,7 @@ export default function GbModModal({
                   value="files"
                   leftSection={<IconDownload size={14} />}
                 >
-                  Files ({profile._aFiles?.length || 0})
+                  Files ({files.length})
                 </Tabs.Tab>
                 <Tabs.Tab
                   value="description"
@@ -270,8 +278,8 @@ export default function GbModModal({
 
               <Tabs.Panel value="files" pt="sm">
                 <Stack gap="sm">
-                  {profile._aFiles && profile._aFiles.length > 0 ? (
-                    profile._aFiles.map((f) => {
+                  {files.length > 0 ? (
+                    files.map((f) => {
                       const downloadKey = String(f._idRow);
                       const queueItem = downloadQueue.find(
                         (item) => item.id === downloadKey,
