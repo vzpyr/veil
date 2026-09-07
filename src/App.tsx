@@ -382,13 +382,13 @@ export default function App() {
     }
   };
 
-  const handleToggleMod = async (modId: string, currentStatus: boolean) => {
+  const handleToggleMod = async (modId: string, enable: boolean) => {
     if (!modsDir) return;
     try {
       await invoke("toggle_mod", {
         modsDir,
         modId,
-        enable: !currentStatus,
+        enable,
       });
       await refreshData();
     } catch (err) {
