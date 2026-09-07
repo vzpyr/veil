@@ -38,12 +38,18 @@ export default function GbModCard({ item, onSelect }: GbModCardProps) {
       <Card.Section
         style={{
           position: "relative",
-          height: 160,
+          aspectRatio: "16 / 9",
           backgroundColor: "var(--color-bg-surface-2)",
         }}
       >
         {imageUrl ? (
-          <Image src={imageUrl} h={160} fit="cover" alt={item._sName} />
+          <Image
+            src={imageUrl}
+            h="100%"
+            w="100%"
+            fit="cover"
+            alt={item._sName}
+          />
         ) : (
           <Stack h="100%" align="center" justify="center" gap="xs">
             <IconPhoto size={36} color="var(--color-text-muted)" />

@@ -1,5 +1,7 @@
 const API_BASE = "https://gamebanana.com/apiv11/";
 
+const LIST_PAGE_SIZE = 20;
+
 export interface GbCategory {
   _idRow: number;
   _sName: string;
@@ -180,7 +182,7 @@ export async function fetchSubfeed(
   page: number,
   sort: string,
 ): Promise<{ records: GbSubfeedItem[]; isLastPage: boolean }> {
-  const url = `${API_BASE}Game/${gameId}/Subfeed?_nPage=${page}&_sSort=${sort}&_csvModelInclusions=Mod`;
+  const url = `${API_BASE}Game/${gameId}/Subfeed?_nPage=${page}&_nPerpage=${LIST_PAGE_SIZE}&_sSort=${sort}&_csvModelInclusions=Mod`;
   const res = await fetch(url);
   if (!res.ok) {
     throw new Error(`Failed to fetch mods: ${res.statusText}`);
@@ -198,7 +200,7 @@ export async function fetchByCategory(
 ): Promise<{ records: GbSubfeedItem[]; isLastPage: boolean }> {
   const sortParam =
     sort === "default" || !sort ? "" : `&_sSort=${encodeURIComponent(sort)}`;
-  const url = `${API_BASE}Mod/Index?_aFilters[Generic_Category]=${catId}&_nPage=${page}${sortParam}`;
+  const url = `${API_BASE}Mod/Index?_aFilters[Generic_Category]=${catId}&_nPage=${page}&_nPerpage=${LIST_PAGE_SIZE}${sortParam}`;
   const res = await fetch(url);
   if (!res.ok) {
     throw new Error(`Failed to fetch category mods: ${res.statusText}`);
@@ -214,7 +216,7 @@ export async function searchGameBananaMods(
   query: string,
   page: number,
 ): Promise<{ records: GbSubfeedItem[]; isLastPage: boolean }> {
-  const url = `${API_BASE}Util/Search/Results?_idGameRow=${gameId}&_sSearchString=${encodeURIComponent(query)}&_nPage=${page}&_sModelName=Mod`;
+  const url = `${API_BASE}Util/Search/Results?_idGameRow=${gameId}&_sSearchString=${encodeURIComponent(query)}&_nPage=${page}&_nPerpage=${LIST_PAGE_SIZE}&_sModelName=Mod`;
   const res = await fetch(url);
   if (!res.ok) {
     throw new Error(`Search failed: ${res.statusText}`);
