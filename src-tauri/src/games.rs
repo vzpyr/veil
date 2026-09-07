@@ -17,7 +17,7 @@ pub fn get_supported_games() -> Vec<GameDefinition> {
             name: "Zenless Zone Zero".to_string(),
             short_name: "ZZZ".to_string(),
             gamebanana_game_id: 19567,
-            root_category_id: Some(30305),
+            root_category_id: None,
             icon: "ZZ".to_string(),
         },
         GameDefinition {
@@ -25,7 +25,7 @@ pub fn get_supported_games() -> Vec<GameDefinition> {
             name: "Arknights: Endfield".to_string(),
             short_name: "EF".to_string(),
             gamebanana_game_id: 21842,
-            root_category_id: Some(42770),
+            root_category_id: None,
             icon: "EF".to_string(),
         },
     ]

@@ -22,9 +22,9 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import {
   fetchByCategory,
-  fetchCategories,
+  fetchGameCategoryTree,
   fetchSubfeed,
-  GbCategory,
+  GbCategoryGroup,
   GbModFile,
   GbSubfeedItem,
   searchGameBananaMods,
@@ -55,7 +55,7 @@ export default function GbBrowserView({
   downloadQueue,
   onEnqueueDownload,
 }: GbBrowserViewProps) {
-  const [categories, setCategories] = useState<GbCategory[]>([]);
+  const [categoryGroups, setCategoryGroups] = useState<GbCategoryGroup[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [sortOption, setSortOption] = useState<string>("default");
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -68,15 +68,17 @@ export default function GbBrowserView({
 
   useEffect(() => {
     async function loadCategories() {
-      if (!activeGame.root_category_id) {
-        setCategories([]);
-        return;
-      }
       try {
-        const cats = await fetchCategories(activeGame.root_category_id);
-        setCategories(cats);
+        const groups = await fetchGameCategoryTree(
+          activeGame.gamebanana_game_id,
+        );
+        setCategoryGroups(groups);
       } catch (err) {
-        console.error(err);
+        notifications.show({
+          title: "Categories Error",
+          message: String(err),
+          color: "red",
+        });
       }
     }
     loadCategories();
@@ -169,10 +171,7 @@ export default function GbBrowserView({
 
   const categorySelectData = [
     { value: "", label: "All Categories" },
-    ...categories.map((c) => ({
-      value: String(c._idRow),
-      label: `${c._sName} (${c._nItemCount})`,
-    })),
+    ...categoryGroups,
   ];
 
   const sortSelectData = [
@@ -227,7 +226,7 @@ export default function GbBrowserView({
         <Group gap="xs">
           <Select
             size="xs"
-            w={200}
+            w={240}
             data={categorySelectData}
             value={selectedCategory || ""}
             onChange={(val) => {
@@ -236,7 +235,9 @@ export default function GbBrowserView({
               setSearchQuery("");
               setPage(1);
             }}
-            allowDeselect={false}
+            searchable
+            clearable
+            allowDeselect={true}
           />
 
           <Select

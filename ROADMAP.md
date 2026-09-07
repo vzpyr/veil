@@ -75,3 +75,10 @@
 - [x] implement gamebanana api update checker
 - [x] display update available indicator badges on mod cards
 - [x] allow opening gamebanana details modal directly from update badge
+
+## phase 10: dynamic gamebanana category tree discovery
+
+- [x] discover top level gamebanana categories dynamically per game
+- [x] fetch subcategories for root categories with children (character skins, bangboos, etc.)
+- [x] group categories in browser dropdown (character skins, ui, misc)
+- [x] eliminate hardcoded root_category_id dependencies

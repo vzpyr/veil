@@ -4,7 +4,16 @@ export interface GbCategory {
   _idRow: number;
   _sName: string;
   _nItemCount: number;
+  _nCategoryCount?: number;
   _sIconUrl?: string;
+}
+
+export interface GbCategoryGroup {
+  group: string;
+  items: {
+    value: string;
+    label: string;
+  }[];
 }
 
 export interface GbSubfeedItem {
@@ -105,6 +114,67 @@ export async function fetchCategories(
   return Array.isArray(data) ? data : [];
 }
 
+export async function fetchGameCategoryTree(
+  gameId: number,
+): Promise<GbCategoryGroup[]> {
+  const rootUrl = `${API_BASE}Mod/Categories?_idGameRow=${gameId}&_sSort=a_to_z`;
+  const res = await fetch(rootUrl);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch categories: ${res.statusText}`);
+  }
+  const rootCategories: GbCategory[] = await res.json();
+  if (!Array.isArray(rootCategories)) {
+    return [];
+  }
+
+  const groups: GbCategoryGroup[] = await Promise.all(
+    rootCategories.map(async (rootCat) => {
+      const subCatCount = rootCat._nCategoryCount || 0;
+      if (subCatCount > 0) {
+        try {
+          const subCats = await fetchCategories(rootCat._idRow);
+          const items = [
+            {
+              value: String(rootCat._idRow),
+              label: `All ${rootCat._sName} (${rootCat._nItemCount})`,
+            },
+            ...subCats.map((sub) => ({
+              value: String(sub._idRow),
+              label: `${sub._sName} (${sub._nItemCount})`,
+            })),
+          ];
+          return {
+            group: rootCat._sName,
+            items,
+          };
+        } catch {
+          return {
+            group: rootCat._sName,
+            items: [
+              {
+                value: String(rootCat._idRow),
+                label: `${rootCat._sName} (${rootCat._nItemCount})`,
+              },
+            ],
+          };
+        }
+      }
+
+      return {
+        group: rootCat._sName,
+        items: [
+          {
+            value: String(rootCat._idRow),
+            label: `${rootCat._sName} (${rootCat._nItemCount})`,
+          },
+        ],
+      };
+    }),
+  );
+
+  return groups;
+}
+
 export async function fetchSubfeed(
   gameId: number,
   page: number,
@@ -126,7 +196,9 @@ export async function fetchByCategory(
   page: number,
   sort: string,
 ): Promise<{ records: GbSubfeedItem[]; isLastPage: boolean }> {
-  const url = `${API_BASE}Mod/Index?_aFilters[Generic_Category]=${catId}&_nPage=${page}&_sSort=${sort}`;
+  const sortParam =
+    sort === "default" || !sort ? "" : `&_sSort=${encodeURIComponent(sort)}`;
+  const url = `${API_BASE}Mod/Index?_aFilters[Generic_Category]=${catId}&_nPage=${page}${sortParam}`;
   const res = await fetch(url);
   if (!res.ok) {
     throw new Error(`Failed to fetch category mods: ${res.statusText}`);
