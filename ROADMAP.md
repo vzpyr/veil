@@ -54,7 +54,6 @@
 - [x] run typescript typecheck
 - [x] run cargo check and tests
 - [x] verify code compliance with no comments and no em or en dashes
-- [x] create initial git commit with conventional format
 
 ## phase 7: download queue and folder naming enhancements
 
