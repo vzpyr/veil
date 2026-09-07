@@ -4,6 +4,7 @@ import {
   Box,
   Button,
   Group,
+  Menu,
   NavLink,
   ScrollArea,
   Stack,
@@ -12,11 +13,14 @@ import {
   Tooltip,
 } from "@mantine/core";
 import {
+  IconDotsVertical,
+  IconEdit,
   IconFolder,
   IconFolderFilled,
   IconFolderPlus,
   IconInbox,
   IconSearch,
+  IconTrash,
   IconX,
 } from "@tabler/icons-react";
 import { CategoryItem } from "../types";
@@ -30,6 +34,8 @@ interface SidebarProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
   onOpenCreateCategory: () => void;
+  onRenameCategory: (categoryName: string) => void;
+  onDeleteCategory: (categoryName: string) => void;
 }
 
 export default function Sidebar({
@@ -41,6 +47,8 @@ export default function Sidebar({
   searchQuery,
   onSearchChange,
   onOpenCreateCategory,
+  onRenameCategory,
+  onDeleteCategory,
 }: SidebarProps) {
   return (
     <Stack
@@ -131,9 +139,43 @@ export default function Sidebar({
                 )
               }
               rightSection={
-                <Badge size="xs" variant="light" color="gray">
-                  {cat.mod_count}
-                </Badge>
+                <Group gap={4} wrap="nowrap">
+                  <Badge size="xs" variant="light" color="gray">
+                    {cat.mod_count}
+                  </Badge>
+                  <Menu position="bottom-end" withinPortal>
+                    <Menu.Target>
+                      <ActionIcon
+                        size="xs"
+                        variant="subtle"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <IconDotsVertical size={12} />
+                      </ActionIcon>
+                    </Menu.Target>
+                    <Menu.Dropdown>
+                      <Menu.Item
+                        leftSection={<IconEdit size={14} />}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onRenameCategory(cat.name);
+                        }}
+                      >
+                        Rename Category
+                      </Menu.Item>
+                      <Menu.Item
+                        color="red"
+                        leftSection={<IconTrash size={14} />}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDeleteCategory(cat.name);
+                        }}
+                      >
+                        Delete Category
+                      </Menu.Item>
+                    </Menu.Dropdown>
+                  </Menu>
+                </Group>
               }
               style={{ borderRadius: "var(--radius-sm)" }}
             />

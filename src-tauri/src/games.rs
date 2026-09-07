@@ -28,6 +28,30 @@ pub fn get_supported_games() -> Vec<GameDefinition> {
             root_category_id: None,
             icon: "EF".to_string(),
         },
+        GameDefinition {
+            id: "wuwa".to_string(),
+            name: "Wuthering Waves".to_string(),
+            short_name: "WuWa".to_string(),
+            gamebanana_game_id: 20357,
+            root_category_id: None,
+            icon: "WW".to_string(),
+        },
+        GameDefinition {
+            id: "genshin".to_string(),
+            name: "Genshin Impact".to_string(),
+            short_name: "GI".to_string(),
+            gamebanana_game_id: 8552,
+            root_category_id: None,
+            icon: "GI".to_string(),
+        },
+        GameDefinition {
+            id: "starrail".to_string(),
+            name: "Honkai: Star Rail".to_string(),
+            short_name: "HSR".to_string(),
+            gamebanana_game_id: 18366,
+            root_category_id: None,
+            icon: "SR".to_string(),
+        },
     ]
 }
 

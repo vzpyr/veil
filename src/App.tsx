@@ -1,6 +1,6 @@
 import { Box, Flex, LoadingOverlay } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { invoke } from "@tauri-apps/api/core";
+import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { open } from "@tauri-apps/plugin-dialog";
 import { revealItemInDir } from "@tauri-apps/plugin-opener";
@@ -67,8 +67,10 @@ export default function App() {
 
   const [categoryModal, setCategoryModal] = useState<{
     open: boolean;
+    mode: "create" | "move" | "rename" | "delete";
     modToMove?: ModItem | null;
-  }>({ open: false, modToMove: null });
+    categoryName?: string | null;
+  }>({ open: false, mode: "create", modToMove: null, categoryName: null });
 
   const [statusFilter, setStatusFilter] = useState<
     "all" | "enabled" | "disabled"
@@ -446,6 +448,140 @@ export default function App() {
     }
   };
 
+  const handleRenameCategory = async (oldName: string, newName: string) => {
+    if (!modsDir) return;
+    try {
+      await invoke("rename_existing_category", {
+        modsDir,
+        oldName,
+        newName,
+      });
+      if (selectedCategory === oldName) {
+        setSelectedCategory(newName);
+      }
+      await refreshData();
+      notifications.show({
+        title: "Category Renamed",
+        message: `Category "${oldName}" renamed to "${newName}".`,
+        color: "green",
+      });
+    } catch (err) {
+      notifications.show({
+        title: "Rename Error",
+        message: String(err),
+        color: "red",
+      });
+    }
+  };
+
+  const handleDeleteCategory = async (
+    categoryName: string,
+    deleteMods: boolean,
+  ) => {
+    if (!modsDir) return;
+    try {
+      await invoke("delete_existing_category", {
+        modsDir,
+        categoryName,
+        deleteMods,
+      });
+      if (selectedCategory === categoryName) {
+        setSelectedCategory(null);
+      }
+      await refreshData();
+      notifications.show({
+        title: "Category Deleted",
+        message: `Category "${categoryName}" deleted.`,
+        color: "orange",
+      });
+    } catch (err) {
+      notifications.show({
+        title: "Delete Error",
+        message: String(err),
+        color: "red",
+      });
+    }
+  };
+
+  const handleSetModPreview = async (mod: ModItem) => {
+    if (!modsDir) return;
+    try {
+      const selected = await open({
+        multiple: false,
+        filters: [
+          {
+            name: "Images",
+            extensions: ["png", "jpg", "jpeg", "webp"],
+          },
+        ],
+      });
+      if (selected && typeof selected === "string") {
+        const fileUrl = convertFileSrc(selected);
+        const img = new window.Image();
+        img.src = fileUrl;
+        await new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = reject;
+        });
+
+        const targetWidth = 600;
+        const targetHeight = 338;
+        const canvas = document.createElement("canvas");
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          throw new Error("Failed to get canvas context");
+        }
+
+        const hRatio = canvas.width / img.width;
+        const vRatio = canvas.height / img.height;
+        const ratio = Math.max(hRatio, vRatio);
+        const centerShiftX = (canvas.width - img.width * ratio) / 2;
+        const centerShiftY = (canvas.height - img.height * ratio) / 2;
+        ctx.drawImage(
+          img,
+          0,
+          0,
+          img.width,
+          img.height,
+          centerShiftX,
+          centerShiftY,
+          img.width * ratio,
+          img.height * ratio,
+        );
+
+        const blob = await new Promise<Blob | null>((resolve) =>
+          canvas.toBlob(resolve, "image/png"),
+        );
+        if (!blob) {
+          throw new Error("Failed to encode image to PNG");
+        }
+        const arrayBuffer = await blob.arrayBuffer();
+        const imageBytes = Array.from(new Uint8Array(arrayBuffer));
+
+        await invoke("set_mod_preview_image", {
+          modsDir,
+          modId: mod.id,
+          imageBytes,
+        });
+
+        await refreshData();
+        notifications.show({
+          title: "Preview Updated",
+          message: `Preview image updated for ${mod.name}.`,
+          color: "green",
+        });
+      }
+    } catch (err) {
+      notifications.show({
+        title: "Preview Error",
+        message: String(err),
+        color: "red",
+      });
+    }
+  };
+
   const handleDeleteMod = async (mod: ModItem) => {
     if (!modsDir) return;
     try {
@@ -743,7 +879,28 @@ export default function App() {
               searchQuery={searchQuery}
               onSearchChange={setSearchQuery}
               onOpenCreateCategory={() =>
-                setCategoryModal({ open: true, modToMove: null })
+                setCategoryModal({
+                  open: true,
+                  mode: "create",
+                  modToMove: null,
+                  categoryName: null,
+                })
+              }
+              onRenameCategory={(catName) =>
+                setCategoryModal({
+                  open: true,
+                  mode: "rename",
+                  modToMove: null,
+                  categoryName: catName,
+                })
+              }
+              onDeleteCategory={(catName) =>
+                setCategoryModal({
+                  open: true,
+                  mode: "delete",
+                  modToMove: null,
+                  categoryName: catName,
+                })
               }
             />
 
@@ -769,7 +926,12 @@ export default function App() {
                 onOpenManualInstall={handleOpenManualInstall}
                 onToggle={handleToggleMod}
                 onMoveCategory={(mod) =>
-                  setCategoryModal({ open: true, modToMove: mod })
+                  setCategoryModal({
+                    open: true,
+                    mode: "move",
+                    modToMove: mod,
+                    categoryName: null,
+                  })
                 }
                 onReveal={handleReveal}
                 onDelete={handleDeleteMod}
@@ -778,6 +940,7 @@ export default function App() {
                 onOpenKeybinds={setKeybindDrawerMod}
                 onOpenUpdate={handleOpenUpdate}
                 onOpenLinkGameBanana={setLinkingMod}
+                onSetPreview={handleSetModPreview}
               />
             </Box>
           </>
@@ -867,11 +1030,22 @@ export default function App() {
 
       <CategoryModal
         opened={categoryModal.open}
-        onClose={() => setCategoryModal({ open: false, modToMove: null })}
+        onClose={() =>
+          setCategoryModal({
+            open: false,
+            mode: "create",
+            modToMove: null,
+            categoryName: null,
+          })
+        }
+        mode={categoryModal.mode}
         categories={categories}
         modToMove={categoryModal.modToMove}
+        categoryName={categoryModal.categoryName}
         onMoveMod={handleMoveMod}
         onCreateCategory={handleCreateCategory}
+        onRenameCategory={handleRenameCategory}
+        onDeleteCategory={handleDeleteCategory}
       />
 
       <ManualInstallModal

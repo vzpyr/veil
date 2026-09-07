@@ -39,6 +39,7 @@ interface ModGridProps {
   onOpenKeybinds: (mod: ModItem) => void;
   onOpenUpdate: (mod: ModItem, updateInfo: ModUpdateInfo) => void;
   onOpenLinkGameBanana: (mod: ModItem) => void;
+  onSetPreview: (mod: ModItem) => void;
 }
 
 export default function ModGrid({
@@ -63,6 +64,7 @@ export default function ModGrid({
   onOpenKeybinds,
   onOpenUpdate,
   onOpenLinkGameBanana,
+  onSetPreview,
 }: ModGridProps) {
   if (!hasModsDir) {
     return (
@@ -165,6 +167,7 @@ export default function ModGrid({
               onOpenKeybinds={onOpenKeybinds}
               onOpenUpdate={onOpenUpdate}
               onOpenLinkGameBanana={onOpenLinkGameBanana}
+              onSetPreview={onSetPreview}
             />
           ))}
         </SimpleGrid>

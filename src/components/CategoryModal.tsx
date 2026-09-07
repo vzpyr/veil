@@ -1,5 +1,6 @@
 import {
   Button,
+  Checkbox,
   Group,
   Modal,
   Select,
@@ -7,32 +8,53 @@ import {
   Text,
   TextInput,
 } from "@mantine/core";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CategoryItem, ModItem } from "../types";
+
+export type CategoryModalMode = "create" | "move" | "rename" | "delete";
 
 interface CategoryModalProps {
   opened: boolean;
   onClose: () => void;
+  mode: CategoryModalMode;
   categories: CategoryItem[];
   modToMove?: ModItem | null;
+  categoryName?: string | null;
   onMoveMod: (modId: string, targetCategory: string | null) => void;
   onCreateCategory: (categoryName: string) => void;
+  onRenameCategory: (oldName: string, newName: string) => void;
+  onDeleteCategory: (categoryName: string, deleteMods: boolean) => void;
 }
 
 export default function CategoryModal({
   opened,
   onClose,
+  mode,
   categories,
   modToMove,
+  categoryName,
   onMoveMod,
   onCreateCategory,
+  onRenameCategory,
+  onDeleteCategory,
 }: CategoryModalProps) {
-  const [newCategoryName, setNewCategoryName] = useState("");
+  const [nameInput, setNameInput] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(
     modToMove?.category || "__root__",
   );
+  const [deleteMods, setDeleteMods] = useState(false);
 
-  const isMoveMode = Boolean(modToMove);
+  useEffect(() => {
+    if (mode === "rename" && categoryName) {
+      setNameInput(categoryName);
+    } else if (mode === "create") {
+      setNameInput("");
+    } else if (mode === "move") {
+      setSelectedCategory(modToMove?.category || "__root__");
+    } else if (mode === "delete") {
+      setDeleteMods(false);
+    }
+  }, [mode, categoryName, modToMove, opened]);
 
   const categoryOptions = [
     { value: "__root__", label: "Uncategorized (Root)" },
@@ -40,16 +62,38 @@ export default function CategoryModal({
   ];
 
   const handleConfirm = () => {
-    if (isMoveMode && modToMove) {
+    if (mode === "move" && modToMove) {
       const target = selectedCategory === "__root__" ? null : selectedCategory;
       onMoveMod(modToMove.id, target);
       onClose();
-    } else {
-      if (newCategoryName.trim()) {
-        onCreateCategory(newCategoryName.trim());
-        setNewCategoryName("");
+    } else if (mode === "create") {
+      if (nameInput.trim()) {
+        onCreateCategory(nameInput.trim());
+        setNameInput("");
         onClose();
       }
+    } else if (mode === "rename" && categoryName) {
+      if (nameInput.trim() && nameInput.trim() !== categoryName) {
+        onRenameCategory(categoryName, nameInput.trim());
+        onClose();
+      }
+    } else if (mode === "delete" && categoryName) {
+      onDeleteCategory(categoryName, deleteMods);
+      onClose();
+    }
+  };
+
+  const getTitle = () => {
+    switch (mode) {
+      case "move":
+        return `Move ${modToMove?.name}`;
+      case "rename":
+        return `Rename Category: ${categoryName}`;
+      case "delete":
+        return `Delete Category: ${categoryName}`;
+      case "create":
+      default:
+        return "Create New Category";
     }
   };
 
@@ -59,12 +103,12 @@ export default function CategoryModal({
       onClose={onClose}
       title={
         <Text fw={700} size="md">
-          {isMoveMode ? `Move ${modToMove?.name}` : "Create New Category"}
+          {getTitle()}
         </Text>
       }
     >
       <Stack gap="md">
-        {isMoveMode ? (
+        {mode === "move" && (
           <Select
             label="Destination Category"
             placeholder="Select a category"
@@ -73,12 +117,14 @@ export default function CategoryModal({
             onChange={setSelectedCategory}
             allowDeselect={false}
           />
-        ) : (
+        )}
+
+        {(mode === "create" || mode === "rename") && (
           <TextInput
             label="Category Name"
             placeholder="Enter category name (for example Jane Doe)"
-            value={newCategoryName}
-            onChange={(e) => setNewCategoryName(e.currentTarget.value)}
+            value={nameInput}
+            onChange={(e) => setNameInput(e.currentTarget.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 handleConfirm();
@@ -87,12 +133,46 @@ export default function CategoryModal({
           />
         )}
 
+        {mode === "delete" && (
+          <Stack gap="xs">
+            <Text size="sm">
+              Are you sure you want to delete the category folder{" "}
+              <Text span fw={700}>
+                {categoryName}
+              </Text>
+              ?
+            </Text>
+            <Checkbox
+              label="Also delete all mod files inside this category from disk"
+              checked={deleteMods}
+              onChange={(e) => setDeleteMods(e.currentTarget.checked)}
+              color="red"
+            />
+            {!deleteMods && (
+              <Text size="xs" c="dimmed">
+                Mods inside this category will be preserved and moved to
+                Uncategorized (Root).
+              </Text>
+            )}
+          </Stack>
+        )}
+
         <Group justify="flex-end" gap="xs">
           <Button variant="default" size="xs" onClick={onClose}>
             Cancel
           </Button>
-          <Button size="xs" onClick={handleConfirm}>
-            {isMoveMode ? "Move" : "Create"}
+          <Button
+            size="xs"
+            color={mode === "delete" ? "red" : undefined}
+            onClick={handleConfirm}
+          >
+            {mode === "move"
+              ? "Move"
+              : mode === "rename"
+                ? "Rename"
+                : mode === "delete"
+                  ? "Delete"
+                  : "Create"}
           </Button>
         </Group>
       </Stack>

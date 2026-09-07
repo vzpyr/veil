@@ -16,8 +16,9 @@ use keybinds::{
     parse_mod_keybinds_and_variables, set_d3dx_user_toggle, update_ini_keybind, ModKeybindData,
 };
 use scanner::{
-    create_category, delete_mod, link_mod, list_categories, move_mod_category, scan_mods,
-    toggle_mod_status, unlink_mod, CategoryItem, ModItem,
+    create_category, delete_category, delete_mod, link_mod, list_categories, move_mod_category,
+    rename_category, scan_mods, set_mod_preview, toggle_mod_status, unlink_mod, CategoryItem,
+    ModItem,
 };
 use std::path::Path;
 use symlink::{ensure_veil_dirs, get_disabled_dir, prune_orphaned_symlinks};
@@ -258,6 +259,36 @@ fn link_mod_to_gamebanana(
 }
 
 #[tauri::command]
+fn rename_existing_category(
+    mods_dir: String,
+    old_name: String,
+    new_name: String,
+) -> Result<(), String> {
+    let path = Path::new(&mods_dir);
+    rename_category(path, &old_name, &new_name)
+}
+
+#[tauri::command]
+fn delete_existing_category(
+    mods_dir: String,
+    category_name: String,
+    delete_mods: bool,
+) -> Result<(), String> {
+    let path = Path::new(&mods_dir);
+    delete_category(path, &category_name, delete_mods)
+}
+
+#[tauri::command]
+fn set_mod_preview_image(
+    mods_dir: String,
+    mod_id: String,
+    image_bytes: Vec<u8>,
+) -> Result<String, String> {
+    let path = Path::new(&mods_dir);
+    set_mod_preview(path, &mod_id, &image_bytes)
+}
+
+#[tauri::command]
 fn unlink_mod_from_gamebanana(mods_dir: String, mod_id: String) -> Result<(), String> {
     let path = Path::new(&mods_dir);
     ensure_veil_dirs(path)?;
@@ -282,6 +313,8 @@ pub fn run() {
             toggle_mod,
             move_mod,
             create_new_category,
+            rename_existing_category,
+            delete_existing_category,
             delete_installed_mod,
             prune_symlinks,
             extract_archive_file,
@@ -291,6 +324,7 @@ pub fn run() {
             set_mod_toggle_state,
             link_mod_to_gamebanana,
             unlink_mod_from_gamebanana,
+            set_mod_preview_image,
         ])
         .run(tauri::generate_context!())
         .expect("error while running veil");

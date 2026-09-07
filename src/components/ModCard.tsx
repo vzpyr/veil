@@ -36,6 +36,7 @@ interface ModCardProps {
   onOpenKeybinds: (mod: ModItem) => void;
   onOpenUpdate: (mod: ModItem, updateInfo: ModUpdateInfo) => void;
   onOpenLinkGameBanana: (mod: ModItem) => void;
+  onSetPreview: (mod: ModItem) => void;
 }
 
 export default function ModCard({
@@ -50,6 +51,7 @@ export default function ModCard({
   onOpenKeybinds,
   onOpenUpdate,
   onOpenLinkGameBanana,
+  onSetPreview,
 }: ModCardProps) {
   const previewUrl = mod.preview_path ? convertFileSrc(mod.preview_path) : null;
 
@@ -197,6 +199,12 @@ export default function ModCard({
                   {mod.gamebanana_id
                     ? "Edit GameBanana Link"
                     : "Link to GameBanana"}
+                </Menu.Item>
+                <Menu.Item
+                  leftSection={<IconPhoto size={14} />}
+                  onClick={() => onSetPreview(mod)}
+                >
+                  Set Preview Image
                 </Menu.Item>
                 <Menu.Item
                   leftSection={<IconExternalLink size={14} />}

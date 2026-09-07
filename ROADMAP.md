@@ -91,7 +91,7 @@
 
 ## phase 12: category lifecycle, preview standardizer, and game expansion
 
-- [ ] implement category rename and delete with mod preservation
-- [ ] establish clean dedicated veil app icon suite
-- [ ] add genshin impact, honkai: star rail, and wuthering waves to games registry
-- [ ] implement set preview image button with standardized resolution and format
+- [x] implement category rename and delete with mod preservation
+- [x] establish clean dedicated veil app icon suite
+- [x] add genshin impact, honkai: star rail, and wuthering waves to games registry
+- [x] implement set preview image button with standardized resolution and format
