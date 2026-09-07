@@ -71,7 +71,7 @@
 
 ## phase 9: mod update checker and gamebanana mapping
 
-- [ ] save dotfile metadata inside downloaded mod folders (.veil.json)
-- [ ] implement gamebanana api update checker
-- [ ] display update available indicator badges on mod cards
-- [ ] allow opening gamebanana details modal directly from update badge
+- [x] save dotfile metadata inside downloaded mod folders (.veil.json)
+- [x] implement gamebanana api update checker
+- [x] display update available indicator badges on mod cards
+- [x] allow opening gamebanana details modal directly from update badge

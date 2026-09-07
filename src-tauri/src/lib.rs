@@ -16,8 +16,8 @@ use keybinds::{
     parse_mod_keybinds_and_variables, set_d3dx_user_toggle, update_ini_keybind, ModKeybindData,
 };
 use scanner::{
-    create_category, delete_mod, list_categories, move_mod_category, scan_mods, toggle_mod_status,
-    CategoryItem, ModItem,
+    create_category, delete_mod, link_mod, list_categories, move_mod_category, scan_mods,
+    toggle_mod_status, unlink_mod, CategoryItem, ModItem,
 };
 use std::path::Path;
 use symlink::{ensure_veil_dirs, get_disabled_dir, prune_orphaned_symlinks};
@@ -244,6 +244,26 @@ fn set_mod_toggle_state(
     set_d3dx_user_toggle(path, &mod_name, &variable, new_value)
 }
 
+#[tauri::command]
+fn link_mod_to_gamebanana(
+    mods_dir: String,
+    mod_id: String,
+    gamebanana_id: u64,
+    version: Option<String>,
+    file_id: Option<u64>,
+) -> Result<(), String> {
+    let path = Path::new(&mods_dir);
+    ensure_veil_dirs(path)?;
+    link_mod(path, &mod_id, gamebanana_id, version, file_id)
+}
+
+#[tauri::command]
+fn unlink_mod_from_gamebanana(mods_dir: String, mod_id: String) -> Result<(), String> {
+    let path = Path::new(&mods_dir);
+    ensure_veil_dirs(path)?;
+    unlink_mod(path, &mod_id)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -269,6 +289,8 @@ pub fn run() {
             get_mod_keybinds,
             set_mod_keybind,
             set_mod_toggle_state,
+            link_mod_to_gamebanana,
+            unlink_mod_from_gamebanana,
         ])
         .run(tauri::generate_context!())
         .expect("error while running veil");

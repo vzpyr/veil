@@ -1,12 +1,13 @@
 import { Box, Button, Center, SimpleGrid, Stack, Text } from "@mantine/core";
 import { IconFolderOff, IconSettings } from "@tabler/icons-react";
-import { ConflictGroup, ModItem } from "../types";
+import { ConflictGroup, ModItem, ModUpdateInfo } from "../types";
 import ModCard from "./ModCard";
 
 interface ModGridProps {
   mods: ModItem[];
   hasModsDir: boolean;
   conflicts: ConflictGroup[];
+  updatesMap: Record<string, ModUpdateInfo>;
   onToggle: (modId: string, enabled: boolean) => void;
   onMoveCategory: (mod: ModItem) => void;
   onReveal: (folderPath: string) => void;
@@ -14,12 +15,15 @@ interface ModGridProps {
   onOpenConflicts: () => void;
   onOpenSettings: () => void;
   onOpenKeybinds: (mod: ModItem) => void;
+  onOpenUpdate: (mod: ModItem, updateInfo: ModUpdateInfo) => void;
+  onOpenLinkGameBanana: (mod: ModItem) => void;
 }
 
 export default function ModGrid({
   mods,
   hasModsDir,
   conflicts,
+  updatesMap,
   onToggle,
   onMoveCategory,
   onReveal,
@@ -27,6 +31,8 @@ export default function ModGrid({
   onOpenConflicts,
   onOpenSettings,
   onOpenKeybinds,
+  onOpenUpdate,
+  onOpenLinkGameBanana,
 }: ModGridProps) {
   if (!hasModsDir) {
     return (
@@ -85,12 +91,15 @@ export default function ModGrid({
             key={mod.id}
             mod={mod}
             inConflict={conflictingModIds.has(mod.id)}
+            updateInfo={updatesMap[mod.id]}
             onToggle={onToggle}
             onMoveCategory={onMoveCategory}
             onReveal={onReveal}
             onDelete={onDelete}
             onOpenConflicts={onOpenConflicts}
             onOpenKeybinds={onOpenKeybinds}
+            onOpenUpdate={onOpenUpdate}
+            onOpenLinkGameBanana={onOpenLinkGameBanana}
           />
         ))}
       </SimpleGrid>

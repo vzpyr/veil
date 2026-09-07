@@ -15,6 +15,7 @@ pub struct ModItem {
     pub hashes: Vec<String>,
     pub gamebanana_id: Option<u64>,
     pub version: Option<String>,
+    pub file_id: Option<u64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -114,25 +115,26 @@ fn find_preview_image(dir: &Path) -> Option<String> {
     None
 }
 
-fn read_veil_metadata(dir: &Path) -> (Option<u64>, Option<String>) {
+fn read_veil_metadata(dir: &Path) -> (Option<u64>, Option<String>, Option<u64>) {
     let dotfile = dir.join(".veil.json");
     if !dotfile.is_file() {
-        return (None, None);
+        return (None, None, None);
     }
     let content = match fs::read_to_string(&dotfile) {
         Ok(c) => c,
-        Err(_) => return (None, None),
+        Err(_) => return (None, None, None),
     };
     let val: serde_json::Value = match serde_json::from_str(&content) {
         Ok(v) => v,
-        Err(_) => return (None, None),
+        Err(_) => return (None, None, None),
     };
     let gb_id = val.get("gamebanana_id").and_then(|v| v.as_u64());
     let version = val
         .get("version")
         .and_then(|v| v.as_str())
         .map(|s| s.to_string());
-    (gb_id, version)
+    let file_id = val.get("file_id").and_then(|v| v.as_u64());
+    (gb_id, version, file_id)
 }
 
 fn has_direct_ini_or_assets(dir: &Path) -> bool {
@@ -202,7 +204,7 @@ pub fn scan_mods(mods_dir: &Path) -> Result<Vec<ModItem>, String> {
             let preview = find_preview_image(&path);
             let hashes = collect_hashes_from_folder(&path);
 
-            let (gb_id, ver) = read_veil_metadata(&path);
+            let (gb_id, ver, fid) = read_veil_metadata(&path);
             mods.push(ModItem {
                 id: rel_id,
                 name: folder_name,
@@ -213,6 +215,7 @@ pub fn scan_mods(mods_dir: &Path) -> Result<Vec<ModItem>, String> {
                 hashes,
                 gamebanana_id: gb_id,
                 version: ver,
+                file_id: fid,
             });
         } else {
             let category_name = folder_name;
@@ -237,7 +240,7 @@ pub fn scan_mods(mods_dir: &Path) -> Result<Vec<ModItem>, String> {
                 let is_enabled = active_symlink.symlink_metadata().is_ok();
                 let preview = find_preview_image(&sub_path);
                 let hashes = collect_hashes_from_folder(&sub_path);
-                let (gb_id, ver) = read_veil_metadata(&sub_path);
+                let (gb_id, ver, fid) = read_veil_metadata(&sub_path);
 
                 mods.push(ModItem {
                     id: rel_id,
@@ -249,6 +252,7 @@ pub fn scan_mods(mods_dir: &Path) -> Result<Vec<ModItem>, String> {
                     hashes,
                     gamebanana_id: gb_id,
                     version: ver,
+                    file_id: fid,
                 });
             }
         }
@@ -426,6 +430,55 @@ pub fn toggle_mod_status(
     }
 }
 
+pub fn link_mod(
+    mods_dir: &Path,
+    mod_rel_path: &str,
+    gamebanana_id: u64,
+    version: Option<String>,
+    file_id: Option<u64>,
+) -> Result<(), String> {
+    let disabled_dir = get_disabled_dir(mods_dir);
+    let mod_folder = disabled_dir.join(mod_rel_path);
+    if !mod_folder.is_dir() {
+        return Err(format!(
+            "Mod folder does not exist: {}",
+            mod_folder.display()
+        ));
+    }
+    let downloaded_at = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs();
+    let mod_name = mod_folder
+        .file_name()
+        .and_then(|n| n.to_str())
+        .unwrap_or("")
+        .to_string();
+    let meta = serde_json::json!({
+        "gamebanana_id": gamebanana_id,
+        "file_id": file_id,
+        "version": version,
+        "mod_name": mod_name,
+        "downloaded_at": downloaded_at
+    });
+    fs::write(
+        mod_folder.join(".veil.json"),
+        serde_json::to_string_pretty(&meta).unwrap_or_default(),
+    )
+    .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+pub fn unlink_mod(mods_dir: &Path, mod_rel_path: &str) -> Result<(), String> {
+    let disabled_dir = get_disabled_dir(mods_dir);
+    let mod_folder = disabled_dir.join(mod_rel_path);
+    let dotfile = mod_folder.join(".veil.json");
+    if dotfile.is_file() {
+        fs::remove_file(dotfile).map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -492,5 +545,43 @@ mod tests {
             .find(|m| m.name == "Outfit A")
             .unwrap();
         assert!(!outfit_disabled.enabled);
+    }
+
+    #[test]
+    fn test_link_and_unlink_mod() {
+        let temp = tempdir().unwrap();
+        let mods_dir = temp.path();
+
+        crate::symlink::ensure_veil_dirs(mods_dir).unwrap();
+
+        let mod_dir = get_disabled_dir(mods_dir).join("Nicole Mod");
+        fs::create_dir_all(&mod_dir).unwrap();
+        fs::write(mod_dir.join("nicole.ini"), "hash = 12345678").unwrap();
+
+        let initial_scan = scan_mods(mods_dir).unwrap();
+        assert_eq!(initial_scan[0].gamebanana_id, None);
+        assert_eq!(initial_scan[0].version, None);
+        assert_eq!(initial_scan[0].file_id, None);
+
+        link_mod(
+            mods_dir,
+            "Nicole Mod",
+            456789,
+            Some("2.0.0".to_string()),
+            Some(98765),
+        )
+        .unwrap();
+
+        let linked_scan = scan_mods(mods_dir).unwrap();
+        assert_eq!(linked_scan[0].gamebanana_id, Some(456789));
+        assert_eq!(linked_scan[0].version, Some("2.0.0".to_string()));
+        assert_eq!(linked_scan[0].file_id, Some(98765));
+
+        unlink_mod(mods_dir, "Nicole Mod").unwrap();
+
+        let unlinked_scan = scan_mods(mods_dir).unwrap();
+        assert_eq!(unlinked_scan[0].gamebanana_id, None);
+        assert_eq!(unlinked_scan[0].version, None);
+        assert_eq!(unlinked_scan[0].file_id, None);
     }
 }

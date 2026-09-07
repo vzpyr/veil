@@ -27,6 +27,15 @@ export interface ModItem {
   hashes: string[];
   gamebanana_id?: number;
   version?: string;
+  file_id?: number;
+}
+
+export interface ModUpdateInfo {
+  available: boolean;
+  latestVersion?: string;
+  latestFileId?: number;
+  latestFileName?: string;
+  gamebananaId: number;
 }
 
 export interface CategoryItem {

@@ -62,6 +62,7 @@ mod tests {
             hashes: vec!["11223344".to_string(), "aabbccdd".to_string()],
             gamebanana_id: None,
             version: None,
+            file_id: None,
         };
 
         let mod_b = ModItem {
@@ -74,6 +75,7 @@ mod tests {
             hashes: vec!["aabbccdd".to_string(), "99887766".to_string()],
             gamebanana_id: None,
             version: None,
+            file_id: None,
         };
 
         let mod_c_disabled = ModItem {
@@ -86,6 +88,7 @@ mod tests {
             hashes: vec!["11223344".to_string()],
             gamebanana_id: None,
             version: None,
+            file_id: None,
         };
 
         let conflicts = detect_conflicts(&[mod_a, mod_b, mod_c_disabled]);

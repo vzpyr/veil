@@ -12,36 +12,44 @@ import {
 } from "@mantine/core";
 import {
   IconAlertTriangle,
+  IconArrowBadgeUp,
   IconDotsVertical,
   IconExternalLink,
   IconFolderSymlink,
   IconKeyboard,
+  IconLink,
   IconPhoto,
   IconTrash,
 } from "@tabler/icons-react";
 import { convertFileSrc } from "@tauri-apps/api/core";
-import { ModItem } from "../types";
+import { ModItem, ModUpdateInfo } from "../types";
 
 interface ModCardProps {
   mod: ModItem;
   inConflict: boolean;
+  updateInfo?: ModUpdateInfo;
   onToggle: (modId: string, enabled: boolean) => void;
   onMoveCategory: (mod: ModItem) => void;
   onReveal: (folderPath: string) => void;
   onDelete: (mod: ModItem) => void;
   onOpenConflicts: () => void;
   onOpenKeybinds: (mod: ModItem) => void;
+  onOpenUpdate: (mod: ModItem, updateInfo: ModUpdateInfo) => void;
+  onOpenLinkGameBanana: (mod: ModItem) => void;
 }
 
 export default function ModCard({
   mod,
   inConflict,
+  updateInfo,
   onToggle,
   onMoveCategory,
   onReveal,
   onDelete,
   onOpenConflicts,
   onOpenKeybinds,
+  onOpenUpdate,
+  onOpenLinkGameBanana,
 }: ModCardProps) {
   const previewUrl = mod.preview_path ? convertFileSrc(mod.preview_path) : null;
 
@@ -87,13 +95,32 @@ export default function ModCard({
             justifyContent: "space-between",
           }}
         >
-          {mod.category ? (
-            <Badge size="xs" variant="filled" color="dark">
-              {mod.category}
-            </Badge>
-          ) : (
-            <span />
-          )}
+          <Group gap={4}>
+            {mod.category && (
+              <Badge size="xs" variant="filled" color="dark">
+                {mod.category}
+              </Badge>
+            )}
+            {updateInfo?.available && (
+              <Tooltip label="Update available on GameBanana. Click to view release.">
+                <Badge
+                  size="xs"
+                  color="teal"
+                  variant="filled"
+                  leftSection={<IconArrowBadgeUp size={14} />}
+                  style={{ cursor: "pointer" }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onOpenUpdate(mod, updateInfo);
+                  }}
+                >
+                  {updateInfo.latestVersion
+                    ? `Update v${updateInfo.latestVersion}`
+                    : "Update"}
+                </Badge>
+              </Tooltip>
+            )}
+          </Group>
 
           {inConflict && (
             <Tooltip label="Active hash conflict detected. Click to resolve.">
@@ -135,13 +162,22 @@ export default function ModCard({
               </ActionIcon>
             </Tooltip>
 
-            <Menu position="bottom-end" shadow="md" width={180}>
+            <Menu position="bottom-end" shadow="md" width={190}>
               <Menu.Target>
                 <ActionIcon variant="subtle" size="sm" color="gray">
                   <IconDotsVertical size={16} />
                 </ActionIcon>
               </Menu.Target>
               <Menu.Dropdown>
+                {updateInfo?.available && (
+                  <Menu.Item
+                    leftSection={<IconArrowBadgeUp size={14} />}
+                    color="teal"
+                    onClick={() => onOpenUpdate(mod, updateInfo)}
+                  >
+                    View Update
+                  </Menu.Item>
+                )}
                 <Menu.Item
                   leftSection={<IconKeyboard size={14} />}
                   onClick={() => onOpenKeybinds(mod)}
@@ -153,6 +189,14 @@ export default function ModCard({
                   onClick={() => onMoveCategory(mod)}
                 >
                   Move Category
+                </Menu.Item>
+                <Menu.Item
+                  leftSection={<IconLink size={14} />}
+                  onClick={() => onOpenLinkGameBanana(mod)}
+                >
+                  {mod.gamebanana_id
+                    ? "Edit GameBanana Link"
+                    : "Link to GameBanana"}
                 </Menu.Item>
                 <Menu.Item
                   leftSection={<IconExternalLink size={14} />}
@@ -174,9 +218,16 @@ export default function ModCard({
         </Group>
 
         <Group justify="space-between" align="center">
-          <Badge size="xs" variant="outline" color="gray">
-            {mod.hashes.length} {mod.hashes.length === 1 ? "hash" : "hashes"}
-          </Badge>
+          <Group gap={4}>
+            <Badge size="xs" variant="outline" color="gray">
+              {mod.hashes.length} {mod.hashes.length === 1 ? "hash" : "hashes"}
+            </Badge>
+            {mod.version && (
+              <Badge size="xs" variant="subtle" color="blue">
+                v{mod.version}
+              </Badge>
+            )}
+          </Group>
 
           <Switch
             size="sm"

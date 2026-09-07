@@ -5,13 +5,16 @@ import { listen } from "@tauri-apps/api/event";
 import { revealItemInDir } from "@tauri-apps/plugin-opener";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { GbModFile } from "./api/gamebanana";
+import { checkModsUpdates } from "./api/updater";
 import GbBrowserView from "./components/browser/GbBrowserView";
+import GbModModal from "./components/browser/GbModModal";
 import CategoryModal from "./components/CategoryModal";
 import ConflictDrawer from "./components/ConflictDrawer";
 import { DownloadQueueDrawer } from "./components/DownloadQueueDrawer";
 import { DuplicateModal } from "./components/DuplicateModal";
 import Header from "./components/Header";
 import KeybindDrawer from "./components/KeybindDrawer";
+import LinkGameBananaModal from "./components/LinkGameBananaModal";
 import ModGrid from "./components/ModGrid";
 import SettingsView from "./components/SettingsView";
 import Sidebar from "./components/Sidebar";
@@ -23,6 +26,7 @@ import {
   DownloadQueueItem,
   GameDefinition,
   ModItem,
+  ModUpdateInfo,
 } from "./types";
 
 export default function App() {
@@ -42,6 +46,12 @@ export default function App() {
   const [keybindDrawerMod, setKeybindDrawerMod] = useState<ModItem | null>(
     null,
   );
+  const [updatesMap, setUpdatesMap] = useState<Record<string, ModUpdateInfo>>(
+    {},
+  );
+  const [isCheckingUpdates, setIsCheckingUpdates] = useState<boolean>(false);
+  const [linkingMod, setLinkingMod] = useState<ModItem | null>(null);
+  const [selectedGbModId, setSelectedGbModId] = useState<number | null>(null);
   const [duplicateModalState, setDuplicateModalState] = useState<{
     opened: boolean;
     file?: GbModFile;
@@ -85,6 +95,9 @@ export default function App() {
         setMods(scannedMods);
         setCategories(catList);
         setConflicts(conflictList);
+        checkModsUpdates(scannedMods).then((updates) => {
+          setUpdatesMap(updates);
+        });
       } catch (err) {
         notifications.show({
           title: "Scanning Error",
@@ -97,6 +110,43 @@ export default function App() {
     },
     [modsDir],
   );
+
+  const handleCheckUpdates = async () => {
+    if (mods.length === 0) return;
+    try {
+      setIsCheckingUpdates(true);
+      const updates = await checkModsUpdates(mods);
+      setUpdatesMap(updates);
+      const availableCount = Object.values(updates).filter(
+        (u) => u.available,
+      ).length;
+      if (availableCount > 0) {
+        notifications.show({
+          title: "Updates Available",
+          message: `Found ${availableCount} mod update${availableCount > 1 ? "s" : ""}.`,
+          color: "teal",
+        });
+      } else {
+        notifications.show({
+          title: "Up to Date",
+          message: "All linked mods are up to date.",
+          color: "green",
+        });
+      }
+    } catch (err) {
+      notifications.show({
+        title: "Update Check Failed",
+        message: String(err),
+        color: "red",
+      });
+    } finally {
+      setIsCheckingUpdates(false);
+    }
+  };
+
+  const handleOpenUpdate = (_mod: ModItem, updateInfo: ModUpdateInfo) => {
+    setSelectedGbModId(updateInfo.gamebananaId);
+  };
 
   useEffect(() => {
     let unlistenProgress: (() => void) | null = null;
@@ -564,6 +614,11 @@ export default function App() {
         isRefreshing={isRefreshing}
         activeDownloadCount={activeDownloadCount}
         onOpenDownloadQueue={() => setQueueDrawerOpen(true)}
+        onCheckUpdates={handleCheckUpdates}
+        isCheckingUpdates={isCheckingUpdates}
+        updatesCount={
+          Object.values(updatesMap).filter((u) => u.available).length
+        }
       />
 
       <Flex style={{ flex: 1, overflow: "hidden" }}>
@@ -593,6 +648,7 @@ export default function App() {
                 mods={filteredMods}
                 hasModsDir={Boolean(modsDir)}
                 conflicts={conflicts}
+                updatesMap={updatesMap}
                 onToggle={handleToggleMod}
                 onMoveCategory={(mod) =>
                   setCategoryModal({ open: true, modToMove: mod })
@@ -602,6 +658,8 @@ export default function App() {
                 onOpenConflicts={() => setConflictDrawerOpen(true)}
                 onOpenSettings={() => setActiveTab("settings")}
                 onOpenKeybinds={setKeybindDrawerMod}
+                onOpenUpdate={handleOpenUpdate}
+                onOpenLinkGameBanana={setLinkingMod}
               />
             </Box>
           </>
@@ -696,6 +754,24 @@ export default function App() {
         modToMove={categoryModal.modToMove}
         onMoveMod={handleMoveMod}
         onCreateCategory={handleCreateCategory}
+      />
+
+      {selectedGbModId && (
+        <GbModModal
+          modId={selectedGbModId}
+          opened={Boolean(selectedGbModId)}
+          onClose={() => setSelectedGbModId(null)}
+          onInstall={handleEnqueueDownload}
+          downloadQueue={downloadQueue}
+        />
+      )}
+
+      <LinkGameBananaModal
+        opened={Boolean(linkingMod)}
+        onClose={() => setLinkingMod(null)}
+        mod={linkingMod}
+        modsDir={modsDir}
+        onSuccess={() => refreshData()}
       />
     </Box>
   );

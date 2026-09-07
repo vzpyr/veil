@@ -14,6 +14,7 @@ import {
   IconFolder,
   IconRefresh,
   IconSettings,
+  IconSparkles,
   IconWorld,
 } from "@tabler/icons-react";
 import { ConflictGroup, GameDefinition } from "../types";
@@ -30,6 +31,9 @@ interface HeaderProps {
   isRefreshing: boolean;
   activeDownloadCount: number;
   onOpenDownloadQueue: () => void;
+  onCheckUpdates?: () => void;
+  isCheckingUpdates?: boolean;
+  updatesCount?: number;
 }
 
 export default function Header({
@@ -44,6 +48,9 @@ export default function Header({
   isRefreshing,
   activeDownloadCount,
   onOpenDownloadQueue,
+  onCheckUpdates,
+  isCheckingUpdates,
+  updatesCount = 0,
 }: HeaderProps) {
   const gameSelectData = games.map((g) => ({
     value: g.id,
@@ -170,6 +177,39 @@ export default function Header({
             )}
           </ActionIcon>
         </Tooltip>
+
+        {onCheckUpdates && (
+          <Tooltip label="Check mod updates">
+            <ActionIcon
+              variant={updatesCount > 0 ? "light" : "default"}
+              color={updatesCount > 0 ? "teal" : undefined}
+              size="md"
+              onClick={onCheckUpdates}
+              loading={isCheckingUpdates}
+              style={{ position: "relative" }}
+            >
+              <IconSparkles size={16} />
+              {updatesCount > 0 && (
+                <Badge
+                  size="xs"
+                  circle
+                  color="teal"
+                  style={{
+                    position: "absolute",
+                    top: -4,
+                    right: -4,
+                    minWidth: 16,
+                    height: 16,
+                    fontSize: 10,
+                    padding: 0,
+                  }}
+                >
+                  {updatesCount}
+                </Badge>
+              )}
+            </ActionIcon>
+          </Tooltip>
+        )}
 
         <Tooltip label="Rescan mods directory">
           <ActionIcon
