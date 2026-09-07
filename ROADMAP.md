@@ -11,13 +11,13 @@
 
 ## phase 2: backend filesystem, symlink engine and mod scanner
 
-- [ ] implement extensible game registry (zzz and endfield definitions)
-- [ ] implement configuration and settings manager in rust
-- [ ] implement symlink engine with safe deletion and orphaned link pruning
-- [ ] implement recursive mod scanner with ini hash extractor
-- [ ] implement category folder operations (create, move, list)
-- [ ] implement unit tests for scanner and ini hash parser
-- [ ] verify phase 2 build and tests
+- [x] implement extensible game registry (zzz and endfield definitions)
+- [x] implement configuration and settings manager in rust
+- [x] implement symlink engine with safe deletion and orphaned link pruning
+- [x] implement recursive mod scanner with ini hash extractor
+- [x] implement category folder operations (create, move, list)
+- [x] implement unit tests for scanner and ini hash parser
+- [x] verify phase 2 build and tests
 
 ## phase 3: archive extraction and conflict engine
 
