@@ -23,7 +23,7 @@ pub fn get_supported_games() -> Vec<GameDefinition> {
         GameDefinition {
             id: "endfield".to_string(),
             name: "Arknights: Endfield".to_string(),
-            short_name: "EF".to_string(),
+            short_name: "Endfield".to_string(),
             gamebanana_game_id: 21842,
             root_category_id: None,
             icon: "EF".to_string(),
@@ -46,15 +46,38 @@ pub fn get_supported_games() -> Vec<GameDefinition> {
         },
         GameDefinition {
             id: "starrail".to_string(),
-            name: "Honkai: Star Rail".to_string(),
+            name: "Honkai Star Rail".to_string(),
             short_name: "HSR".to_string(),
             gamebanana_game_id: 18366,
             root_category_id: None,
             icon: "SR".to_string(),
+        },
+        GameDefinition {
+            id: "hi3".to_string(),
+            name: "Honkai Impact 3rd".to_string(),
+            short_name: "HI3".to_string(),
+            gamebanana_game_id: 10349,
+            root_category_id: None,
+            icon: "HI3".to_string(),
         },
     ]
 }
 
 pub fn get_game_by_id(id: &str) -> Option<GameDefinition> {
     get_supported_games().into_iter().find(|game| game.id == id)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_get_supported_games() {
+        let games = get_supported_games();
+        assert_eq!(games.len(), 6);
+        assert!(get_game_by_id("hi3").is_some());
+        let hi3 = get_game_by_id("hi3").unwrap();
+        assert_eq!(hi3.name, "Honkai Impact 3rd");
+        assert_eq!(hi3.gamebanana_game_id, 10349);
+    }
 }

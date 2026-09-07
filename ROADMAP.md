@@ -95,3 +95,7 @@
 - [x] establish clean dedicated veil app icon suite
 - [x] add genshin impact, honkai: star rail, and wuthering waves to games registry
 - [x] implement set preview image button with standardized resolution and format
+
+## phase 13: honkai impact 3rd expansion
+
+- [x] add honkai impact 3rd to games registry
