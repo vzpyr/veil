@@ -50,8 +50,8 @@
 
 ## phase 6: verification, typecheck, build and final polish
 
-- [ ] run full format check with prettier
-- [ ] run typescript typecheck
-- [ ] run cargo check and tests
-- [ ] verify code compliance with no comments and no em or en dashes
-- [ ] create initial git commit with conventional format
+- [x] run full format check with prettier
+- [x] run typescript typecheck
+- [x] run cargo check and tests
+- [x] verify code compliance with no comments and no em or en dashes
+- [x] create initial git commit with conventional format
