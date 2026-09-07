@@ -25,6 +25,8 @@ export interface ModItem {
   enabled: boolean;
   preview_path?: string;
   hashes: string[];
+  gamebanana_id?: number;
+  version?: string;
 }
 
 export interface CategoryItem {
@@ -38,6 +40,9 @@ export interface ConflictGroup {
   mod_names: string[];
 }
 
+export type DownloadStatus =
+  "queued" | "downloading" | "extracting" | "completed" | "failed";
+
 export interface DownloadProgressPayload {
   key: string;
   downloaded: number;
@@ -45,4 +50,36 @@ export interface DownloadProgressPayload {
   speed: string;
   eta: string;
   percentage: number;
+}
+
+export interface DownloadStatusPayload {
+  key: string;
+  status: string;
+}
+
+export interface DownloadCompletePayload {
+  key: string;
+  rel_id: string;
+  mod_name: string;
+}
+
+export interface DownloadErrorPayload {
+  key: string;
+  error: string;
+}
+
+export interface DownloadQueueItem {
+  id: string;
+  modName: string;
+  fileName: string;
+  fileId: number;
+  gamebananaId: number;
+  version?: string;
+  category?: string;
+  previewUrl?: string;
+  downloadUrl: string;
+  status: DownloadStatus;
+  progress: DownloadProgressPayload;
+  duplicateAction: "replace" | "keep_both";
+  error?: string;
 }

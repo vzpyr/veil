@@ -60,6 +60,8 @@ mod tests {
             enabled: true,
             preview_path: None,
             hashes: vec!["11223344".to_string(), "aabbccdd".to_string()],
+            gamebanana_id: None,
+            version: None,
         };
 
         let mod_b = ModItem {
@@ -70,6 +72,8 @@ mod tests {
             enabled: true,
             preview_path: None,
             hashes: vec!["aabbccdd".to_string(), "99887766".to_string()],
+            gamebanana_id: None,
+            version: None,
         };
 
         let mod_c_disabled = ModItem {
@@ -80,6 +84,8 @@ mod tests {
             enabled: false,
             preview_path: None,
             hashes: vec!["11223344".to_string()],
+            gamebanana_id: None,
+            version: None,
         };
 
         let conflicts = detect_conflicts(&[mod_a, mod_b, mod_c_disabled]);

@@ -61,6 +61,10 @@ pub async fn download_and_install_mod(
     category: Option<String>,
     preview_url: Option<String>,
     key: String,
+    duplicate_action: Option<String>,
+    item_id: Option<u64>,
+    file_id: Option<u64>,
+    version: Option<String>,
 ) -> Result<String, String> {
     let mods_path = Path::new(&mods_dir);
     ensure_veil_dirs(mods_path)?;
@@ -83,17 +87,28 @@ pub async fn download_and_install_mod(
         .build()
         .map_err(|e| e.to_string())?;
 
-    let response = client
-        .get(&download_url)
-        .send()
-        .await
-        .map_err(|e| e.to_string())?;
+    let response = client.get(&download_url).send().await.map_err(|e| {
+        let err_msg = e.to_string();
+        let _ = app.emit(
+            "download-error",
+            serde_json::json!({
+                "key": key.clone(),
+                "error": err_msg.clone()
+            }),
+        );
+        err_msg
+    })?;
 
     if !response.status().is_success() {
-        return Err(format!(
-            "Download request failed with status: {}",
-            response.status()
-        ));
+        let err_msg = format!("Download request failed with status: {}", response.status());
+        let _ = app.emit(
+            "download-error",
+            serde_json::json!({
+                "key": key.clone(),
+                "error": err_msg.clone()
+            }),
+        );
+        return Err(err_msg);
     }
 
     let ext = response
@@ -116,7 +131,17 @@ pub async fn download_and_install_mod(
     let start_time = Instant::now();
 
     while let Some(chunk_result) = stream.next().await {
-        let chunk = chunk_result.map_err(|e| e.to_string())?;
+        let chunk = chunk_result.map_err(|e| {
+            let err_msg = e.to_string();
+            let _ = app.emit(
+                "download-error",
+                serde_json::json!({
+                    "key": key.clone(),
+                    "error": err_msg.clone()
+                }),
+            );
+            err_msg
+        })?;
         writer.write_all(&chunk).map_err(|e| e.to_string())?;
         downloaded += chunk.len() as u64;
 
@@ -158,7 +183,30 @@ pub async fn download_and_install_mod(
     writer.flush().map_err(|e| e.to_string())?;
     drop(writer);
 
-    let extracted_dir = extract_any_archive(&temp_archive_path, &target_parent_dir, &mod_name)?;
+    let _ = app.emit(
+        "download-status",
+        serde_json::json!({
+            "key": key.clone(),
+            "status": "extracting"
+        }),
+    );
+
+    let action = duplicate_action.unwrap_or_else(|| "replace".to_string());
+    let extracted_dir =
+        match extract_any_archive(&temp_archive_path, &target_parent_dir, &mod_name, &action) {
+            Ok(dir) => dir,
+            Err(err) => {
+                let _ = fs::remove_file(&temp_archive_path);
+                let _ = app.emit(
+                    "download-error",
+                    serde_json::json!({
+                        "key": key.clone(),
+                        "error": err.clone()
+                    }),
+                );
+                return Err(err);
+            }
+        };
     let _ = fs::remove_file(&temp_archive_path);
 
     if let Some(img_url) = preview_url {
@@ -174,6 +222,29 @@ pub async fn download_and_install_mod(
         }
     }
 
+    let downloaded_at = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs();
+
+    let meta = serde_json::json!({
+        "gamebanana_id": item_id,
+        "file_id": file_id,
+        "version": version,
+        "mod_name": mod_name,
+        "downloaded_at": downloaded_at
+    });
+    let _ = fs::write(
+        extracted_dir.join(".veil.json"),
+        serde_json::to_string_pretty(&meta).unwrap_or_default(),
+    );
+
+    let final_folder_name = extracted_dir
+        .file_name()
+        .and_then(|n| n.to_str())
+        .unwrap_or(&mod_name)
+        .to_string();
+
     let rel_id = extracted_dir
         .strip_prefix(&disabled_dir)
         .map_err(|e| e.to_string())?
@@ -185,7 +256,7 @@ pub async fn download_and_install_mod(
         serde_json::json!({
             "key": key,
             "rel_id": rel_id,
-            "mod_name": mod_name
+            "mod_name": final_folder_name
         }),
     );
 

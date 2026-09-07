@@ -19,7 +19,6 @@ import {
   IconSearch,
   IconX,
 } from "@tabler/icons-react";
-import { invoke } from "@tauri-apps/api/core";
 import { useCallback, useEffect, useState } from "react";
 import {
   fetchByCategory,
@@ -30,7 +29,7 @@ import {
   GbSubfeedItem,
   searchGameBananaMods,
 } from "../../api/gamebanana";
-import { DownloadProgressPayload, GameDefinition } from "../../types";
+import { DownloadQueueItem, GameDefinition } from "../../types";
 import GbModCard from "./GbModCard";
 import GbModModal from "./GbModModal";
 
@@ -38,16 +37,23 @@ interface GbBrowserViewProps {
   activeGame: GameDefinition;
   modsDir?: string;
   autoCategorize: boolean;
-  activeDownloads: Record<string, DownloadProgressPayload>;
-  onInstallSuccess: () => void;
+  downloadQueue: DownloadQueueItem[];
+  onEnqueueDownload: (
+    file: GbModFile,
+    modName: string,
+    gamebananaId: number,
+    version?: string,
+    categoryName?: string,
+    previewUrl?: string,
+  ) => void;
 }
 
 export default function GbBrowserView({
   activeGame,
   modsDir,
   autoCategorize,
-  activeDownloads,
-  onInstallSuccess,
+  downloadQueue,
+  onEnqueueDownload,
 }: GbBrowserViewProps) {
   const [categories, setCategories] = useState<GbCategory[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -132,9 +138,11 @@ export default function GbBrowserView({
     setPage(1);
   };
 
-  const handleInstallFile = async (
+  const handleInstallFile = (
     file: GbModFile,
     modName: string,
+    gamebananaId: number,
+    version?: string,
     categoryName?: string,
     previewUrl?: string,
   ) => {
@@ -148,39 +156,15 @@ export default function GbBrowserView({
       return;
     }
 
-    const key = String(file._idRow);
     const resolvedCategory = autoCategorize ? categoryName : undefined;
-
-    try {
-      notifications.show({
-        title: "Download Started",
-        message: `Downloading ${file._sFile}...`,
-        color: "blue",
-      });
-
-      await invoke("download_mod", {
-        downloadUrl: file._sDownloadUrl,
-        modsDir,
-        modName,
-        category: resolvedCategory,
-        previewUrl,
-        key,
-      });
-
-      notifications.show({
-        title: "Installation Complete",
-        message: `${modName} installed successfully into DISABLED_veil.`,
-        color: "green",
-      });
-
-      onInstallSuccess();
-    } catch (err) {
-      notifications.show({
-        title: "Installation Failed",
-        message: String(err),
-        color: "red",
-      });
-    }
+    onEnqueueDownload(
+      file,
+      modName,
+      gamebananaId,
+      version,
+      resolvedCategory,
+      previewUrl,
+    );
   };
 
   const categorySelectData = [
@@ -331,7 +315,7 @@ export default function GbBrowserView({
         opened={selectedModId !== null}
         onClose={() => setSelectedModId(null)}
         onInstall={handleInstallFile}
-        activeDownloads={activeDownloads}
+        downloadQueue={downloadQueue}
       />
     </Box>
   );

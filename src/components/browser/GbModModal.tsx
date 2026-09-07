@@ -16,6 +16,7 @@ import {
   Text,
 } from "@mantine/core";
 import {
+  IconCheck,
   IconDownload,
   IconHistory,
   IconInfoCircle,
@@ -32,7 +33,7 @@ import {
   GbPost,
   GbUpdate,
 } from "../../api/gamebanana";
-import { DownloadProgressPayload } from "../../types";
+import { DownloadQueueItem } from "../../types";
 
 interface GbModModalProps {
   modId: number | null;
@@ -41,10 +42,12 @@ interface GbModModalProps {
   onInstall: (
     file: GbModFile,
     modName: string,
+    gamebananaId: number,
+    version?: string,
     categoryName?: string,
     previewUrl?: string,
   ) => void;
-  activeDownloads: Record<string, DownloadProgressPayload>;
+  downloadQueue: DownloadQueueItem[];
 }
 
 function formatBytes(bytes: number): string {
@@ -74,7 +77,7 @@ export default function GbModModal({
   opened,
   onClose,
   onInstall,
-  activeDownloads,
+  downloadQueue,
 }: GbModModalProps) {
   const [profile, setProfile] = useState<GbModProfile | null>(null);
   const [updates, setUpdates] = useState<GbUpdate[]>([]);
@@ -270,7 +273,14 @@ export default function GbModModal({
                   {profile._aFiles && profile._aFiles.length > 0 ? (
                     profile._aFiles.map((f) => {
                       const downloadKey = String(f._idRow);
-                      const currentProgress = activeDownloads[downloadKey];
+                      const queueItem = downloadQueue.find(
+                        (item) => item.id === downloadKey,
+                      );
+                      const isDownloading = queueItem?.status === "downloading";
+                      const isExtracting = queueItem?.status === "extracting";
+                      const isQueued = queueItem?.status === "queued";
+                      const isCompleted = queueItem?.status === "completed";
+                      const isFailed = queueItem?.status === "failed";
 
                       return (
                         <Card
@@ -309,37 +319,80 @@ export default function GbModModal({
                             <Button
                               size="xs"
                               variant="light"
-                              leftSection={<IconDownload size={14} />}
-                              loading={Boolean(currentProgress)}
+                              color={
+                                isCompleted
+                                  ? "green"
+                                  : isFailed
+                                    ? "red"
+                                    : isQueued
+                                      ? "yellow"
+                                      : "blue"
+                              }
+                              leftSection={
+                                isCompleted ? (
+                                  <IconCheck size={14} />
+                                ) : (
+                                  <IconDownload size={14} />
+                                )
+                              }
+                              loading={isDownloading || isExtracting}
+                              disabled={isCompleted || isQueued}
                               onClick={() =>
                                 onInstall(
                                   f,
                                   profile._sName,
+                                  profile._idRow,
+                                  profile._sVersion,
                                   profile._aCategory?._sName,
                                   primaryPreviewUrl,
                                 )
                               }
                             >
-                              Install
+                              {isDownloading
+                                ? `${Math.round(queueItem.progress.percentage)}%`
+                                : isExtracting
+                                  ? "Extracting"
+                                  : isQueued
+                                    ? "Queued"
+                                    : isCompleted
+                                      ? "Installed"
+                                      : isFailed
+                                        ? "Retry"
+                                        : "Install"}
                             </Button>
                           </Group>
 
-                          {currentProgress && (
+                          {isDownloading && queueItem && (
                             <Box mt="xs">
                               <Group justify="space-between" mb={4}>
                                 <Text size="2xs" c="dimmed">
-                                  Speed: {currentProgress.speed} | ETA:{" "}
-                                  {currentProgress.eta}
+                                  Speed: {queueItem.progress.speed} | ETA:{" "}
+                                  {queueItem.progress.eta}
                                 </Text>
                                 <Text size="2xs" fw={600}>
-                                  {currentProgress.percentage.toFixed(0)}%
+                                  {Math.round(queueItem.progress.percentage)}%
                                 </Text>
                               </Group>
                               <Progress
-                                value={currentProgress.percentage}
+                                value={queueItem.progress.percentage}
                                 size="xs"
                                 animated
+                                color="blue"
                               />
+                            </Box>
+                          )}
+
+                          {isExtracting && (
+                            <Box mt="xs">
+                              <Progress
+                                value={100}
+                                size="xs"
+                                animated
+                                color="cyan"
+                              />
+                              <Text size="2xs" c="cyan" ta="right" mt={4}>
+                                Extracting and installing archive...
+                              </Text>
                             </Box>
                           )}
                         </Card>

@@ -154,6 +154,7 @@ fn extract_archive_file(
     mods_dir: String,
     mod_name: String,
     category: Option<String>,
+    duplicate_action: Option<String>,
 ) -> Result<String, String> {
     let path = Path::new(&mods_dir);
     ensure_veil_dirs(path)?;
@@ -168,7 +169,13 @@ fn extract_archive_file(
         _ => disabled_dir.clone(),
     };
 
-    let extracted = extract_any_archive(Path::new(&archive_path), &target_parent_dir, &mod_name)?;
+    let action = duplicate_action.unwrap_or_else(|| "replace".to_string());
+    let extracted = extract_any_archive(
+        Path::new(&archive_path),
+        &target_parent_dir,
+        &mod_name,
+        &action,
+    )?;
     let rel_id = extracted
         .strip_prefix(&disabled_dir)
         .map_err(|e| e.to_string())?
@@ -187,6 +194,10 @@ async fn download_mod(
     category: Option<String>,
     preview_url: Option<String>,
     key: String,
+    duplicate_action: Option<String>,
+    item_id: Option<u64>,
+    file_id: Option<u64>,
+    version: Option<String>,
 ) -> Result<String, String> {
     download_and_install_mod(
         app,
@@ -196,6 +207,10 @@ async fn download_mod(
         category,
         preview_url,
         key,
+        duplicate_action,
+        item_id,
+        file_id,
+        version,
     )
     .await
 }

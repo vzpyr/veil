@@ -55,3 +55,23 @@
 - [x] run cargo check and tests
 - [x] verify code compliance with no comments and no em or en dashes
 - [x] create initial git commit with conventional format
+
+## phase 7: download queue and folder naming enhancements
+
+- [x] implement reactive download queue manager with concurrency control
+- [x] enforce exact gamebanana mod name for extracted folders
+- [x] streamline duplicate version detection and clean replacement
+
+## phase 8: mod keybinds and toggle state editor
+
+- [ ] parse 3dmigoto key swap and toggle sections from mod ini files
+- [ ] implement keybind editing and ini persistence
+- [ ] inspect and edit persistent toggle states from ini and d3dx_user
+- [ ] build interactive keybind and toggle drawer in ui
+
+## phase 9: mod update checker and gamebanana mapping
+
+- [ ] save dotfile metadata inside downloaded mod folders (.veil.json)
+- [ ] implement gamebanana api update checker
+- [ ] display update available indicator badges on mod cards
+- [ ] allow opening gamebanana details modal directly from update badge

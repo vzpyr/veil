@@ -13,6 +13,8 @@ pub struct ModItem {
     pub enabled: bool,
     pub preview_path: Option<String>,
     pub hashes: Vec<String>,
+    pub gamebanana_id: Option<u64>,
+    pub version: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -112,6 +114,27 @@ fn find_preview_image(dir: &Path) -> Option<String> {
     None
 }
 
+fn read_veil_metadata(dir: &Path) -> (Option<u64>, Option<String>) {
+    let dotfile = dir.join(".veil.json");
+    if !dotfile.is_file() {
+        return (None, None);
+    }
+    let content = match fs::read_to_string(&dotfile) {
+        Ok(c) => c,
+        Err(_) => return (None, None),
+    };
+    let val: serde_json::Value = match serde_json::from_str(&content) {
+        Ok(v) => v,
+        Err(_) => return (None, None),
+    };
+    let gb_id = val.get("gamebanana_id").and_then(|v| v.as_u64());
+    let version = val
+        .get("version")
+        .and_then(|v| v.as_str())
+        .map(|s| s.to_string());
+    (gb_id, version)
+}
+
 fn has_direct_ini_or_assets(dir: &Path) -> bool {
     let entries = match fs::read_dir(dir) {
         Ok(e) => e,
@@ -179,6 +202,7 @@ pub fn scan_mods(mods_dir: &Path) -> Result<Vec<ModItem>, String> {
             let preview = find_preview_image(&path);
             let hashes = collect_hashes_from_folder(&path);
 
+            let (gb_id, ver) = read_veil_metadata(&path);
             mods.push(ModItem {
                 id: rel_id,
                 name: folder_name,
@@ -187,6 +211,8 @@ pub fn scan_mods(mods_dir: &Path) -> Result<Vec<ModItem>, String> {
                 enabled: is_enabled,
                 preview_path: preview,
                 hashes,
+                gamebanana_id: gb_id,
+                version: ver,
             });
         } else {
             let category_name = folder_name;
@@ -211,6 +237,7 @@ pub fn scan_mods(mods_dir: &Path) -> Result<Vec<ModItem>, String> {
                 let is_enabled = active_symlink.symlink_metadata().is_ok();
                 let preview = find_preview_image(&sub_path);
                 let hashes = collect_hashes_from_folder(&sub_path);
+                let (gb_id, ver) = read_veil_metadata(&sub_path);
 
                 mods.push(ModItem {
                     id: rel_id,
@@ -220,6 +247,8 @@ pub fn scan_mods(mods_dir: &Path) -> Result<Vec<ModItem>, String> {
                     enabled: is_enabled,
                     preview_path: preview,
                     hashes,
+                    gamebanana_id: gb_id,
+                    version: ver,
                 });
             }
         }

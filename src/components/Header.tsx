@@ -10,6 +10,7 @@ import {
 } from "@mantine/core";
 import {
   IconAlertTriangle,
+  IconDownload,
   IconFolder,
   IconRefresh,
   IconSettings,
@@ -27,6 +28,8 @@ interface HeaderProps {
   onOpenConflicts: () => void;
   onRefresh: () => void;
   isRefreshing: boolean;
+  activeDownloadCount: number;
+  onOpenDownloadQueue: () => void;
 }
 
 export default function Header({
@@ -39,6 +42,8 @@ export default function Header({
   onOpenConflicts,
   onRefresh,
   isRefreshing,
+  activeDownloadCount,
+  onOpenDownloadQueue,
 }: HeaderProps) {
   const gameSelectData = games.map((g) => ({
     value: g.id,
@@ -135,6 +140,36 @@ export default function Header({
             </Button>
           </Tooltip>
         )}
+
+        <Tooltip label="Download Queue">
+          <ActionIcon
+            variant={activeDownloadCount > 0 ? "light" : "default"}
+            color={activeDownloadCount > 0 ? "blue" : undefined}
+            size="md"
+            onClick={onOpenDownloadQueue}
+            style={{ position: "relative" }}
+          >
+            <IconDownload size={16} />
+            {activeDownloadCount > 0 && (
+              <Badge
+                size="xs"
+                circle
+                color="blue"
+                style={{
+                  position: "absolute",
+                  top: -4,
+                  right: -4,
+                  minWidth: 16,
+                  height: 16,
+                  fontSize: 10,
+                  padding: 0,
+                }}
+              >
+                {activeDownloadCount}
+              </Badge>
+            )}
+          </ActionIcon>
+        </Tooltip>
 
         <Tooltip label="Rescan mods directory">
           <ActionIcon
