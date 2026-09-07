@@ -26,3 +26,11 @@ sevenz-rust = "0.6"
 
 [dev-dependencies]
 tempfile = "3"
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = true
+trim-paths = "all"
