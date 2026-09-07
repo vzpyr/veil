@@ -1,6 +1,6 @@
 const API_BASE = "https://gamebanana.com/apiv11/";
 
-const LIST_PAGE_SIZE = 20;
+const LIST_PAGE_SIZE = 15;
 
 export interface GbCategory {
   _idRow: number;
