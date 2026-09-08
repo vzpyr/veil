@@ -161,12 +161,13 @@ export default function Sidebar({
                   <Menu position="bottom-end" withinPortal radius="lg">
                     <Menu.Target>
                       <ActionIcon
-                        size="xs"
+                        size="sm"
                         radius="xl"
                         variant="subtle"
+                        color="gray"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <IconDotsVertical size={12} />
+                        <IconDotsVertical size={16} />
                       </ActionIcon>
                     </Menu.Target>
                     <Menu.Dropdown>
