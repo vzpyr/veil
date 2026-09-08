@@ -21,7 +21,9 @@ use scanner::{
     ModItem,
 };
 use std::path::Path;
-use symlink::{ensure_veil_dirs, get_disabled_dir, prune_orphaned_symlinks, UNCATEGORIZED_DIR_NAME};
+use symlink::{
+    ensure_veil_dirs, get_disabled_dir, prune_orphaned_symlinks, UNCATEGORIZED_DIR_NAME,
+};
 use tauri::AppHandle;
 
 #[tauri::command]

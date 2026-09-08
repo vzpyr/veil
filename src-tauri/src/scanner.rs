@@ -1,5 +1,6 @@
 use crate::symlink::{
-    create_mod_symlink, get_active_dir, get_disabled_dir, remove_mod_symlink, UNCATEGORIZED_DIR_NAME,
+    create_mod_symlink, get_active_dir, get_disabled_dir, remove_mod_symlink,
+    UNCATEGORIZED_DIR_NAME,
 };
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
@@ -139,60 +140,6 @@ fn read_veil_metadata(dir: &Path) -> (Option<u64>, Option<String>, Option<u64>) 
     (gb_id, version, file_id)
 }
 
-fn has_direct_ini_or_assets(dir: &Path) -> bool {
-    let entries = match fs::read_dir(dir) {
-        Ok(e) => e,
-        Err(_) => return false,
-    };
-
-    for entry in entries.flatten() {
-        let path = entry.path();
-        if path.is_file() {
-            if let Some(ext) = path.extension() {
-                if ext.eq_ignore_ascii_case("ini")
-                    || ext.eq_ignore_ascii_case("dds")
-                    || ext.eq_ignore_ascii_case("buf")
-                    || ext.eq_ignore_ascii_case("ib")
-                    || ext.eq_ignore_ascii_case("vb")
-                {
-                    return true;
-                }
-            }
-        }
-    }
-    false
-}
-
-fn contains_subdirectories(dir: &Path) -> bool {
-    let entries = match fs::read_dir(dir) {
-        Ok(e) => e,
-        Err(_) => return false,
-    };
-
-    for entry in entries.flatten() {
-        if entry.path().is_dir() {
-            return true;
-        }
-    }
-    false
-}
-
-fn is_loose_mod_folder(dir: &Path) -> bool {
-    if dir.join(".veil.json").is_file() {
-        return true;
-    }
-    if find_preview_image(dir).is_some() {
-        return true;
-    }
-    if has_direct_ini_or_assets(dir) {
-        return true;
-    }
-    if !contains_subdirectories(dir) {
-        return true;
-    }
-    false
-}
-
 pub fn scan_mods(mods_dir: &Path) -> Result<Vec<ModItem>, String> {
     let disabled_dir = get_disabled_dir(mods_dir);
     let active_dir = get_active_dir(mods_dir);
@@ -202,39 +149,7 @@ pub fn scan_mods(mods_dir: &Path) -> Result<Vec<ModItem>, String> {
     }
 
     let uncategorized_dir = disabled_dir.join(UNCATEGORIZED_DIR_NAME);
-    let active_uncategorized_dir = active_dir.join(UNCATEGORIZED_DIR_NAME);
     let _ = fs::create_dir_all(&uncategorized_dir);
-
-    if let Ok(entries) = fs::read_dir(&disabled_dir) {
-        for entry in entries.flatten() {
-            let path = entry.path();
-            if !path.is_dir() {
-                continue;
-            }
-            let name = match path.file_name().and_then(|n| n.to_str()) {
-                Some(n) => n.to_string(),
-                None => continue,
-            };
-            if name.eq_ignore_ascii_case(UNCATEGORIZED_DIR_NAME) {
-                continue;
-            }
-            if is_loose_mod_folder(&path) {
-                let target_dest = uncategorized_dir.join(&name);
-                if !target_dest.exists() {
-                    let old_active = active_dir.join(&name);
-                    let was_enabled = old_active.symlink_metadata().is_ok();
-                    if was_enabled {
-                        let _ = remove_mod_symlink(&old_active);
-                    }
-                    if fs::rename(&path, &target_dest).is_ok() && was_enabled {
-                        let _ = fs::create_dir_all(&active_uncategorized_dir);
-                        let new_active = active_uncategorized_dir.join(&name);
-                        let _ = create_mod_symlink(&target_dest, &new_active);
-                    }
-                }
-            }
-        }
-    }
 
     let mut mods = Vec::new();
     let entries = fs::read_dir(&disabled_dir).map_err(|err| err.to_string())?;
@@ -295,7 +210,7 @@ pub fn scan_mods(mods_dir: &Path) -> Result<Vec<ModItem>, String> {
         }
     }
 
-    mods.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
+    mods.sort_by_key(|a| a.name.to_lowercase());
     Ok(mods)
 }
 
@@ -327,7 +242,7 @@ pub fn list_categories(mods_dir: &Path) -> Result<Vec<CategoryItem>, String> {
         }
     }
 
-    categories.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
+    categories.sort_by_key(|a| a.name.to_lowercase());
     Ok(categories)
 }
 
@@ -866,24 +781,28 @@ mod tests {
     }
 
     #[test]
-    fn test_loose_mod_auto_migration() {
+    fn test_empty_category_preservation() {
         let temp = tempdir().unwrap();
         let mods_dir = temp.path();
 
         crate::symlink::ensure_veil_dirs(mods_dir).unwrap();
-        let loose_mod = get_disabled_dir(mods_dir).join("LooseMod");
-        fs::create_dir_all(&loose_mod).unwrap();
-        fs::write(loose_mod.join("mod.ini"), "hash = loosehash").unwrap();
+        create_category(mods_dir, "Dialyn").unwrap();
+
+        let categories = list_categories(mods_dir).unwrap();
+        assert_eq!(categories.len(), 1);
+        assert_eq!(categories[0].name, "Dialyn");
+        assert_eq!(categories[0].mod_count, 0);
 
         let scanned = scan_mods(mods_dir).unwrap();
-        assert_eq!(scanned.len(), 1);
-        assert_eq!(scanned[0].name, "LooseMod");
-        assert_eq!(scanned[0].category, None);
-        assert_eq!(scanned[0].id, "Uncategorized/LooseMod");
-        assert!(get_disabled_dir(mods_dir)
+        assert_eq!(scanned.len(), 0);
+
+        let categories_after_scan = list_categories(mods_dir).unwrap();
+        assert_eq!(categories_after_scan.len(), 1);
+        assert_eq!(categories_after_scan[0].name, "Dialyn");
+        assert!(get_disabled_dir(mods_dir).join("Dialyn").exists());
+        assert!(!get_disabled_dir(mods_dir)
             .join(crate::symlink::UNCATEGORIZED_DIR_NAME)
-            .join("LooseMod")
+            .join("Dialyn")
             .exists());
-        assert!(!loose_mod.exists());
     }
 }

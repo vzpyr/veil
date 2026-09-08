@@ -141,64 +141,65 @@ pub fn parse_mod_keybinds_and_variables(
 
         let mut in_constants = false;
 
-        let flush_section = |current_section: &str,
-                             section_key: &str,
-                             section_type: &str,
-                             section_var: &Option<String>,
-                             section_vals: &[i64],
-                             ini_path: &Path,
-                             keybinds: &mut Vec<ModKeybind>,
-                             variables_map: &mut HashMap<String, ModVariableState>| {
-            if current_section.is_empty() || section_key.is_empty() {
-                return;
-            }
+        let flush_section =
+            |current_section: &str,
+             section_key: &str,
+             section_type: &str,
+             section_var: &Option<String>,
+             section_vals: &[i64],
+             ini_path: &Path,
+             keybinds: &mut Vec<ModKeybind>,
+             variables_map: &mut HashMap<String, ModVariableState>| {
+                if current_section.is_empty() || section_key.is_empty() {
+                    return;
+                }
 
-            let label = format_section_label(current_section);
-            let b_type = if section_type.is_empty() {
-                "cycle".to_string()
-            } else {
-                section_type.to_string()
-            };
+                let label = format_section_label(current_section);
+                let b_type = if section_type.is_empty() {
+                    "cycle".to_string()
+                } else {
+                    section_type.to_string()
+                };
 
-            keybinds.push(ModKeybind {
-                section: current_section.to_string(),
-                label: label.clone(),
-                key: section_key.to_string(),
-                binding_type: b_type.clone(),
-                variable: section_var.clone(),
-                values: section_vals.to_vec(),
-                ini_path: ini_path.to_string_lossy().to_string(),
-            });
+                keybinds.push(ModKeybind {
+                    section: current_section.to_string(),
+                    label: label.clone(),
+                    key: section_key.to_string(),
+                    binding_type: b_type.clone(),
+                    variable: section_var.clone(),
+                    values: section_vals.to_vec(),
+                    ini_path: ini_path.to_string_lossy().to_string(),
+                });
 
-            if !b_type.eq_ignore_ascii_case("hold") {
-                if let Some(var_name) = section_var {
-                    let mut possible = section_vals.to_vec();
-                    if b_type.eq_ignore_ascii_case("toggle") && possible.len() == 1 {
-                        if !possible.contains(&0) {
-                            possible.insert(0, 0);
+                if !b_type.eq_ignore_ascii_case("hold") {
+                    if let Some(var_name) = section_var {
+                        let mut possible = section_vals.to_vec();
+                        if b_type.eq_ignore_ascii_case("toggle") && possible.len() == 1 {
+                            if !possible.contains(&0) {
+                                possible.insert(0, 0);
+                            }
                         }
-                    }
-                    if possible.is_empty() {
-                        possible = vec![0, 1];
-                    }
+                        if possible.is_empty() {
+                            possible = vec![0, 1];
+                        }
 
-                    let entry = variables_map
-                        .entry(var_name.clone())
-                        .or_insert_with(|| ModVariableState {
-                            variable: var_name.clone(),
-                            label,
-                            current_value: possible.first().copied().unwrap_or(0),
-                            possible_values: Vec::new(),
-                            is_persisted: true,
+                        let entry = variables_map.entry(var_name.clone()).or_insert_with(|| {
+                            ModVariableState {
+                                variable: var_name.clone(),
+                                label,
+                                current_value: possible.first().copied().unwrap_or(0),
+                                possible_values: Vec::new(),
+                                is_persisted: true,
+                            }
                         });
-                    for v in &possible {
-                        if !entry.possible_values.contains(v) {
-                            entry.possible_values.push(*v);
+                        for v in &possible {
+                            if !entry.possible_values.contains(v) {
+                                entry.possible_values.push(*v);
+                            }
                         }
                     }
                 }
-            }
-        };
+            };
 
         for line in content.lines() {
             let clean = strip_comments(line);
