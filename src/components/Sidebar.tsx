@@ -155,9 +155,6 @@ export default function Sidebar({
               }
               rightSection={
                 <Group gap="2xs" wrap="nowrap">
-                  <Badge size="xs" radius="xl" variant="light" color="gray">
-                    {cat.mod_count}
-                  </Badge>
                   <Menu position="bottom-end" withinPortal radius="lg">
                     <Menu.Target>
                       <ActionIcon
@@ -193,6 +190,9 @@ export default function Sidebar({
                       </Menu.Item>
                     </Menu.Dropdown>
                   </Menu>
+                  <Badge size="xs" radius="xl" variant="light" color="gray">
+                    {cat.mod_count}
+                  </Badge>
                 </Group>
               }
             />
