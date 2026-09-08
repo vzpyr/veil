@@ -193,12 +193,6 @@ export default function ModCard({
                   </Menu.Item>
                 )}
                 <Menu.Item
-                  leftSection={<IconKeyboard size={14} />}
-                  onClick={() => onOpenKeybinds(mod)}
-                >
-                  Keybinds and toggles
-                </Menu.Item>
-                <Menu.Item
                   leftSection={<IconFolderSymlink size={14} />}
                   onClick={() => onMoveCategory(mod)}
                 >
