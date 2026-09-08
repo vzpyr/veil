@@ -1,8 +1,16 @@
-import { Badge, Button, Group, Modal, Paper, Stack, Text } from "@mantine/core";
+import {
+  Badge,
+  Button,
+  Drawer,
+  Group,
+  Paper,
+  Stack,
+  Text,
+} from "@mantine/core";
 import { IconAlertTriangle, IconCopy, IconRefresh } from "@tabler/icons-react";
 import { ModItem } from "../types";
 
-interface DuplicateModalProps {
+interface DuplicateDrawerProps {
   opened: boolean;
   onClose: () => void;
   modName: string;
@@ -10,17 +18,20 @@ interface DuplicateModalProps {
   onConfirm: (action: "replace" | "keep_both") => void;
 }
 
-export function DuplicateModal({
+export function DuplicateDrawer({
   opened,
   onClose,
   modName,
   existingMod,
   onConfirm,
-}: DuplicateModalProps) {
+}: DuplicateDrawerProps) {
   return (
-    <Modal
+    <Drawer
       opened={opened}
       onClose={onClose}
+      position="right"
+      size="md"
+      radius="lg"
       title={
         <Group gap="xs">
           <IconAlertTriangle size={20} color="var(--color-status-warning)" />
@@ -29,10 +40,8 @@ export function DuplicateModal({
           </Text>
         </Group>
       }
-      radius="lg"
-      size="md"
     >
-      <Stack gap="md">
+      <Stack gap="md" h="100%">
         <Text size="sm">
           A mod named{" "}
           <Text span fw={700}>
@@ -64,9 +73,8 @@ export function DuplicateModal({
         <Stack gap="xs">
           <Button
             justify="flex-start"
-            variant="light"
-            color="gray"
-            radius="lg"
+            variant="default"
+            radius="xl"
             h="auto"
             py="xs"
             leftSection={<IconRefresh size={18} />}
@@ -89,7 +97,7 @@ export function DuplicateModal({
           <Button
             justify="flex-start"
             variant="default"
-            radius="lg"
+            radius="xl"
             h="auto"
             py="xs"
             leftSection={<IconCopy size={18} />}
@@ -109,18 +117,12 @@ export function DuplicateModal({
           </Button>
         </Stack>
 
-        <Group justify="flex-end" mt="xs">
-          <Button
-            variant="subtle"
-            color="gray"
-            size="xs"
-            radius="xl"
-            onClick={onClose}
-          >
+        <Group justify="flex-end" mt="auto">
+          <Button variant="default" size="xs" radius="xl" onClick={onClose}>
             Cancel
           </Button>
         </Group>
       </Stack>
-    </Modal>
+    </Drawer>
   );
 }

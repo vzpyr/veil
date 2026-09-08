@@ -567,7 +567,7 @@ export default function KeybindDrawer({
                               <>
                                 <KeyDisplay keyStr={k.key} />
                                 <Button
-                                  variant="light"
+                                  variant="default"
                                   size="xs"
                                   radius="xl"
                                   onClick={() => {

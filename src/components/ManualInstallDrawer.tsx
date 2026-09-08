@@ -1,7 +1,7 @@
 import {
   Button,
+  Drawer,
   Group,
-  Modal,
   Select,
   Stack,
   Text,
@@ -11,7 +11,7 @@ import { IconPackageImport } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { CategoryItem } from "../types";
 
-interface ManualInstallModalProps {
+interface ManualInstallDrawerProps {
   opened: boolean;
   onClose: () => void;
   archivePath: string;
@@ -24,14 +24,14 @@ interface ManualInstallModalProps {
   isInstalling: boolean;
 }
 
-export default function ManualInstallModal({
+export default function ManualInstallDrawer({
   opened,
   onClose,
   archivePath,
   categories,
   onInstall,
   isInstalling,
-}: ManualInstallModalProps) {
+}: ManualInstallDrawerProps) {
   const [modName, setModName] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(
     "__root__",
@@ -69,9 +69,11 @@ export default function ManualInstallModal({
   };
 
   return (
-    <Modal
+    <Drawer
       opened={opened}
       onClose={onClose}
+      position="right"
+      size="md"
       radius="lg"
       title={
         <Group gap="xs">
@@ -82,11 +84,11 @@ export default function ManualInstallModal({
         </Group>
       }
     >
-      <Stack gap="md">
+      <Stack gap="md" h="100%">
         <TextInput
           label="Mod Name"
           description="Folder name where the mod files will be placed"
-          radius="md"
+          radius="xl"
           value={modName}
           onChange={(e) => setModName(e.currentTarget.value)}
           required
@@ -95,7 +97,7 @@ export default function ManualInstallModal({
         <Select
           label="Category"
           description="Target category folder inside mods directory"
-          radius="md"
+          radius="xl"
           data={categoryOptions}
           value={selectedCategory}
           onChange={setSelectedCategory}
@@ -105,14 +107,14 @@ export default function ManualInstallModal({
         <Select
           label="Duplicate Handling"
           description="Action to take if a folder with this name already exists"
-          radius="md"
+          radius="xl"
           data={duplicateOptions}
           value={duplicateAction}
           onChange={(val) => setDuplicateAction(val || "replace")}
           allowDeselect={false}
         />
 
-        <Group justify="flex-end" gap="xs" mt="sm">
+        <Group justify="flex-end" gap="xs" mt="auto">
           <Button
             variant="default"
             size="xs"
@@ -123,6 +125,7 @@ export default function ManualInstallModal({
             Cancel
           </Button>
           <Button
+            variant="filled"
             size="xs"
             radius="xl"
             onClick={handleConfirm}
@@ -133,6 +136,6 @@ export default function ManualInstallModal({
           </Button>
         </Group>
       </Stack>
-    </Modal>
+    </Drawer>
   );
 }

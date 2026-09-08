@@ -74,8 +74,8 @@ export default function ModCard({
           position: "relative",
           aspectRatio: "16 / 9",
           backgroundColor: "var(--color-bg-surface-2)",
-          borderTopLeftRadius: "var(--radius-md)",
-          borderTopRightRadius: "var(--radius-md)",
+          borderTopLeftRadius: "var(--radius-lg)",
+          borderTopRightRadius: "var(--radius-lg)",
           overflow: "hidden",
         }}
       >
@@ -175,7 +175,7 @@ export default function ModCard({
               </ActionIcon>
             </Tooltip>
 
-            <Menu position="bottom-end" shadow="md" width={190}>
+            <Menu position="bottom-end" shadow="md" width={190} radius="lg">
               <Menu.Target>
                 <ActionIcon variant="subtle" size="sm" radius="xl" color="gray">
                   <IconDotsVertical size={16} />
@@ -184,6 +184,7 @@ export default function ModCard({
               <Menu.Dropdown>
                 {updateInfo?.available && (
                   <Menu.Item
+                    className="menu-item-success"
                     leftSection={<IconArrowBadgeUp size={14} />}
                     color="green"
                     onClick={() => onOpenUpdate(mod, updateInfo)}
@@ -226,6 +227,7 @@ export default function ModCard({
                 <Menu.Divider />
                 <Menu.Item
                   color="red"
+                  className="menu-item-danger"
                   leftSection={<IconTrash size={14} />}
                   onClick={() => onDelete(mod)}
                 >

@@ -1,8 +1,8 @@
 import {
   Button,
   Checkbox,
+  Drawer,
   Group,
-  Modal,
   Select,
   Stack,
   Text,
@@ -12,12 +12,12 @@ import { IconFolder } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { CategoryItem, ModItem } from "../types";
 
-export type CategoryModalMode = "create" | "move" | "rename" | "delete";
+export type CategoryDrawerMode = "create" | "move" | "rename" | "delete";
 
-interface CategoryModalProps {
+interface CategoryDrawerProps {
   opened: boolean;
   onClose: () => void;
-  mode: CategoryModalMode;
+  mode: CategoryDrawerMode;
   categories: CategoryItem[];
   modToMove?: ModItem | null;
   categoryName?: string | null;
@@ -27,7 +27,7 @@ interface CategoryModalProps {
   onDeleteCategory: (categoryName: string, deleteMods: boolean) => void;
 }
 
-export default function CategoryModal({
+export default function CategoryDrawer({
   opened,
   onClose,
   mode,
@@ -38,7 +38,7 @@ export default function CategoryModal({
   onCreateCategory,
   onRenameCategory,
   onDeleteCategory,
-}: CategoryModalProps) {
+}: CategoryDrawerProps) {
   const [nameInput, setNameInput] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(
     modToMove?.category || "__root__",
@@ -105,9 +105,11 @@ export default function CategoryModal({
   };
 
   return (
-    <Modal
+    <Drawer
       opened={opened}
       onClose={onClose}
+      position="right"
+      size="md"
       radius="lg"
       title={
         <Group gap="xs">
@@ -118,12 +120,12 @@ export default function CategoryModal({
         </Group>
       }
     >
-      <Stack gap="md">
+      <Stack gap="md" h="100%">
         {mode === "move" && (
           <Select
             label="Destination Category"
             placeholder="Select a category"
-            radius="md"
+            radius="xl"
             data={categoryOptions}
             value={selectedCategory}
             onChange={setSelectedCategory}
@@ -133,9 +135,8 @@ export default function CategoryModal({
 
         {(mode === "create" || mode === "rename") && (
           <TextInput
-            label="Category Name"
             placeholder="Enter category name (for example Jane Doe)"
-            radius="md"
+            radius="xl"
             value={nameInput}
             onChange={(e) => setNameInput(e.currentTarget.value)}
             onKeyDown={(e) => {
@@ -170,11 +171,12 @@ export default function CategoryModal({
           </Stack>
         )}
 
-        <Group justify="flex-end" gap="xs">
+        <Group justify="flex-end" gap="xs" mt="auto">
           <Button variant="default" size="xs" radius="xl" onClick={onClose}>
             Cancel
           </Button>
           <Button
+            variant="filled"
             size="xs"
             radius="xl"
             color={mode === "delete" ? "red" : undefined}
@@ -190,6 +192,6 @@ export default function CategoryModal({
           </Button>
         </Group>
       </Stack>
-    </Modal>
+    </Drawer>
   );
 }

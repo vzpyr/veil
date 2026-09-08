@@ -82,7 +82,7 @@ export default function SettingsView({
                 <Button
                   size="xs"
                   radius="xl"
-                  variant="light"
+                  variant="default"
                   leftSection={<IconFolderOpen size={14} />}
                   onClick={handleOpenFolder}
                 >
@@ -92,7 +92,7 @@ export default function SettingsView({
               <Button
                 size="xs"
                 radius="xl"
-                variant="light"
+                variant="default"
                 onClick={handleBrowseFolder}
               >
                 Browse

@@ -73,7 +73,7 @@ export default function ModGrid({
             mods with Veil.
           </Text>
           <Button
-            variant="light"
+            variant="filled"
             size="sm"
             leftSection={<IconSettings size={16} />}
             onClick={onOpenSettings}

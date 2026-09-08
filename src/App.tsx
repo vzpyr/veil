@@ -8,15 +8,15 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { GbModFile } from "./api/gamebanana";
 import { checkModsUpdates } from "./api/updater";
 import GbBrowserView from "./components/browser/GbBrowserView";
-import GbModModal from "./components/browser/GbModModal";
-import CategoryModal from "./components/CategoryModal";
+import GbModDrawer from "./components/browser/GbModDrawer";
+import CategoryDrawer from "./components/CategoryDrawer";
 import ConflictDrawer from "./components/ConflictDrawer";
 import { DownloadQueueDrawer } from "./components/DownloadQueueDrawer";
-import { DuplicateModal } from "./components/DuplicateModal";
+import { DuplicateDrawer } from "./components/DuplicateDrawer";
 import Header from "./components/Header";
 import KeybindDrawer from "./components/KeybindDrawer";
-import LinkGameBananaModal from "./components/LinkGameBananaModal";
-import ManualInstallModal from "./components/ManualInstallModal";
+import LinkGameBananaDrawer from "./components/LinkGameBananaDrawer";
+import ManualInstallDrawer from "./components/ManualInstallDrawer";
 import ModGrid from "./components/ModGrid";
 import SettingsView from "./components/SettingsView";
 import Sidebar from "./components/Sidebar";
@@ -903,6 +903,12 @@ export default function App() {
                 })
               }
               onOpenManualInstall={handleOpenManualInstall}
+              onOpenModsFolder={() => {
+                if (modsDir) {
+                  handleReveal(modsDir);
+                }
+              }}
+              hasModsDir={Boolean(modsDir)}
             />
 
             <Box
@@ -1007,7 +1013,7 @@ export default function App() {
       />
 
       {duplicateModalState && (
-        <DuplicateModal
+        <DuplicateDrawer
           opened={duplicateModalState.opened}
           onClose={() => setDuplicateModalState(null)}
           modName={duplicateModalState.modName}
@@ -1028,7 +1034,7 @@ export default function App() {
         />
       )}
 
-      <CategoryModal
+      <CategoryDrawer
         opened={categoryModal.open}
         onClose={() =>
           setCategoryModal({
@@ -1048,7 +1054,7 @@ export default function App() {
         onDeleteCategory={handleDeleteCategory}
       />
 
-      <ManualInstallModal
+      <ManualInstallDrawer
         opened={manualInstallModalOpen}
         onClose={() => setManualInstallModalOpen(false)}
         archivePath={manualInstallArchivePath}
@@ -1058,7 +1064,7 @@ export default function App() {
       />
 
       {selectedGbModId && (
-        <GbModModal
+        <GbModDrawer
           modId={selectedGbModId}
           opened={Boolean(selectedGbModId)}
           onClose={() => setSelectedGbModId(null)}
@@ -1067,7 +1073,7 @@ export default function App() {
         />
       )}
 
-      <LinkGameBananaModal
+      <LinkGameBananaDrawer
         opened={Boolean(linkingMod)}
         onClose={() => setLinkingMod(null)}
         mod={linkingMod}

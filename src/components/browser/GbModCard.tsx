@@ -35,8 +35,8 @@ export default function GbModCard({ item, onSelect }: GbModCardProps) {
           position: "relative",
           aspectRatio: "16 / 9",
           backgroundColor: "var(--color-bg-surface-2)",
-          borderTopLeftRadius: "var(--radius-md)",
-          borderTopRightRadius: "var(--radius-md)",
+          borderTopLeftRadius: "var(--radius-lg)",
+          borderTopRightRadius: "var(--radius-lg)",
           overflow: "hidden",
         }}
       >

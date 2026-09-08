@@ -80,6 +80,7 @@ const veilInfo: MantineColorsTuple = [
 
 export const theme = createTheme({
   primaryColor: "gray",
+  primaryShade: { light: 6, dark: 2 },
   colors: {
     dark: veilDark,
     gray: veilGray,
@@ -151,12 +152,12 @@ export const theme = createTheme({
     },
     TextInput: {
       defaultProps: {
-        radius: "md",
+        radius: "xl",
       },
     },
     Select: {
       defaultProps: {
-        radius: "md",
+        radius: "xl",
       },
     },
     Card: {
@@ -227,9 +228,36 @@ export const theme = createTheme({
         radius: "xl",
       },
     },
+    Menu: {
+      defaultProps: {
+        radius: "lg",
+        shadow: "md",
+      },
+    },
+    Alert: {
+      defaultProps: {
+        radius: "md",
+      },
+    },
     Tooltip: {
       defaultProps: {
-        radius: "sm",
+        radius: "md",
+      },
+    },
+    Notification: {
+      defaultProps: {
+        radius: "lg",
+        withBorder: true,
+      },
+    },
+    Progress: {
+      defaultProps: {
+        radius: "xl",
+      },
+    },
+    Checkbox: {
+      defaultProps: {
+        radius: "xs",
       },
     },
     LoadingOverlay: {

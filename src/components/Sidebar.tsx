@@ -18,6 +18,7 @@ import {
   IconEdit,
   IconFolder,
   IconFolderFilled,
+  IconFolderOpen,
   IconFolderPlus,
   IconPackageImport,
   IconSearch,
@@ -38,6 +39,8 @@ interface SidebarProps {
   onRenameCategory: (categoryName: string) => void;
   onDeleteCategory: (categoryName: string) => void;
   onOpenManualInstall: () => void;
+  onOpenModsFolder: () => void;
+  hasModsDir: boolean;
 }
 
 export default function Sidebar({
@@ -52,6 +55,8 @@ export default function Sidebar({
   onRenameCategory,
   onDeleteCategory,
   onOpenManualInstall,
+  onOpenModsFolder,
+  hasModsDir,
 }: SidebarProps) {
   return (
     <Stack
@@ -153,7 +158,7 @@ export default function Sidebar({
                   <Badge size="xs" radius="xl" variant="light" color="gray">
                     {cat.mod_count}
                   </Badge>
-                  <Menu position="bottom-end" withinPortal>
+                  <Menu position="bottom-end" withinPortal radius="lg">
                     <Menu.Target>
                       <ActionIcon
                         size="xs"
@@ -176,6 +181,7 @@ export default function Sidebar({
                       </Menu.Item>
                       <Menu.Item
                         color="red"
+                        className="menu-item-danger"
                         leftSection={<IconTrash size={14} />}
                         onClick={(e) => {
                           e.stopPropagation();
@@ -200,7 +206,7 @@ export default function Sidebar({
         <Stack gap="xs">
           <Button
             fullWidth
-            variant="light"
+            variant="default"
             size="xs"
             radius="xl"
             leftSection={<IconFolderPlus size={14} />}
@@ -210,6 +216,18 @@ export default function Sidebar({
           </Button>
           <Button
             fullWidth
+            variant="default"
+            size="xs"
+            radius="xl"
+            leftSection={<IconFolderOpen size={14} />}
+            onClick={onOpenModsFolder}
+            disabled={!hasModsDir}
+          >
+            Open Mods Folder
+          </Button>
+          <Button
+            fullWidth
+            variant="default"
             size="xs"
             radius="xl"
             leftSection={<IconPackageImport size={14} />}

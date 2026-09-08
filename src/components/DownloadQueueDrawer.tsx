@@ -73,9 +73,8 @@ export function DownloadQueueDrawer({
           </Group>
           {completedCount > 0 && (
             <Button
-              variant="subtle"
-              color="gray"
-              size="2xs"
+              variant="default"
+              size="xs"
               radius="xl"
               leftSection={<IconTrash size={12} />}
               onClick={onClearCompleted}
@@ -126,14 +125,14 @@ export function DownloadQueueDrawer({
                             src={item.previewUrl}
                             w="var(--size-thumb-sm)"
                             h="var(--size-thumb-sm)"
-                            radius="sm"
+                            radius="md"
                             fit="cover"
                           />
                         ) : (
                           <Paper
                             w="var(--size-thumb-sm)"
                             h="var(--size-thumb-sm)"
-                            radius="sm"
+                            radius="md"
                             style={{
                               backgroundColor: "var(--color-bg-surface-3)",
                               display: "flex",

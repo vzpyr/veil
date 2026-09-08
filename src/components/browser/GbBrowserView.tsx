@@ -31,7 +31,7 @@ import {
 } from "../../api/gamebanana";
 import { DownloadQueueItem, GameDefinition } from "../../types";
 import GbModCard from "./GbModCard";
-import GbModModal from "./GbModModal";
+import GbModDrawer from "./GbModDrawer";
 
 interface GbBrowserViewProps {
   activeGame: GameDefinition;
@@ -226,7 +226,7 @@ export default function GbBrowserView({
           <Button
             size="xs"
             radius="xl"
-            variant="light"
+            variant="default"
             onClick={handleSearchSubmit}
           >
             Search
@@ -325,7 +325,7 @@ export default function GbBrowserView({
         </Button>
       </Group>
 
-      <GbModModal
+      <GbModDrawer
         modId={selectedModId}
         opened={selectedModId !== null}
         onClose={() => setSelectedModId(null)}

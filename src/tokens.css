@@ -35,6 +35,28 @@
   --color-text-muted: #6b7382;
   --color-text-inverse: #0e1116;
 
+  --color-btn-default-bg: #222731;
+  --color-btn-default-hover: #2b323f;
+  --color-btn-default-active: #1c212a;
+  --color-btn-default-border: #333947;
+  --color-btn-default-border-hover: #4b5362;
+  --color-btn-default-text: #f3f5f8;
+
+  --color-btn-primary-bg: #e6e9ee;
+  --color-btn-primary-hover: #ffffff;
+  --color-btn-primary-active: #d2d6de;
+  --color-btn-primary-border: #e6e9ee;
+  --color-btn-primary-text: #0e1116;
+
+  --color-btn-danger-bg: #ef4444;
+  --color-btn-danger-hover: #dc2626;
+  --color-btn-danger-active: #b91c1c;
+  --color-btn-danger-border: #ef4444;
+  --color-btn-danger-text: #ffffff;
+  --color-btn-danger-subtle-bg: rgba(239, 68, 68, 0.12);
+  --color-btn-danger-subtle-border: rgba(239, 68, 68, 0.35);
+  --color-btn-danger-subtle-hover: rgba(239, 68, 68, 0.22);
+
   --space-3xs: 0.125rem;
   --space-2xs: 0.25rem;
   --space-xs: 0.5rem;
@@ -210,15 +232,255 @@ button[role="tab"][aria-selected="true"] .mantine-Tabs-tabSection,
   color: var(--color-text-inverse) !important;
 }
 
+.mantine-Button-root {
+  font-family: var(--font-family-sans);
+  font-weight: 500;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast),
+    opacity var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.mantine-Button-root:active:not(:disabled):not([data-disabled]) {
+  transform: translateY(1px);
+}
+
+.mantine-Button-root[data-variant="default"] {
+  background-color: var(--color-btn-default-bg) !important;
+  border: 1px solid var(--color-btn-default-border) !important;
+  color: var(--color-text-secondary) !important;
+}
+
+.mantine-Button-root[data-variant="default"]:hover:not(:disabled):not(
+    [data-disabled]
+  ) {
+  background-color: var(--color-btn-default-hover) !important;
+  border-color: var(--color-btn-default-border-hover) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.mantine-Button-root[data-variant="default"]:active:not(:disabled):not(
+    [data-disabled]
+  ) {
+  background-color: var(--color-btn-default-active) !important;
+}
+
+.mantine-Button-root[data-variant="default"][data-color="red"] {
+  background-color: var(--color-btn-danger-subtle-bg) !important;
+  border: 1px solid var(--color-btn-danger-subtle-border) !important;
+  color: var(--color-status-error) !important;
+}
+
+.mantine-Button-root[data-variant="default"][data-color="red"]:hover:not(
+    :disabled
+  ):not([data-disabled]) {
+  background-color: var(--color-btn-danger-subtle-hover) !important;
+  border-color: var(--color-status-error) !important;
+  color: var(--color-status-error) !important;
+}
+
+.mantine-Button-root[data-variant="default"] .mantine-Button-label,
+.mantine-Button-root[data-variant="default"] svg,
+.mantine-Button-root[data-variant="default"] .mantine-Button-section {
+  color: var(--color-text-secondary) !important;
+  transition: color var(--transition-fast);
+}
+
+.mantine-Button-root[data-variant="default"]:hover:not(:disabled):not(
+    [data-disabled]
+  )
+  .mantine-Button-label,
+.mantine-Button-root[data-variant="default"]:hover:not(:disabled):not(
+    [data-disabled]
+  )
+  svg,
+.mantine-Button-root[data-variant="default"]:hover:not(:disabled):not(
+    [data-disabled]
+  )
+  .mantine-Button-section {
+  color: var(--color-text-primary) !important;
+}
+
+.mantine-Button-root[data-variant="filled"]:not([data-color="red"]):not(
+    [data-color="green"]
+  ):not([data-color="yellow"]):not([data-color="orange"]) {
+  background-color: var(--color-btn-primary-bg) !important;
+  border: 1px solid var(--color-btn-primary-border) !important;
+  color: var(--color-btn-primary-text) !important;
+  font-weight: 600;
+}
+
+.mantine-Button-root[data-variant="filled"]:not([data-color="red"]):not(
+    [data-color="green"]
+  ):not([data-color="yellow"]):not([data-color="orange"]):hover:not(
+    :disabled
+  ):not([data-disabled]) {
+  background-color: var(--color-btn-primary-hover) !important;
+  border-color: var(--color-btn-primary-hover) !important;
+  color: var(--color-btn-primary-text) !important;
+}
+
+.mantine-Button-root[data-variant="filled"]:not([data-color="red"]):not(
+    [data-color="green"]
+  ):not([data-color="yellow"]):not([data-color="orange"]):active:not(
+    :disabled
+  ):not([data-disabled]) {
+  background-color: var(--color-btn-primary-active) !important;
+}
+
+.mantine-Button-root[data-variant="filled"]:not([data-color="red"]):not(
+    [data-color="green"]
+  ):not([data-color="yellow"]):not([data-color="orange"])
+  svg,
+.mantine-Button-root[data-variant="filled"]:not([data-color="red"]):not(
+    [data-color="green"]
+  ):not([data-color="yellow"]):not([data-color="orange"])
+  .mantine-Button-section {
+  color: var(--color-btn-primary-text) !important;
+}
+
+.mantine-Button-root[data-variant="filled"][data-color="red"] {
+  background-color: var(--color-btn-danger-bg) !important;
+  border: 1px solid var(--color-btn-danger-border) !important;
+  color: var(--color-btn-danger-text) !important;
+  font-weight: 600;
+}
+
+.mantine-Button-root[data-variant="filled"][data-color="red"]:hover:not(
+    :disabled
+  ):not([data-disabled]) {
+  background-color: var(--color-btn-danger-hover) !important;
+  border-color: var(--color-btn-danger-hover) !important;
+  color: var(--color-btn-danger-text) !important;
+}
+
+.mantine-Button-root[data-variant="filled"][data-color="red"]:active:not(
+    :disabled
+  ):not([data-disabled]) {
+  background-color: var(--color-btn-danger-active) !important;
+}
+
+.mantine-Button-root[data-variant="light"][data-color="orange"] {
+  background-color: var(--color-status-warning-surface) !important;
+  border: 1px solid rgba(245, 158, 11, 0.4) !important;
+  color: var(--color-status-warning) !important;
+}
+
+.mantine-Button-root[data-variant="light"][data-color="red"] {
+  background-color: var(--color-status-error-surface) !important;
+  border: 1px solid rgba(239, 68, 68, 0.4) !important;
+  color: var(--color-status-error) !important;
+}
+
+.mantine-Button-root[data-variant="light"][data-color="green"] {
+  background-color: var(--color-status-success-surface) !important;
+  border: 1px solid rgba(16, 185, 129, 0.4) !important;
+  color: var(--color-status-success) !important;
+}
+
+.mantine-Button-root[data-variant="light"][data-color="yellow"] {
+  background-color: var(--color-status-warning-surface) !important;
+  border: 1px solid rgba(245, 158, 11, 0.4) !important;
+  color: var(--color-status-warning) !important;
+}
+
+.mantine-Button-root:disabled,
+.mantine-Button-root[data-disabled] {
+  opacity: 0.45 !important;
+  cursor: not-allowed !important;
+  pointer-events: none;
+}
+
+.mantine-ActionIcon-root[data-variant="default"] {
+  background-color: var(--color-btn-default-bg) !important;
+  border: 1px solid var(--color-btn-default-border) !important;
+  color: var(--color-btn-default-text) !important;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.mantine-ActionIcon-root[data-variant="default"]:hover:not(:disabled):not(
+    [data-disabled]
+  ) {
+  background-color: var(--color-btn-default-hover) !important;
+  border-color: var(--color-btn-default-border-hover) !important;
+  color: var(--color-btn-default-text) !important;
+}
+
+.mantine-ActionIcon-root[data-variant="default"]:active:not(:disabled):not(
+    [data-disabled]
+  ) {
+  background-color: var(--color-btn-default-active) !important;
+}
+
+.mantine-ActionIcon-root[data-variant="subtle"] {
+  color: var(--color-text-secondary) !important;
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.mantine-ActionIcon-root[data-variant="subtle"]:hover:not(:disabled):not(
+    [data-disabled]
+  ) {
+  background-color: var(--color-surface-hover) !important;
+  color: var(--color-text-primary) !important;
+}
+
 .mantine-NavLink-root {
-  border-radius: var(--radius-pill);
-  padding-top: var(--space-2xs);
-  padding-bottom: var(--space-2xs);
+  border-radius: var(--radius-pill) !important;
+  padding-top: var(--space-2xs) !important;
+  padding-bottom: var(--space-2xs) !important;
+  color: var(--color-text-secondary) !important;
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.mantine-NavLink-root:hover:not([data-active]) {
+  background-color: var(--color-surface-hover) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.mantine-NavLink-root[data-active] {
+  background-color: var(--color-bg-surface-3) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.mantine-NavLink-root[data-active] .mantine-NavLink-label {
+  color: var(--color-text-primary) !important;
+  font-weight: 600 !important;
+}
+
+.mantine-NavLink-root[data-active] .mantine-NavLink-leftSection {
+  color: var(--color-accent-primary) !important;
 }
 
 .mantine-NavLink-label {
-  font-size: var(--font-size-xs);
-  font-weight: 500;
+  font-size: var(--font-size-xs) !important;
+  font-weight: 500 !important;
+}
+
+.mantine-Input-input {
+  background-color: var(--color-bg-surface-2) !important;
+  border: 1px solid var(--color-border-subtle) !important;
+  color: var(--color-text-primary) !important;
+  font-family: var(--font-family-sans);
+  transition:
+    border-color var(--transition-fast),
+    background-color var(--transition-fast);
+}
+
+.mantine-Input-input:hover:not(:focus):not(:disabled) {
+  border-color: var(--color-border-strong) !important;
+}
+
+.mantine-Input-input::placeholder {
+  color: var(--color-text-muted) !important;
 }
 
 .mantine-Input-input:focus,
@@ -230,11 +492,11 @@ button[role="tab"][aria-selected="true"] .mantine-Tabs-tabSection,
 .mantine-Combobox-dropdown {
   background-color: var(--color-bg-surface-2) !important;
   border: 1px solid var(--color-border-strong) !important;
-  border-radius: var(--radius-md) !important;
+  border-radius: var(--radius-lg) !important;
 }
 
 .mantine-Combobox-option {
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   font-size: var(--font-size-xs);
   transition:
     background-color var(--transition-fast),
@@ -261,8 +523,192 @@ button[role="tab"][aria-selected="true"] .mantine-Tabs-tabSection,
   color: var(--color-text-inverse) !important;
 }
 
+.mantine-Menu-dropdown {
+  background-color: var(--color-bg-surface-2) !important;
+  border: 1px solid var(--color-border-strong) !important;
+  border-radius: var(--radius-lg) !important;
+  padding: var(--space-2xs) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+.mantine-Menu-item {
+  border-radius: var(--radius-md) !important;
+  font-size: var(--font-size-xs) !important;
+  font-weight: 500 !important;
+  line-height: var(--line-height-normal) !important;
+  padding: var(--space-xs) var(--space-sm) !important;
+  color: var(--color-text-secondary) !important;
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.mantine-Menu-item .mantine-Menu-itemLabel {
+  font-size: var(--font-size-xs) !important;
+  font-weight: 500 !important;
+  line-height: var(--line-height-normal) !important;
+}
+
+.mantine-Menu-item:hover:not(:disabled):not([data-disabled]),
+.mantine-Menu-item[data-hovered]:not(:disabled):not([data-disabled]) {
+  background-color: var(--color-bg-surface-3) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.mantine-Menu-item:hover:not(:disabled):not([data-disabled]) svg,
+.mantine-Menu-item:hover:not(:disabled):not([data-disabled])
+  .mantine-Menu-itemSection,
+.mantine-Menu-item[data-hovered]:not(:disabled):not([data-disabled]) svg,
+.mantine-Menu-item[data-hovered]:not(:disabled):not([data-disabled])
+  .mantine-Menu-itemSection {
+  color: var(--color-text-primary) !important;
+}
+
+.mantine-Menu-item.menu-item-danger,
+.mantine-Menu-item[style*="red"],
+.mantine-Menu-item[data-color="red"] {
+  color: var(--color-status-error) !important;
+}
+
+.mantine-Menu-item.menu-item-danger svg,
+.mantine-Menu-item.menu-item-danger .mantine-Menu-itemSection,
+.mantine-Menu-item[style*="red"] svg,
+.mantine-Menu-item[style*="red"] .mantine-Menu-itemSection,
+.mantine-Menu-item[data-color="red"] svg,
+.mantine-Menu-item[data-color="red"] .mantine-Menu-itemSection {
+  color: var(--color-status-error) !important;
+}
+
+.mantine-Menu-item.menu-item-danger:hover:not(:disabled):not([data-disabled]),
+.mantine-Menu-item.menu-item-danger[data-hovered]:not(:disabled):not(
+    [data-disabled]
+  ),
+.mantine-Menu-item[style*="red"]:hover:not(:disabled):not([data-disabled]),
+.mantine-Menu-item[style*="red"][data-hovered]:not(:disabled):not(
+    [data-disabled]
+  ),
+.mantine-Menu-item[data-color="red"]:hover:not(:disabled):not([data-disabled]),
+.mantine-Menu-item[data-color="red"][data-hovered]:not(:disabled):not(
+    [data-disabled]
+  ) {
+  background-color: var(--color-status-error-surface) !important;
+  color: var(--color-btn-danger-text) !important;
+}
+
+.mantine-Menu-item.menu-item-danger:hover:not(:disabled):not([data-disabled])
+  svg,
+.mantine-Menu-item.menu-item-danger:hover:not(:disabled):not([data-disabled])
+  .mantine-Menu-itemSection,
+.mantine-Menu-item.menu-item-danger[data-hovered]:not(:disabled):not(
+    [data-disabled]
+  )
+  svg,
+.mantine-Menu-item.menu-item-danger[data-hovered]:not(:disabled):not(
+    [data-disabled]
+  )
+  .mantine-Menu-itemSection,
+.mantine-Menu-item[style*="red"]:hover:not(:disabled):not([data-disabled]) svg,
+.mantine-Menu-item[style*="red"]:hover:not(:disabled):not([data-disabled])
+  .mantine-Menu-itemSection,
+.mantine-Menu-item[style*="red"][data-hovered]:not(:disabled):not(
+    [data-disabled]
+  )
+  svg,
+.mantine-Menu-item[style*="red"][data-hovered]:not(:disabled):not(
+    [data-disabled]
+  )
+  .mantine-Menu-itemSection,
+.mantine-Menu-item[data-color="red"]:hover:not(:disabled):not([data-disabled])
+  svg,
+.mantine-Menu-item[data-color="red"]:hover:not(:disabled):not([data-disabled])
+  .mantine-Menu-itemSection,
+.mantine-Menu-item[data-color="red"][data-hovered]:not(:disabled):not(
+    [data-disabled]
+  )
+  svg,
+.mantine-Menu-item[data-color="red"][data-hovered]:not(:disabled):not(
+    [data-disabled]
+  )
+  .mantine-Menu-itemSection {
+  color: var(--color-btn-danger-text) !important;
+}
+
+.mantine-Menu-item.menu-item-success,
+.mantine-Menu-item[style*="green"],
+.mantine-Menu-item[data-color="green"] {
+  color: var(--color-status-success) !important;
+}
+
+.mantine-Menu-item.menu-item-success svg,
+.mantine-Menu-item.menu-item-success .mantine-Menu-itemSection,
+.mantine-Menu-item[style*="green"] svg,
+.mantine-Menu-item[style*="green"] .mantine-Menu-itemSection,
+.mantine-Menu-item[data-color="green"] svg,
+.mantine-Menu-item[data-color="green"] .mantine-Menu-itemSection {
+  color: var(--color-status-success) !important;
+}
+
+.mantine-Menu-item.menu-item-success:hover:not(:disabled):not([data-disabled]),
+.mantine-Menu-item.menu-item-success[data-hovered]:not(:disabled):not(
+    [data-disabled]
+  ),
+.mantine-Menu-item[style*="green"]:hover:not(:disabled):not([data-disabled]),
+.mantine-Menu-item[style*="green"][data-hovered]:not(:disabled):not(
+    [data-disabled]
+  ),
+.mantine-Menu-item[data-color="green"]:hover:not(:disabled):not(
+    [data-disabled]
+  ),
+.mantine-Menu-item[data-color="green"][data-hovered]:not(:disabled):not(
+    [data-disabled]
+  ) {
+  background-color: var(--color-status-success-surface) !important;
+  color: var(--color-status-success) !important;
+}
+
+.mantine-Menu-divider {
+  border-top-color: var(--color-border-subtle) !important;
+  margin: var(--space-2xs) 0 !important;
+}
+
+.mantine-Combobox-option[data-combobox-selected] svg {
+  color: var(--color-text-inverse) !important;
+}
+
+.mantine-SegmentedControl-root {
+  background-color: var(--color-bg-surface-2) !important;
+  border: 1px solid var(--color-border-subtle) !important;
+  padding: var(--space-3xs) !important;
+}
+
 .mantine-SegmentedControl-control::before {
   display: none !important;
+}
+
+.mantine-SegmentedControl-indicator {
+  background-color: var(--color-accent-primary) !important;
+  border-radius: var(--radius-pill) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+.mantine-SegmentedControl-label {
+  color: var(--color-text-secondary) !important;
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-xs) !important;
+  font-weight: 600 !important;
+  transition: color var(--transition-fast);
+}
+
+.mantine-SegmentedControl-label:hover {
+  color: var(--color-text-primary) !important;
+}
+
+.mantine-SegmentedControl-label[data-active] {
+  color: var(--color-text-inverse) !important;
+}
+
+.mantine-SegmentedControl-label[data-active] * {
+  color: var(--color-text-inverse) !important;
 }
 
 .mantine-Switch-root,
@@ -389,4 +835,235 @@ button[role="tab"][aria-selected="true"] .mantine-Tabs-tabSection,
   padding-left: var(--space-sm);
   color: var(--color-text-muted);
   margin: var(--space-xs) 0;
+}
+
+.mantine-Badge-root {
+  font-family: var(--font-family-sans);
+  font-weight: 600;
+  text-transform: none !important;
+  letter-spacing: 0.01em;
+}
+
+.mantine-Badge-root[data-variant="filled"][data-color="dark"] {
+  background-color: rgba(14, 17, 22, 0.85) !important;
+  color: var(--color-text-primary) !important;
+  border: 1px solid var(--color-border-strong) !important;
+  backdrop-filter: blur(4px);
+}
+
+.mantine-Badge-root[data-variant="outline"][data-color="gray"] {
+  border-color: var(--color-border-strong) !important;
+  color: var(--color-text-secondary) !important;
+}
+
+.mantine-Badge-root[data-variant="light"][data-color="gray"] {
+  background-color: var(--color-bg-surface-3) !important;
+  color: var(--color-text-secondary) !important;
+}
+
+.mantine-Notification-root {
+  background-color: var(--color-bg-surface-2) !important;
+  border: 1px solid var(--color-border-strong) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-lg) !important;
+  padding: var(--space-sm) var(--space-md) !important;
+  font-family: var(--font-family-sans);
+}
+
+.mantine-Notification-root::before {
+  border-top-left-radius: var(--radius-lg) !important;
+  border-bottom-left-radius: var(--radius-lg) !important;
+}
+
+.mantine-Notification-title {
+  color: var(--color-text-primary) !important;
+  font-family: var(--font-family-sans);
+  font-weight: 600 !important;
+  font-size: var(--font-size-sm) !important;
+  margin-bottom: var(--space-3xs) !important;
+}
+
+.mantine-Notification-description {
+  color: var(--color-text-secondary) !important;
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-xs) !important;
+  line-height: var(--line-height-normal) !important;
+}
+
+.mantine-Notification-closeButton {
+  color: var(--color-text-muted) !important;
+  border-radius: var(--radius-xl) !important;
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.mantine-Notification-closeButton:hover {
+  background-color: var(--color-surface-hover) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.mantine-Tooltip-tooltip {
+  background-color: var(--color-bg-surface-3) !important;
+  border: 1px solid var(--color-border-strong) !important;
+  color: var(--color-text-primary) !important;
+  border-radius: var(--radius-md) !important;
+  font-size: var(--font-size-xs) !important;
+  font-family: var(--font-family-sans);
+  font-weight: 500;
+  box-shadow: var(--shadow-md) !important;
+  padding: var(--space-2xs) var(--space-xs) !important;
+}
+
+.mantine-Progress-root {
+  background-color: var(--color-bg-surface-3) !important;
+  border-radius: var(--radius-pill) !important;
+}
+
+.mantine-Progress-section {
+  border-radius: var(--radius-pill) !important;
+}
+
+.mantine-Progress-section[data-color="gray"] {
+  background-color: var(--color-accent-primary) !important;
+}
+
+.mantine-Alert-root {
+  border-radius: var(--radius-md) !important;
+  font-family: var(--font-family-sans);
+}
+
+.mantine-Alert-root[data-color="orange"] {
+  background-color: var(--color-status-warning-surface) !important;
+  border: 1px solid rgba(245, 158, 11, 0.35) !important;
+}
+
+.mantine-Alert-root[data-color="red"] {
+  background-color: var(--color-status-error-surface) !important;
+  border: 1px solid rgba(239, 68, 68, 0.35) !important;
+}
+
+.mantine-Alert-root[data-color="green"] {
+  background-color: var(--color-status-success-surface) !important;
+  border: 1px solid rgba(16, 185, 129, 0.35) !important;
+}
+
+.mantine-Alert-root[data-color="gray"] {
+  background-color: var(--color-bg-surface-2) !important;
+  border: 1px solid var(--color-border-strong) !important;
+}
+
+.mantine-Alert-title {
+  color: var(--color-text-primary) !important;
+  font-weight: 600 !important;
+  font-size: var(--font-size-xs) !important;
+}
+
+.mantine-Alert-message {
+  color: var(--color-text-secondary) !important;
+  font-size: var(--font-size-xs) !important;
+  line-height: var(--line-height-normal) !important;
+}
+
+.mantine-Kbd-root {
+  background-color: var(--color-bg-surface-3) !important;
+  border: 1px solid var(--color-border-strong) !important;
+  border-bottom: 2px solid var(--color-border-strong) !important;
+  color: var(--color-text-primary) !important;
+  border-radius: var(--radius-sm) !important;
+  font-family: var(--font-family-mono);
+  font-weight: 600;
+}
+
+.mantine-Checkbox-input {
+  background-color: var(--color-bg-surface-3) !important;
+  border: 1px solid var(--color-border-strong) !important;
+  border-radius: var(--radius-xs) !important;
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.mantine-Checkbox-input:checked {
+  background-color: var(--color-btn-danger-bg) !important;
+  border-color: var(--color-btn-danger-border) !important;
+}
+
+.mantine-Checkbox-label {
+  color: var(--color-text-primary) !important;
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-xs) !important;
+  cursor: pointer;
+}
+
+.mantine-ScrollArea-scrollbar {
+  background: transparent !important;
+}
+
+.mantine-ScrollArea-thumb {
+  background-color: var(--color-border-strong) !important;
+  border-radius: var(--radius-pill) !important;
+  transition: background-color var(--transition-fast);
+}
+
+.mantine-ScrollArea-thumb:hover {
+  background-color: var(--color-border-focus) !important;
+}
+
+.mantine-Carousel-control {
+  background-color: var(--color-bg-overlay) !important;
+  border: 1px solid var(--color-border-strong) !important;
+  color: var(--color-text-primary) !important;
+  border-radius: var(--radius-pill) !important;
+  box-shadow: var(--shadow-md) !important;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.mantine-Carousel-control:hover {
+  background-color: var(--color-bg-surface-3) !important;
+  border-color: var(--color-border-focus) !important;
+}
+
+.mantine-Carousel-indicator {
+  background-color: var(--color-border-strong) !important;
+  border-radius: var(--radius-pill) !important;
+  transition:
+    background-color var(--transition-fast),
+    width var(--transition-fast);
+}
+
+.mantine-Carousel-indicator[data-active] {
+  background-color: var(--color-accent-primary) !important;
+}
+
+.mantine-Drawer-header,
+.mantine-Modal-header {
+  background-color: var(--color-bg-surface-2) !important;
+  border-bottom: 1px solid var(--color-border-subtle) !important;
+  padding: var(--space-sm) var(--space-md) !important;
+}
+
+.mantine-Drawer-body,
+.mantine-Modal-body {
+  background-color: var(--color-bg-surface-2) !important;
+  padding: var(--space-md) !important;
+}
+
+.mantine-Drawer-close,
+.mantine-Modal-close {
+  color: var(--color-text-muted) !important;
+  border-radius: var(--radius-xl) !important;
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.mantine-Drawer-close:hover,
+.mantine-Modal-close:hover {
+  background-color: var(--color-surface-hover) !important;
+  color: var(--color-text-primary) !important;
 }

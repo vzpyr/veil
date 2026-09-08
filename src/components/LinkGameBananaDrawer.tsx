@@ -2,9 +2,9 @@ import {
   Alert,
   Badge,
   Button,
+  Drawer,
   Group,
   Loader,
-  Modal,
   Paper,
   Stack,
   Text,
@@ -22,7 +22,7 @@ import { useEffect, useState } from "react";
 import { fetchModProfile, GbModProfile } from "../api/gamebanana";
 import { ModItem } from "../types";
 
-interface LinkGameBananaModalProps {
+interface LinkGameBananaDrawerProps {
   opened: boolean;
   onClose: () => void;
   mod: ModItem | null;
@@ -44,13 +44,13 @@ function extractGameBananaId(input: string): number | null {
   return null;
 }
 
-export default function LinkGameBananaModal({
+export default function LinkGameBananaDrawer({
   opened,
   onClose,
   mod,
   modsDir,
   onSuccess,
-}: LinkGameBananaModalProps) {
+}: LinkGameBananaDrawerProps) {
   const [inputVal, setInputVal] = useState<string>("");
   const [profile, setProfile] = useState<GbModProfile | null>(null);
   const [fetching, setFetching] = useState<boolean>(false);
@@ -167,9 +167,11 @@ export default function LinkGameBananaModal({
   };
 
   return (
-    <Modal
+    <Drawer
       opened={opened}
       onClose={onClose}
+      position="right"
+      size="md"
       radius="lg"
       title={
         <Group gap="xs">
@@ -179,10 +181,8 @@ export default function LinkGameBananaModal({
           </Text>
         </Group>
       }
-      centered
-      size="md"
     >
-      <Stack gap="md">
+      <Stack gap="md" h="100%">
         {mod && (
           <Text size="sm" c="dimmed">
             Associate{" "}
@@ -197,7 +197,7 @@ export default function LinkGameBananaModal({
           <TextInput
             label="GameBanana Mod URL or ID"
             placeholder="e.g. 523812 or https://gamebanana.com/mods/523812"
-            radius="md"
+            radius="xl"
             value={inputVal}
             onChange={(e) => setInputVal(e.currentTarget.value)}
             style={{ flex: 1 }}
@@ -208,7 +208,8 @@ export default function LinkGameBananaModal({
             }}
           />
           <Button
-            variant="light"
+            variant="default"
+            size="xs"
             radius="xl"
             onClick={handleLookup}
             loading={fetching}
@@ -266,12 +267,12 @@ export default function LinkGameBananaModal({
 
         <Group
           justify={mod?.gamebanana_id ? "space-between" : "flex-end"}
-          mt="md"
+          mt="auto"
         >
           {mod?.gamebanana_id && (
             <Button
               color="red"
-              variant="subtle"
+              variant="default"
               size="xs"
               radius="xl"
               leftSection={<IconTrash size={14} />}
@@ -300,6 +301,6 @@ export default function LinkGameBananaModal({
           </Group>
         </Group>
       </Stack>
-    </Modal>
+    </Drawer>
   );
 }

@@ -109,7 +109,7 @@ export default function ConflictDrawer({
                       }
 
                       return (
-                        <Card key={modId} p="xs" radius="sm" withBorder>
+                        <Card key={modId} p="xs" radius="md" withBorder>
                           <Group justify="space-between">
                             <Stack gap="3xs">
                               <Text fw={600} size="sm">
