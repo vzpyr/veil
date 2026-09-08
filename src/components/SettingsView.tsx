@@ -45,7 +45,7 @@ export default function SettingsView({
   };
 
   return (
-    <Box p="md" maw="var(--max-width-settings)" mx="auto">
+    <Box p="sm" maw="var(--max-width-settings)" mx="auto">
       <Stack gap="md">
         <div>
           <Text fw={700} size="md">

@@ -62,7 +62,7 @@ export default function Sidebar({
     <Stack
       w="var(--sidebar-width)"
       h="100%"
-      p="xs"
+      p="sm"
       gap="xs"
       style={{
         backgroundColor: "var(--color-bg-surface-1)",
@@ -200,7 +200,7 @@ export default function Sidebar({
       </ScrollArea>
 
       <Box
-        pt="xs"
+        pt="sm"
         style={{ borderTop: "1px solid var(--color-border-subtle)" }}
       >
         <Stack gap="xs">

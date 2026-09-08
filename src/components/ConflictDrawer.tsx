@@ -75,7 +75,7 @@ export default function ConflictDrawer({
           </Center>
         ) : (
           <ScrollArea style={{ flex: 1 }}>
-            <Stack gap="sm">
+            <Stack gap="sm" pr="xs">
               {conflicts.map((c) => (
                 <Card
                   key={c.hash}

@@ -163,7 +163,7 @@ export default function ModGrid({
       </Group>
 
       {mods.length === 0 ? (
-        <Center py="2xl">
+        <Center h="var(--height-empty-state)">
           <Stack align="center" gap="sm">
             <IconFolderOff size={44} color="var(--color-text-muted)" />
             <Text fw={600} size="md">
