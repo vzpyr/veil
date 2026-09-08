@@ -494,6 +494,8 @@ button[role="tab"][aria-selected="true"] .mantine-Tabs-tabSection,
   background-color: var(--color-bg-surface-2) !important;
   border: 1px solid var(--color-border-strong) !important;
   border-radius: var(--radius-lg) !important;
+  padding: var(--space-2xs) !important;
+  box-shadow: var(--shadow-md) !important;
 }
 
 .mantine-Combobox-option {
@@ -670,10 +672,6 @@ button[role="tab"][aria-selected="true"] .mantine-Tabs-tabSection,
 .mantine-Menu-divider {
   border-top-color: var(--color-border-subtle) !important;
   margin: var(--space-2xs) 0 !important;
-}
-
-.mantine-Combobox-option[data-combobox-selected] svg {
-  color: var(--color-text-inverse) !important;
 }
 
 .mantine-SegmentedControl-root {

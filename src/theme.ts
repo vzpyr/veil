@@ -102,6 +102,14 @@ export const theme = createTheme({
   fontFamily: "var(--font-family-sans)",
   fontFamilyMonospace: "var(--font-family-mono)",
   defaultRadius: "md",
+  cursorType: "pointer",
+  shadows: {
+    xs: "var(--shadow-xs)",
+    sm: "var(--shadow-sm)",
+    md: "var(--shadow-md)",
+    lg: "var(--shadow-lg)",
+    xl: "var(--shadow-lg)",
+  },
   spacing: {
     "3xs": "var(--space-3xs)",
     "2xs": "var(--space-2xs)",
@@ -158,6 +166,17 @@ export const theme = createTheme({
     Select: {
       defaultProps: {
         radius: "xl",
+        comboboxProps: {
+          shadow: "md",
+          transitionProps: { transition: "pop-top-left", duration: 150 },
+        },
+      },
+    },
+    Combobox: {
+      defaultProps: {
+        radius: "lg",
+        shadow: "md",
+        transitionProps: { transition: "pop-top-left", duration: 150 },
       },
     },
     Card: {
@@ -201,6 +220,7 @@ export const theme = createTheme({
     },
     Drawer: {
       defaultProps: {
+        position: "right",
         radius: "lg",
       },
       styles: {
@@ -258,6 +278,11 @@ export const theme = createTheme({
     Checkbox: {
       defaultProps: {
         radius: "xs",
+      },
+    },
+    NavLink: {
+      defaultProps: {
+        radius: "xl",
       },
     },
     LoadingOverlay: {

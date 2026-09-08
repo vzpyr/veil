@@ -140,15 +140,10 @@ export default function Header({
         <Select
           size="xs"
           w="var(--control-width-md)"
-          radius="xl"
           data={gameSelectData}
           value={activeGameId}
           onChange={(val) => val && onSelectGame(val)}
           allowDeselect={false}
-          comboboxProps={{
-            shadow: "md",
-            transitionProps: { transition: "pop-top-left" },
-          }}
         />
       </Group>
 
