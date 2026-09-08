@@ -27,12 +27,7 @@ export default function GbModCard({ item, onSelect }: GbModCardProps) {
       p="xs"
       radius="lg"
       withBorder
-      style={{
-        backgroundColor: "var(--color-bg-card)",
-        borderColor: "var(--color-border-subtle)",
-        cursor: "pointer",
-        transition: "var(--transition-fast)",
-      }}
+      className="card-interactive"
       onClick={() => onSelect(item._idRow)}
     >
       <Card.Section
@@ -57,7 +52,7 @@ export default function GbModCard({ item, onSelect }: GbModCardProps) {
           <Stack h="100%" align="center" justify="center" gap="xs">
             <IconPhoto size={32} color="var(--color-text-muted)" />
             <Text size="2xs" c="dimmed">
-              No preview
+              No preview image
             </Text>
           </Stack>
         )}
@@ -68,7 +63,11 @@ export default function GbModCard({ item, onSelect }: GbModCardProps) {
             radius="xl"
             variant="filled"
             color="dark"
-            style={{ position: "absolute", top: 6, left: 6 }}
+            style={{
+              position: "absolute",
+              top: "var(--space-xs)",
+              left: "var(--space-xs)",
+            }}
           >
             {item._aCategory._sName}
           </Badge>
@@ -85,14 +84,14 @@ export default function GbModCard({ item, onSelect }: GbModCardProps) {
         <Group justify="space-between" align="center">
           <Group gap="xs">
             <Avatar src={item._aSubmitter?._sAvatarUrl} size="xs" radius="xl" />
-            <Text size="xs" c="dimmed" truncate maw={100}>
+            <Text size="xs" c="dimmed" truncate maw="var(--max-width-author)">
               {item._aSubmitter?._sName || "Unknown"}
             </Text>
           </Group>
 
           <Group gap="xs">
             {typeof item._nLikeCount === "number" && (
-              <Group gap={4}>
+              <Group gap="2xs">
                 <IconHeart size={12} color="var(--color-text-muted)" />
                 <Text size="xs" c="dimmed">
                   {item._nLikeCount}
@@ -101,7 +100,7 @@ export default function GbModCard({ item, onSelect }: GbModCardProps) {
             )}
 
             {typeof item._nViewCount === "number" && (
-              <Group gap={4}>
+              <Group gap="2xs">
                 <IconEye size={12} color="var(--color-text-muted)" />
                 <Text size="xs" c="dimmed">
                   {item._nViewCount}

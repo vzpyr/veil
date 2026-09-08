@@ -8,6 +8,7 @@ import {
   Text,
   TextInput,
 } from "@mantine/core";
+import { IconFolder } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { CategoryItem, ModItem } from "../types";
 
@@ -92,11 +93,11 @@ export default function CategoryModal({
   const getTitle = () => {
     switch (mode) {
       case "move":
-        return `Move ${modToMove?.name}`;
+        return `Move ${modToMove?.name || "Mod"}`;
       case "rename":
-        return `Rename Category: ${categoryName}`;
+        return `Rename ${categoryName || "Category"}`;
       case "delete":
-        return `Delete Category: ${categoryName}`;
+        return `Delete ${categoryName || "Category"}`;
       case "create":
       default:
         return "Create New Category";
@@ -109,9 +110,12 @@ export default function CategoryModal({
       onClose={onClose}
       radius="lg"
       title={
-        <Text fw={700} size="md">
-          {getTitle()}
-        </Text>
+        <Group gap="xs">
+          <IconFolder size={20} color="var(--color-accent-primary)" />
+          <Text fw={700} size="md">
+            {getTitle()}
+          </Text>
+        </Group>
       }
     >
       <Stack gap="md">

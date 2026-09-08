@@ -33,7 +33,6 @@
   --color-text-primary: #f3f5f8;
   --color-text-secondary: #9da4b2;
   --color-text-muted: #6b7382;
-  --color-text-dimmed: #6b7382;
   --color-text-inverse: #0e1116;
 
   --space-3xs: 0.125rem;
@@ -53,7 +52,6 @@
   --radius-xl: 1rem;
   --radius-2xl: 1.25rem;
   --radius-pill: 9999px;
-  --radius-full: 9999px;
 
   --font-family-sans:
     "Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont,
@@ -89,6 +87,34 @@
 
   --header-height: 52px;
   --sidebar-width: 240px;
+
+  --control-width-sm: 160px;
+  --control-width-md: 210px;
+  --control-width-lg: 240px;
+
+  --max-width-text-sm: 320px;
+  --max-width-text-md: 380px;
+  --max-width-text-lg: 400px;
+  --max-width-author: 100px;
+  --max-width-settings: 680px;
+  --min-width-search: 300px;
+
+  --height-modal-scroll: 320px;
+  --height-carousel: 260px;
+  --height-empty-state: 280px;
+  --size-thumb-sm: 44px;
+  --size-badge-dot: 16px;
+  --font-size-badge-dot: 10px;
+  --offset-badge: -4px;
+
+  --icon-size-2xs: 10px;
+  --icon-size-xs: 12px;
+  --icon-size-sm: 14px;
+  --icon-size-md: 16px;
+  --icon-size-lg: 20px;
+  --icon-size-xl: 32px;
+  --icon-size-2xl: 44px;
+  --icon-size-3xl: 48px;
 }
 
 * {
@@ -119,7 +145,7 @@ body {
 
 ::-webkit-scrollbar-thumb {
   background: var(--color-border-subtle);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill);
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -283,4 +309,84 @@ button[role="tab"][aria-selected="true"] .mantine-Tabs-tabSection,
 .mantine-Switch-input:focus-visible + .mantine-Switch-track {
   outline: 2px solid var(--color-border-focus) !important;
   outline-offset: 2px;
+}
+
+.card-interactive {
+  cursor: pointer;
+  background-color: var(--color-bg-card);
+  border: 1px solid var(--color-border-subtle);
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.card-interactive:hover {
+  background-color: var(--color-bg-card-hover) !important;
+  border-color: var(--color-border-strong) !important;
+}
+
+.card-interactive:active {
+  background-color: var(--color-bg-card-active) !important;
+}
+
+.badge-counter-dot {
+  position: absolute;
+  top: var(--offset-badge);
+  right: var(--offset-badge);
+  min-width: var(--size-badge-dot);
+  height: var(--size-badge-dot);
+  font-size: var(--font-size-badge-dot);
+  padding: 0;
+}
+
+.gb-rich-text {
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-primary);
+  word-break: break-word;
+}
+
+.gb-rich-text a {
+  color: var(--color-text-secondary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color var(--transition-fast);
+}
+
+.gb-rich-text a:hover {
+  color: var(--color-accent-primary-hover);
+}
+
+.gb-rich-text img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-sm);
+  margin: var(--space-2xs) 0;
+}
+
+.gb-rich-text h1,
+.gb-rich-text h2,
+.gb-rich-text h3,
+.gb-rich-text h4 {
+  color: var(--color-text-primary);
+  font-weight: 600;
+  margin-top: var(--space-sm);
+  margin-bottom: var(--space-2xs);
+}
+
+.gb-rich-text p {
+  margin-bottom: var(--space-2xs);
+}
+
+.gb-rich-text ul,
+.gb-rich-text ol {
+  padding-left: var(--space-md);
+  margin-bottom: var(--space-2xs);
+}
+
+.gb-rich-text blockquote {
+  border-left: 2px solid var(--color-border-strong);
+  padding-left: var(--space-sm);
+  color: var(--color-text-muted);
+  margin: var(--space-xs) 0;
 }

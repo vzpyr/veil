@@ -21,6 +21,7 @@ import {
   IconHistory,
   IconInfoCircle,
   IconMessageCircle,
+  IconWorld,
 } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import {
@@ -154,30 +155,38 @@ export default function GbModModal({
       size="xl"
       radius="lg"
       title={
-        profile ? (
-          <Group gap="xs">
+        <Group gap="xs">
+          <IconWorld size={20} color="var(--color-accent-primary)" />
+          {profile ? (
+            <Group gap="xs">
+              <Text fw={700} size="md">
+                {profile._sName}
+              </Text>
+              {profile._aCategory && (
+                <Badge size="xs" radius="xl" variant="light" color="gray">
+                  {profile._aCategory._sName}
+                </Badge>
+              )}
+              {profile._sVersion && (
+                <Badge size="xs" radius="xl" variant="outline" color="gray">
+                  v{profile._sVersion}
+                </Badge>
+              )}
+            </Group>
+          ) : (
             <Text fw={700} size="md">
-              {profile._sName}
+              Mod Details
             </Text>
-            {profile._aCategory && (
-              <Badge size="xs" radius="xl" variant="light" color="gray">
-                {profile._aCategory._sName}
-              </Badge>
-            )}
-            {profile._sVersion && (
-              <Badge size="xs" radius="xl" variant="outline" color="gray">
-                v{profile._sVersion}
-              </Badge>
-            )}
-          </Group>
-        ) : (
-          <Text fw={700} size="md">
-            Mod Details
-          </Text>
-        )
+          )}
+        </Group>
       }
     >
-      <Box style={{ position: "relative", minHeight: 400 }}>
+      <Box
+        style={{
+          position: "relative",
+          minHeight: "var(--height-modal-scroll)",
+        }}
+      >
         <LoadingOverlay visible={isLoading} />
 
         {profile && (
@@ -185,7 +194,7 @@ export default function GbModModal({
             {images.length > 0 && (
               <Carousel
                 withIndicators
-                height={260}
+                height="var(--height-carousel)"
                 slideSize="100%"
                 slideGap="sm"
                 loop
@@ -194,7 +203,7 @@ export default function GbModModal({
                   <Carousel.Slide key={idx}>
                     <Image
                       src={`${img._sBaseUrl}/${img._sFile530 || img._sFile}`}
-                      h={260}
+                      h="var(--height-carousel)"
                       fit="contain"
                       style={{
                         backgroundColor: "var(--color-bg-surface-1)",
@@ -212,7 +221,6 @@ export default function GbModModal({
               withBorder
               style={{
                 backgroundColor: "var(--color-bg-surface-2)",
-                borderColor: "var(--color-border-subtle)",
               }}
             >
               <Group justify="space-between" align="center">
@@ -297,22 +305,13 @@ export default function GbModModal({
                       const isFailed = queueItem?.status === "failed";
 
                       return (
-                        <Card
-                          key={f._idRow}
-                          p="xs"
-                          radius="md"
-                          withBorder
-                          style={{
-                            backgroundColor: "var(--color-bg-card)",
-                            borderColor: "var(--color-border-subtle)",
-                          }}
-                        >
+                        <Card key={f._idRow} p="xs" radius="md" withBorder>
                           <Group
                             justify="space-between"
                             align="flex-start"
                             wrap="nowrap"
                           >
-                            <Stack gap={2} style={{ flex: 1, minWidth: 0 }}>
+                            <Stack gap="3xs" style={{ flex: 1, minWidth: 0 }}>
                               <Text fw={600} size="sm" truncate>
                                 {f._sFile}
                               </Text>
@@ -330,7 +329,7 @@ export default function GbModModal({
                                 </Text>
                               </Group>
                               {f._sDescription && (
-                                <Text size="xs" c="dimmed" mt={4}>
+                                <Text size="xs" c="dimmed" mt="2xs">
                                   {f._sDescription}
                                 </Text>
                               )}
@@ -385,7 +384,7 @@ export default function GbModModal({
 
                           {isDownloading && queueItem && (
                             <Box mt="xs">
-                              <Group justify="space-between" mb={4}>
+                              <Group justify="space-between" mb="2xs">
                                 <Text size="2xs" c="dimmed">
                                   Speed: {queueItem.progress.speed} | ETA:{" "}
                                   {queueItem.progress.eta}
@@ -413,7 +412,7 @@ export default function GbModModal({
                                 color="gray"
                                 radius="xl"
                               />
-                              <Text size="2xs" c="dimmed" ta="right" mt={4}>
+                              <Text size="2xs" c="dimmed" ta="right" mt="2xs">
                                 Extracting and installing archive...
                               </Text>
                             </Box>
@@ -423,46 +422,33 @@ export default function GbModModal({
                     })
                   ) : (
                     <Text size="sm" c="dimmed" ta="center" py="md">
-                      No files available for download.
+                      No files available for download
                     </Text>
                   )}
                 </Stack>
               </Tabs.Panel>
 
               <Tabs.Panel value="description" pt="sm">
-                <ScrollArea h={320} p="xs">
+                <ScrollArea h="var(--height-modal-scroll)" p="xs">
                   {profile._sText ? (
                     <div
+                      className="gb-rich-text"
                       dangerouslySetInnerHTML={{ __html: profile._sText }}
-                      style={{
-                        fontSize: "var(--font-size-sm)",
-                        lineHeight: "var(--line-height-relaxed)",
-                        color: "var(--color-text-primary)",
-                      }}
                     />
                   ) : (
-                    <Text size="sm" c="dimmed">
-                      No description provided by author.
+                    <Text size="sm" c="dimmed" ta="center" py="md">
+                      No description provided by author
                     </Text>
                   )}
                 </ScrollArea>
               </Tabs.Panel>
 
               <Tabs.Panel value="updates" pt="sm">
-                <ScrollArea h={320} p="xs">
+                <ScrollArea h="var(--height-modal-scroll)" p="xs">
                   {updates.length > 0 ? (
                     <Stack gap="xs">
                       {updates.map((u) => (
-                        <Card
-                          key={u._idRow}
-                          p="xs"
-                          radius="md"
-                          withBorder
-                          style={{
-                            backgroundColor: "var(--color-bg-card)",
-                            borderColor: "var(--color-border-subtle)",
-                          }}
-                        >
+                        <Card key={u._idRow} p="xs" radius="md" withBorder>
                           <Group justify="space-between" mb="xs">
                             <Group gap="xs">
                               <Text fw={600} size="sm">
@@ -481,16 +467,14 @@ export default function GbModModal({
 
                           {u._sText && (
                             <div
+                              className="gb-rich-text"
+                              style={{ marginBottom: "var(--space-xs)" }}
                               dangerouslySetInnerHTML={{ __html: u._sText }}
-                              style={{
-                                fontSize: "var(--font-size-xs)",
-                                marginBottom: "var(--space-xs)",
-                              }}
                             />
                           )}
 
                           {u._aChangeLog && u._aChangeLog.length > 0 && (
-                            <Stack gap={2}>
+                            <Stack gap="3xs">
                               {u._aChangeLog.map((log, lIdx) => (
                                 <Group key={lIdx} gap="xs">
                                   <Badge
@@ -511,27 +495,18 @@ export default function GbModModal({
                     </Stack>
                   ) : (
                     <Text size="sm" c="dimmed" ta="center" py="md">
-                      No updates recorded for this mod.
+                      No updates recorded for this mod
                     </Text>
                   )}
                 </ScrollArea>
               </Tabs.Panel>
 
               <Tabs.Panel value="comments" pt="sm">
-                <ScrollArea h={320} p="xs">
+                <ScrollArea h="var(--height-modal-scroll)" p="xs">
                   {posts.length > 0 ? (
                     <Stack gap="xs">
                       {posts.map((p) => (
-                        <Card
-                          key={p._idRow}
-                          p="xs"
-                          radius="md"
-                          withBorder
-                          style={{
-                            backgroundColor: "var(--color-bg-card)",
-                            borderColor: "var(--color-border-subtle)",
-                          }}
-                        >
+                        <Card key={p._idRow} p="xs" radius="md" withBorder>
                           <Group justify="space-between" mb="xs">
                             <Group gap="xs">
                               <Avatar
@@ -549,11 +524,8 @@ export default function GbModModal({
                           </Group>
 
                           <div
+                            className="gb-rich-text"
                             dangerouslySetInnerHTML={{ __html: p._sText }}
-                            style={{
-                              fontSize: "var(--font-size-xs)",
-                              color: "var(--color-text-primary)",
-                            }}
                           />
 
                           {typeof p._nReplyCount === "number" &&
@@ -582,7 +554,7 @@ export default function GbModModal({
                                   >
                                     {replies[p._idRow].map((r) => (
                                       <Box key={r._idRow} p="2xs">
-                                        <Group justify="space-between" mb={2}>
+                                        <Group justify="space-between" mb="3xs">
                                           <Group gap="xs">
                                             <Avatar
                                               src={r._aSubmitter?._sAvatarUrl}
@@ -598,11 +570,9 @@ export default function GbModModal({
                                           </Text>
                                         </Group>
                                         <div
+                                          className="gb-rich-text"
                                           dangerouslySetInnerHTML={{
                                             __html: r._sText,
-                                          }}
-                                          style={{
-                                            fontSize: "var(--font-size-xs)",
                                           }}
                                         />
                                       </Box>
@@ -616,7 +586,7 @@ export default function GbModModal({
                     </Stack>
                   ) : (
                     <Text size="sm" c="dimmed" ta="center" py="md">
-                      No comments posted on this mod yet.
+                      No comments posted on this mod yet
                     </Text>
                   )}
                 </ScrollArea>

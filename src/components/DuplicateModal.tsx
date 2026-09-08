@@ -1,5 +1,5 @@
-import { Modal, Stack, Text, Group, Button, Paper, Badge } from "@mantine/core";
-import { IconRefresh, IconCopy, IconAlertTriangle } from "@tabler/icons-react";
+import { Badge, Button, Group, Modal, Paper, Stack, Text } from "@mantine/core";
+import { IconAlertTriangle, IconCopy, IconRefresh } from "@tabler/icons-react";
 import { ModItem } from "../types";
 
 interface DuplicateModalProps {
@@ -23,7 +23,7 @@ export function DuplicateModal({
       onClose={onClose}
       title={
         <Group gap="xs">
-          <IconAlertTriangle size={18} color="var(--color-status-warning)" />
+          <IconAlertTriangle size={20} color="var(--color-status-warning)" />
           <Text fw={700} size="md">
             Mod Already Installed
           </Text>
@@ -42,14 +42,7 @@ export function DuplicateModal({
         </Text>
 
         {existingMod && (
-          <Paper
-            p="xs"
-            radius="md"
-            style={{
-              backgroundColor: "var(--color-bg-surface-2)",
-              border: "1px solid var(--color-border-subtle)",
-            }}
-          >
+          <Paper p="xs" radius="md">
             <Group justify="space-between">
               <Text size="xs" c="dimmed">
                 Existing Location
@@ -58,14 +51,14 @@ export function DuplicateModal({
                 {existingMod.category || "Uncategorized"}
               </Badge>
             </Group>
-            <Text size="xs" fw={600} mt={4}>
+            <Text size="xs" fw={600} mt="2xs">
               {existingMod.name}
             </Text>
           </Paper>
         )}
 
         <Text size="xs" c="dimmed">
-          Choose how you would like to handle this installation:
+          Choose how you would like to handle this installation.
         </Text>
 
         <Stack gap="xs">
@@ -82,13 +75,13 @@ export function DuplicateModal({
               onClose();
             }}
           >
-            <Stack gap={2} align="flex-start">
+            <Stack gap="3xs" align="flex-start">
               <Text size="sm" fw={600}>
                 Clean Update (Replace)
               </Text>
               <Text size="2xs" c="dimmed">
                 Removes obsolete files from previous version, keeps previews and
-                active symlinks
+                active symlinks.
               </Text>
             </Stack>
           </Button>
@@ -105,12 +98,12 @@ export function DuplicateModal({
               onClose();
             }}
           >
-            <Stack gap={2} align="flex-start">
+            <Stack gap="3xs" align="flex-start">
               <Text size="sm" fw={600}>
                 Keep Both Versions
               </Text>
               <Text size="2xs" c="dimmed">
-                Installs alongside the existing mod as a numbered copy
+                Installs alongside the existing mod as a numbered copy.
               </Text>
             </Stack>
           </Button>

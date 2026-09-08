@@ -70,7 +70,7 @@ export default function Header({
             padding: "0 var(--space-xs)",
           }}
         >
-          <IconFolder size={15} />
+          <IconFolder size={16} />
           <Text size="xs" fw={600}>
             Installed
           </Text>
@@ -88,7 +88,7 @@ export default function Header({
             padding: "0 var(--space-xs)",
           }}
         >
-          <IconWorld size={15} />
+          <IconWorld size={16} />
           <Text size="xs" fw={600}>
             GameBanana
           </Text>
@@ -106,7 +106,7 @@ export default function Header({
             padding: "0 var(--space-xs)",
           }}
         >
-          <IconSettings size={15} />
+          <IconSettings size={16} />
           <Text size="xs" fw={600}>
             Settings
           </Text>
@@ -139,7 +139,7 @@ export default function Header({
 
         <Select
           size="xs"
-          w={210}
+          w="var(--control-width-md)"
           radius="xl"
           data={gameSelectData}
           value={activeGameId}
@@ -186,7 +186,7 @@ export default function Header({
           </Tooltip>
         )}
 
-        <Tooltip label="Download Queue">
+        <Tooltip label="Download queue">
           <ActionIcon
             variant={activeDownloadCount > 0 ? "light" : "default"}
             color={activeDownloadCount > 0 ? "gray" : undefined}
@@ -201,15 +201,7 @@ export default function Header({
                 size="xs"
                 circle
                 color="dark"
-                style={{
-                  position: "absolute",
-                  top: -4,
-                  right: -4,
-                  minWidth: 16,
-                  height: 16,
-                  fontSize: 10,
-                  padding: 0,
-                }}
+                className="badge-counter-dot"
               >
                 {activeDownloadCount}
               </Badge>
@@ -234,15 +226,7 @@ export default function Header({
                   size="xs"
                   circle
                   color="dark"
-                  style={{
-                    position: "absolute",
-                    top: -4,
-                    right: -4,
-                    minWidth: 16,
-                    height: 16,
-                    fontSize: 10,
-                    padding: 0,
-                  }}
+                  className="badge-counter-dot"
                 >
                   {updatesCount}
                 </Badge>

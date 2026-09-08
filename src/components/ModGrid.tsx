@@ -68,7 +68,7 @@ export default function ModGrid({
           <Text fw={600} size="lg">
             No Mods Directory Configured
           </Text>
-          <Text c="dimmed" size="sm" ta="center" maw={400}>
+          <Text c="dimmed" size="sm" ta="center" maw="var(--max-width-text-lg)">
             Configure your game mods directory in settings to begin managing
             mods with Veil.
           </Text>
@@ -148,15 +148,15 @@ export default function ModGrid({
           <Select
             size="xs"
             radius="xl"
-            w={160}
+            w="var(--control-width-sm)"
             value={sortBy}
             onChange={(val) => onSortByChange(val || "name-asc")}
             allowDeselect={false}
             data={[
               { value: "name-asc", label: "Name (A to Z)" },
               { value: "name-desc", label: "Name (Z to A)" },
-              { value: "enabled-first", label: "Enabled first" },
-              { value: "disabled-first", label: "Disabled first" },
+              { value: "enabled-first", label: "Enabled First" },
+              { value: "disabled-first", label: "Disabled First" },
             ]}
           />
         </Group>
@@ -169,7 +169,12 @@ export default function ModGrid({
             <Text fw={600} size="md">
               No Mods Found
             </Text>
-            <Text c="dimmed" size="xs" ta="center" maw={380}>
+            <Text
+              c="dimmed"
+              size="xs"
+              ta="center"
+              maw="var(--max-width-text-md)"
+            >
               No mods match your current filter or category. Download mods from
               GameBanana, import an archive, or place folders into your
               DISABLED_veil directory.

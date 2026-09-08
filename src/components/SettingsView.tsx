@@ -45,7 +45,7 @@ export default function SettingsView({
   };
 
   return (
-    <Box p="md" maw={680} mx="auto">
+    <Box p="md" maw="var(--max-width-settings)" mx="auto">
       <Stack gap="md">
         <div>
           <Text fw={700} size="md">
@@ -56,15 +56,7 @@ export default function SettingsView({
           </Text>
         </div>
 
-        <Card
-          p="sm"
-          radius="lg"
-          withBorder
-          style={{
-            backgroundColor: "var(--color-bg-card)",
-            borderColor: "var(--color-border-subtle)",
-          }}
-        >
+        <Card p="sm">
           <Stack gap="sm">
             <div>
               <Text fw={600} size="sm">
@@ -109,15 +101,7 @@ export default function SettingsView({
           </Stack>
         </Card>
 
-        <Card
-          p="sm"
-          radius="lg"
-          withBorder
-          style={{
-            backgroundColor: "var(--color-bg-card)",
-            borderColor: "var(--color-border-subtle)",
-          }}
-        >
+        <Card p="sm">
           <Group justify="space-between" align="center">
             <div>
               <Text fw={600} size="sm">

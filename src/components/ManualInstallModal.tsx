@@ -7,6 +7,7 @@ import {
   Text,
   TextInput,
 } from "@mantine/core";
+import { IconPackageImport } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { CategoryItem } from "../types";
 
@@ -73,9 +74,12 @@ export default function ManualInstallModal({
       onClose={onClose}
       radius="lg"
       title={
-        <Text fw={700} size="md">
-          Install Mod from Archive
-        </Text>
+        <Group gap="xs">
+          <IconPackageImport size={20} color="var(--color-accent-primary)" />
+          <Text fw={700} size="md">
+            Install Mod from Archive
+          </Text>
+        </Group>
       }
     >
       <Stack gap="md">

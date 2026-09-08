@@ -2,6 +2,7 @@ import {
   Alert,
   Badge,
   Card,
+  Center,
   Drawer,
   Group,
   ScrollArea,
@@ -61,9 +62,17 @@ export default function ConflictDrawer({
         </Alert>
 
         {conflicts.length === 0 ? (
-          <Text c="dimmed" size="sm" ta="center" py="xl">
-            No active conflicts detected.
-          </Text>
+          <Center py="2xl">
+            <Stack align="center" gap="sm">
+              <IconAlertTriangle size={44} color="var(--color-text-muted)" />
+              <Text fw={600} size="md">
+                No Active Conflicts
+              </Text>
+              <Text c="dimmed" size="xs" ta="center">
+                No active conflicts detected
+              </Text>
+            </Stack>
+          </Center>
         ) : (
           <ScrollArea style={{ flex: 1 }}>
             <Stack gap="sm">
@@ -80,7 +89,7 @@ export default function ConflictDrawer({
                 >
                   <Group justify="space-between" mb="xs">
                     <Text size="xs" fw={700} c="dimmed">
-                      Colliding Hash:
+                      Colliding Hash
                     </Text>
                     <Badge
                       size="xs"
@@ -100,18 +109,9 @@ export default function ConflictDrawer({
                       }
 
                       return (
-                        <Card
-                          key={modId}
-                          p="xs"
-                          radius="sm"
-                          withBorder
-                          style={{
-                            backgroundColor: "var(--color-bg-card)",
-                            borderColor: "var(--color-border-subtle)",
-                          }}
-                        >
+                        <Card key={modId} p="xs" radius="sm" withBorder>
                           <Group justify="space-between">
-                            <Stack gap={2}>
+                            <Stack gap="3xs">
                               <Text fw={600} size="sm">
                                 {mod.name}
                               </Text>

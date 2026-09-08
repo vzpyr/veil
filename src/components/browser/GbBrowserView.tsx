@@ -193,7 +193,10 @@ export default function GbBrowserView({
       }}
     >
       <Group justify="space-between" mb="sm" wrap="wrap" gap="xs">
-        <Group gap="xs" style={{ flex: 1, minWidth: 300 }}>
+        <Group
+          gap="xs"
+          style={{ flex: 1, minWidth: "var(--min-width-search)" }}
+        >
           <TextInput
             size="xs"
             radius="xl"
@@ -234,7 +237,7 @@ export default function GbBrowserView({
           <Select
             size="xs"
             radius="xl"
-            w={240}
+            w="var(--control-width-lg)"
             data={categorySelectData}
             value={selectedCategory || ""}
             onChange={(val) => {
@@ -251,7 +254,7 @@ export default function GbBrowserView({
           <Select
             size="xs"
             radius="xl"
-            w={160}
+            w="var(--control-width-sm)"
             data={sortSelectData}
             value={sortOption}
             onChange={(val) => {
@@ -269,13 +272,13 @@ export default function GbBrowserView({
         <LoadingOverlay visible={isLoading} />
 
         {items.length === 0 && !isLoading ? (
-          <Center h={280}>
+          <Center h="var(--height-empty-state)">
             <Stack align="center" gap="sm">
               <IconFolderOff size={44} color="var(--color-text-muted)" />
               <Text fw={600} size="md">
                 No Mods Found
               </Text>
-              <Text c="dimmed" size="xs">
+              <Text c="dimmed" size="xs" ta="center">
                 Try a different search query or select another category.
               </Text>
             </Stack>

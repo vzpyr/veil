@@ -148,9 +148,9 @@ function KeyDisplay({ keyStr }: { keyStr: string }) {
   }
 
   return (
-    <Group gap={4} wrap="nowrap">
+    <Group gap="2xs" wrap="nowrap">
       {tokens.map((token, i) => (
-        <Group key={i} gap={4} wrap="nowrap">
+        <Group key={i} gap="2xs" wrap="nowrap">
           {i > 0 &&
             token.toLowerCase() !== "no_modifiers" &&
             tokens[i - 1].toLowerCase() !== "no_modifiers" && (
@@ -234,7 +234,7 @@ export default function KeybindDrawer({
       });
       notifications.show({
         title: "Toggle Updated",
-        message: `Saved variable state to d3dx_user.ini.`,
+        message: "Saved variable state to d3dx_user.ini.",
         color: "green",
         icon: <IconCheck size={16} />,
       });
@@ -376,11 +376,10 @@ export default function KeybindDrawer({
             radius="md"
             style={{
               backgroundColor: "var(--color-bg-surface-2)",
-              border: "1px solid var(--color-border-subtle)",
             }}
           >
             <Group justify="space-between" align="center">
-              <Stack gap={2}>
+              <Stack gap="3xs">
                 <Text fw={600} size="sm">
                   {mod.name}
                 </Text>
@@ -420,15 +419,20 @@ export default function KeybindDrawer({
             <Loader size="sm" color="gray" />
           </Center>
         ) : !hasContent ? (
-          <Center py="xl">
-            <Stack align="center" gap="xs">
-              <IconAdjustments size={36} color="var(--color-text-muted)" />
-              <Text fw={600} size="sm">
+          <Center py="2xl">
+            <Stack align="center" gap="sm">
+              <IconAdjustments size={44} color="var(--color-text-muted)" />
+              <Text fw={600} size="md">
                 No Keybinds or Toggles Found
               </Text>
-              <Text size="xs" c="dimmed" ta="center" maw={320}>
+              <Text
+                size="xs"
+                c="dimmed"
+                ta="center"
+                maw="var(--max-width-text-sm)"
+              >
                 This mod does not declare any configurable keybinds or toggle
-                variables in its INI files.
+                variables in its configuration files.
               </Text>
             </Stack>
           </Center>
@@ -437,7 +441,13 @@ export default function KeybindDrawer({
             <Stack gap="md" pr="xs">
               {data && data.variables.length > 0 && (
                 <Stack gap="xs">
-                  <Text fw={700} size="sm" c="dimmed" tt="uppercase">
+                  <Text
+                    fw={700}
+                    size="xs"
+                    c="dimmed"
+                    tt="uppercase"
+                    style={{ letterSpacing: "0.08em" }}
+                  >
                     Toggle States
                   </Text>
                   {data.variables.map((v) => {
@@ -446,17 +456,9 @@ export default function KeybindDrawer({
                       v.possible_values.every((val) => val === 0 || val === 1);
 
                     return (
-                      <Card
-                        key={v.variable}
-                        p="xs"
-                        radius="md"
-                        style={{
-                          backgroundColor: "var(--color-bg-card)",
-                          border: "1px solid var(--color-border-subtle)",
-                        }}
-                      >
+                      <Card key={v.variable} p="xs" radius="md">
                         <Group justify="space-between" align="center">
-                          <Stack gap={2}>
+                          <Stack gap="3xs">
                             <Text fw={600} size="sm">
                               {v.label}
                             </Text>
@@ -499,7 +501,13 @@ export default function KeybindDrawer({
 
               {data && data.keybinds.length > 0 && (
                 <Stack gap="xs">
-                  <Text fw={700} size="sm" c="dimmed" tt="uppercase">
+                  <Text
+                    fw={700}
+                    size="xs"
+                    c="dimmed"
+                    tt="uppercase"
+                    style={{ letterSpacing: "0.08em" }}
+                  >
                     Keybinds
                   </Text>
                   {data.keybinds.map((k, index) => {
@@ -514,14 +522,13 @@ export default function KeybindDrawer({
                           backgroundColor: isRecording
                             ? "var(--color-bg-card-active)"
                             : "var(--color-bg-card)",
-                          border: isRecording
-                            ? "1px solid var(--color-accent-primary)"
-                            : "1px solid var(--color-border-subtle)",
-                          transition: "var(--transition-fast)",
+                          borderColor: isRecording
+                            ? "var(--color-accent-primary)"
+                            : "var(--color-border-subtle)",
                         }}
                       >
                         <Group justify="space-between" align="center">
-                          <Stack gap={2}>
+                          <Stack gap="3xs">
                             <Text fw={600} size="sm">
                               {k.label}
                             </Text>
@@ -544,16 +551,17 @@ export default function KeybindDrawer({
                                   {currentModifiers.shift && "Shift + "}
                                   Press Key
                                 </Badge>
-                                <ActionIcon
-                                  size="sm"
-                                  radius="xl"
-                                  variant="light"
-                                  color="red"
-                                  title="Cancel rebind"
-                                  onClick={() => setRecordingIndex(null)}
-                                >
-                                  <IconX size={14} />
-                                </ActionIcon>
+                                <Tooltip label="Cancel rebind">
+                                  <ActionIcon
+                                    size="sm"
+                                    radius="xl"
+                                    variant="light"
+                                    color="red"
+                                    onClick={() => setRecordingIndex(null)}
+                                  >
+                                    <IconX size={14} />
+                                  </ActionIcon>
+                                </Tooltip>
                               </Group>
                             ) : (
                               <>

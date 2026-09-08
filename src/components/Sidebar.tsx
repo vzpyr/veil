@@ -115,7 +115,6 @@ export default function Sidebar({
                 {totalModsCount}
               </Badge>
             }
-            style={{ borderRadius: "var(--radius-pill)" }}
           />
 
           <NavLink
@@ -150,7 +149,7 @@ export default function Sidebar({
                 )
               }
               rightSection={
-                <Group gap={4} wrap="nowrap">
+                <Group gap="2xs" wrap="nowrap">
                   <Badge size="xs" radius="xl" variant="light" color="gray">
                     {cat.mod_count}
                   </Badge>
@@ -189,7 +188,6 @@ export default function Sidebar({
                   </Menu>
                 </Group>
               }
-              style={{ borderRadius: "var(--radius-pill)" }}
             />
           ))}
         </Stack>

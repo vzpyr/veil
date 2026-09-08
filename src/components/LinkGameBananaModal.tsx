@@ -186,7 +186,7 @@ export default function LinkGameBananaModal({
         {mod && (
           <Text size="sm" c="dimmed">
             Associate{" "}
-            <Text span fw={600} c="white">
+            <Text span fw={600} c="var(--color-text-primary)">
               {mod.name}
             </Text>{" "}
             with a GameBanana mod page to enable automatic update checking.
@@ -236,14 +236,7 @@ export default function LinkGameBananaModal({
         )}
 
         {profile && (
-          <Paper
-            p="sm"
-            radius="md"
-            style={{
-              backgroundColor: "var(--color-bg-surface-2)",
-              border: "1px solid var(--color-border-subtle)",
-            }}
-          >
+          <Paper p="sm" radius="md">
             <Stack gap="xs">
               <Group justify="space-between" align="flex-start">
                 <Text fw={600} size="sm">
@@ -271,8 +264,11 @@ export default function LinkGameBananaModal({
           </Paper>
         )}
 
-        <Group justify="space-between" mt="md">
-          {mod?.gamebanana_id ? (
+        <Group
+          justify={mod?.gamebanana_id ? "space-between" : "flex-end"}
+          mt="md"
+        >
+          {mod?.gamebanana_id && (
             <Button
               color="red"
               variant="subtle"
@@ -284,8 +280,6 @@ export default function LinkGameBananaModal({
             >
               Unlink
             </Button>
-          ) : (
-            <div />
           )}
 
           <Group gap="xs">

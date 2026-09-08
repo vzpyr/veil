@@ -60,14 +60,13 @@ export default function ModCard({
       p="xs"
       radius="lg"
       withBorder
+      className="card-interactive"
       style={{
-        backgroundColor: "var(--color-bg-card)",
         borderColor: inConflict
           ? "var(--color-status-warning)"
           : mod.enabled
             ? "var(--color-border-strong)"
             : "var(--color-border-subtle)",
-        transition: "var(--transition-fast)",
       }}
     >
       <Card.Section
@@ -100,13 +99,13 @@ export default function ModCard({
         <Group
           style={{
             position: "absolute",
-            top: 6,
-            left: 6,
-            right: 6,
+            top: "var(--space-xs)",
+            left: "var(--space-xs)",
+            right: "var(--space-xs)",
             justifyContent: "space-between",
           }}
         >
-          <Group gap={4}>
+          <Group gap="2xs">
             {mod.category && (
               <Badge size="xs" radius="xl" variant="filled" color="dark">
                 {mod.category}
@@ -117,7 +116,7 @@ export default function ModCard({
                 <Badge
                   size="xs"
                   radius="xl"
-                  color="teal"
+                  color="green"
                   variant="filled"
                   leftSection={<IconArrowBadgeUp size={14} />}
                   style={{ cursor: "pointer" }}
@@ -163,7 +162,7 @@ export default function ModCard({
             </Text>
           </Tooltip>
 
-          <Group gap={2} wrap="nowrap">
+          <Group gap="3xs" wrap="nowrap">
             <Tooltip label="Keybinds and toggles">
               <ActionIcon
                 variant="subtle"
@@ -186,7 +185,7 @@ export default function ModCard({
                 {updateInfo?.available && (
                   <Menu.Item
                     leftSection={<IconArrowBadgeUp size={14} />}
-                    color="teal"
+                    color="green"
                     onClick={() => onOpenUpdate(mod, updateInfo)}
                   >
                     View Update
@@ -196,7 +195,7 @@ export default function ModCard({
                   leftSection={<IconKeyboard size={14} />}
                   onClick={() => onOpenKeybinds(mod)}
                 >
-                  Keybinds and Toggles
+                  Keybinds and toggles
                 </Menu.Item>
                 <Menu.Item
                   leftSection={<IconFolderSymlink size={14} />}
@@ -238,7 +237,7 @@ export default function ModCard({
         </Group>
 
         <Group justify="space-between" align="center">
-          <Group gap={4}>
+          <Group gap="2xs">
             <Badge size="xs" radius="xl" variant="outline" color="gray">
               {mod.hashes.length} {mod.hashes.length === 1 ? "hash" : "hashes"}
             </Badge>
