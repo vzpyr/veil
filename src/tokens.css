@@ -126,6 +126,7 @@
   --height-empty-state: 280px;
   --size-thumb-sm: 44px;
   --size-badge-dot: 16px;
+  --size-badge-count-min: 24px;
   --font-size-badge-dot: 10px;
   --offset-badge: -4px;
 
@@ -783,6 +784,14 @@ button[role="tab"][aria-selected="true"] .mantine-Tabs-tabSection,
   height: var(--size-badge-dot);
   font-size: var(--font-size-badge-dot);
   padding: 0;
+}
+
+.badge-count {
+  min-width: var(--size-badge-count-min);
+  font-variant-numeric: tabular-nums;
+  justify-content: center;
+  padding-left: var(--space-3xs) !important;
+  padding-right: var(--space-3xs) !important;
 }
 
 .gb-rich-text {

@@ -116,7 +116,13 @@ export default function Sidebar({
               )
             }
             rightSection={
-              <Badge size="xs" radius="xl" variant="light" color="gray">
+              <Badge
+                size="xs"
+                radius="xl"
+                variant="light"
+                color="gray"
+                className="badge-count"
+              >
                 {totalModsCount}
               </Badge>
             }
@@ -134,7 +140,13 @@ export default function Sidebar({
               )
             }
             rightSection={
-              <Badge size="xs" radius="xl" variant="light" color="gray">
+              <Badge
+                size="xs"
+                radius="xl"
+                variant="light"
+                color="gray"
+                className="badge-count"
+              >
                 {uncategorizedCount}
               </Badge>
             }
@@ -190,7 +202,13 @@ export default function Sidebar({
                       </Menu.Item>
                     </Menu.Dropdown>
                   </Menu>
-                  <Badge size="xs" radius="xl" variant="light" color="gray">
+                  <Badge
+                    size="xs"
+                    radius="xl"
+                    variant="light"
+                    color="gray"
+                    className="badge-count"
+                  >
                     {cat.mod_count}
                   </Badge>
                 </Group>
