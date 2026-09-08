@@ -62,6 +62,15 @@ export default function CategoryDrawer({
     ...categories.map((c) => ({ value: c.name, label: c.name })),
   ];
 
+  const isConfirmDisabled =
+    (mode === "create" &&
+      (!nameInput.trim() ||
+        nameInput.trim().toLowerCase() === "uncategorized")) ||
+    (mode === "rename" &&
+      (!nameInput.trim() ||
+        nameInput.trim() === categoryName ||
+        nameInput.trim().toLowerCase() === "uncategorized"));
+
   const handleConfirm = () => {
     if (mode === "move" && modToMove) {
       const target = selectedCategory === "__root__" ? null : selectedCategory;
@@ -135,15 +144,22 @@ export default function CategoryDrawer({
 
         {(mode === "create" || mode === "rename") && (
           <TextInput
-            placeholder="Enter category name (for example Jane Doe)"
+            label={mode === "create" ? "Category Name" : "New Category Name"}
+            description={
+              mode === "create"
+                ? "Subfolder inside DISABLED_veil for organizing mods"
+                : "Renames the category directory in DISABLED_veil and active symlinks"
+            }
+            placeholder="e.g. Characters or Weapons"
             radius="xl"
             value={nameInput}
             onChange={(e) => setNameInput(e.currentTarget.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter") {
+              if (e.key === "Enter" && !isConfirmDisabled) {
                 handleConfirm();
               }
             }}
+            data-autofocus
           />
         )}
 
@@ -181,6 +197,7 @@ export default function CategoryDrawer({
             radius="xl"
             color={mode === "delete" ? "red" : undefined}
             onClick={handleConfirm}
+            disabled={isConfirmDisabled}
           >
             {mode === "move"
               ? "Move"

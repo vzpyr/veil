@@ -255,6 +255,9 @@ pub fn create_category(mods_dir: &Path, category_name: &str) -> Result<(), Strin
         return Err("Cannot use reserved category name 'Uncategorized'".to_string());
     }
     let cat_dir = get_disabled_dir(mods_dir).join(&sanitized);
+    if cat_dir.exists() {
+        return Err(format!("Category already exists: {}", sanitized));
+    }
     fs::create_dir_all(&cat_dir).map_err(|err| err.to_string())?;
     Ok(())
 }
@@ -787,6 +790,7 @@ mod tests {
 
         crate::symlink::ensure_veil_dirs(mods_dir).unwrap();
         create_category(mods_dir, "Dialyn").unwrap();
+        assert!(create_category(mods_dir, "Dialyn").is_err());
 
         let categories = list_categories(mods_dir).unwrap();
         assert_eq!(categories.len(), 1);

@@ -69,7 +69,8 @@ export default function ConflictDrawer({
                 No Active Conflicts
               </Text>
               <Text c="dimmed" size="xs" ta="center">
-                No active conflicts detected
+                All enabled mods are compatible without overlapping shader or
+                texture hashes.
               </Text>
             </Stack>
           </Center>

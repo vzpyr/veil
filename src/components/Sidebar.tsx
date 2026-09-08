@@ -160,9 +160,9 @@ export default function Sidebar({
               onClick={() => onSelectCategory(cat.name)}
               leftSection={
                 selectedCategory === cat.name ? (
-                  <IconArchiveFilled size={16} />
+                  <IconFolderFilled size={16} />
                 ) : (
-                  <IconArchive size={16} />
+                  <IconFolder size={16} />
                 )
               }
               rightSection={
@@ -230,6 +230,7 @@ export default function Sidebar({
             radius="xl"
             leftSection={<IconFolderPlus size={14} />}
             onClick={onOpenCreateCategory}
+            disabled={!hasModsDir}
           >
             New Category
           </Button>
@@ -251,6 +252,7 @@ export default function Sidebar({
             radius="xl"
             leftSection={<IconPackageImport size={14} />}
             onClick={onOpenManualInstall}
+            disabled={!hasModsDir}
           >
             Install Mod
           </Button>
