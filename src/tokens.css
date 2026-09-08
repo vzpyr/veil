@@ -788,7 +788,6 @@ button[role="tab"][aria-selected="true"] .mantine-Tabs-tabSection,
 
 .badge-count {
   min-width: var(--size-badge-count-min);
-  font-variant-numeric: tabular-nums;
   justify-content: center;
   padding-left: var(--space-3xs) !important;
   padding-right: var(--space-3xs) !important;
