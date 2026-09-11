@@ -24,10 +24,11 @@ import {
   Search,
   Sparkles,
   Trash2,
+  TriangleAlert,
   X,
 } from "lucide-react";
 import { motion } from "motion/react";
-import { CategoryItem } from "../types";
+import { CategoryItem, ConflictGroup } from "../types";
 import { fadeUp, staggerContainer } from "../motion";
 
 interface SidebarProps {
@@ -38,6 +39,8 @@ interface SidebarProps {
   uncategorizedCount: number;
   searchQuery: string;
   onSearchChange: (query: string) => void;
+  conflicts: ConflictGroup[];
+  onOpenConflicts: () => void;
   onOpenCreateCategory: () => void;
   onRenameCategory: (categoryName: string) => void;
   onDeleteCategory: (categoryName: string) => void;
@@ -58,6 +61,8 @@ export default function Sidebar({
   uncategorizedCount,
   searchQuery,
   onSearchChange,
+  conflicts,
+  onOpenConflicts,
   onOpenCreateCategory,
   onRenameCategory,
   onDeleteCategory,
@@ -240,6 +245,26 @@ export default function Sidebar({
         style={{ borderTop: "1px solid var(--color-border-subtle)" }}
       >
         <Stack gap="xs">
+          {conflicts.length > 0 && (
+            <Tooltip
+              label={`${conflicts.length} mod ${conflicts.length === 1 ? "conflict" : "conflicts"} detected`}
+            >
+              <Button
+                fullWidth
+                size="xs"
+                color="orange"
+                variant="light"
+                className="animate-scale-in"
+                leftSection={<TriangleAlert size={14} />}
+                onClick={onOpenConflicts}
+              >
+                Conflicts
+                <Badge size="xs" color="orange" ml="xs" variant="filled">
+                  {conflicts.length}
+                </Badge>
+              </Button>
+            </Tooltip>
+          )}
           <Button
             fullWidth
             variant="default"

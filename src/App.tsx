@@ -953,8 +953,6 @@ export default function App() {
         onSelectGame={handleSelectGame}
         activeTab={activeTab}
         onSelectTab={setActiveTab}
-        conflicts={conflicts}
-        onOpenConflicts={() => setConflictDrawerOpen(true)}
         activeDownloadCount={activeDownloadCount}
         onOpenDownloadQueue={() => setQueueDrawerOpen(true)}
       />
@@ -984,6 +982,8 @@ export default function App() {
                   uncategorizedCount={uncategorizedCount}
                   searchQuery={searchQuery}
                   onSearchChange={setSearchQuery}
+                  conflicts={conflicts}
+                  onOpenConflicts={() => setConflictDrawerOpen(true)}
                   onOpenCreateCategory={() =>
                     setCategoryModal({
                       open: true,

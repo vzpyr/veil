@@ -20,11 +20,10 @@ import {
   Minus,
   Settings,
   Square,
-  TriangleAlert,
   X,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { ConflictGroup, GameDefinition } from "../types";
+import { GameDefinition } from "../types";
 import veilLogo from "../assets/veil.png";
 
 interface HeaderProps {
@@ -33,8 +32,6 @@ interface HeaderProps {
   onSelectGame: (gameId: string) => void;
   activeTab: string;
   onSelectTab: (tab: string) => void;
-  conflicts: ConflictGroup[];
-  onOpenConflicts: () => void;
   activeDownloadCount: number;
   onOpenDownloadQueue: () => void;
 }
@@ -45,8 +42,6 @@ export default function Header({
   onSelectGame,
   activeTab,
   onSelectTab,
-  conflicts,
-  onOpenConflicts,
   activeDownloadCount,
   onOpenDownloadQueue,
 }: HeaderProps) {
@@ -186,26 +181,6 @@ export default function Header({
       />
 
       <Group gap="xs" wrap="nowrap" style={{ justifySelf: "end" }}>
-        {conflicts.length > 0 && (
-          <Tooltip
-            label={`${conflicts.length} mod ${conflicts.length === 1 ? "conflict" : "conflicts"} detected`}
-          >
-            <Button
-              size="xs"
-              color="orange"
-              variant="light"
-              className="animate-scale-in"
-              leftSection={<TriangleAlert size={14} />}
-              onClick={onOpenConflicts}
-            >
-              Conflicts
-              <Badge size="xs" color="orange" ml="xs" variant="filled">
-                {conflicts.length}
-              </Badge>
-            </Button>
-          </Tooltip>
-        )}
-
         <Tooltip label="Download queue">
           <ActionIcon
             variant={activeDownloadCount > 0 ? "light" : "default"}
