@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Veil
+Comment=Yet another 3DMigoto mod manager
+Exec=veil
+Icon=com.vzpyr.veil
+Type=Application
+Categories=Utility;

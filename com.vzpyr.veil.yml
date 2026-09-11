@@ -1,0 +1,34 @@
+app-id: com.vzpyr.veil
+runtime: org.gnome.Platform
+runtime-version: "47"
+sdk: org.gnome.Sdk
+command: veil
+finish-args:
+  - --share=ipc
+  - --socket=fallback-x11
+  - --socket=wayland
+  - --share=network
+  - --device=dri
+  - --filesystem=host
+  - --talk-name=org.freedesktop.Notifications
+modules:
+  - name: veil
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 veil /app/bin/veil
+      - install -Dm644 com.vzpyr.veil.desktop /app/share/applications/com.vzpyr.veil.desktop
+      - install -Dm644 com.vzpyr.veil.metainfo.xml /app/share/metainfo/com.vzpyr.veil.metainfo.xml
+      - install -Dm644 icons/32x32.png /app/share/icons/hicolor/32x32/apps/com.vzpyr.veil.png
+      - install -Dm644 icons/128x128.png /app/share/icons/hicolor/128x128/apps/com.vzpyr.veil.png
+      - install -Dm644 icons/128x128@2x.png /app/share/icons/hicolor/256x256/apps/com.vzpyr.veil.png
+      - install -Dm644 icons/1024x1024.png /app/share/icons/hicolor/1024x1024/apps/com.vzpyr.veil.png
+    sources:
+      - type: file
+        path: src-tauri/target/release/veil
+      - type: file
+        path: com.vzpyr.veil.desktop
+      - type: file
+        path: com.vzpyr.veil.metainfo.xml
+      - type: dir
+        path: src-tauri/icons
+        dest: icons

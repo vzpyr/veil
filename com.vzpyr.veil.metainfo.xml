@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.vzpyr.veil</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <name>Veil</name>
+  <summary>Yet another 3DMigoto mod manager</summary>
+  <description>
+    <p>
+      Veil is a lightweight, easy-to-use manager for 3DMigoto-based mods that lets you browse, install and configure mods across multiple games effortlessly.
+    </p>
+  </description>
+  <launchable type="desktop-id">com.vzpyr.veil.desktop</launchable>
+  <url type="homepage">https://github.com/vzpyr/veil</url>
+  <developer id="com.vzpyr">
+    <name>vzpyr</name>
+  </developer>
+  <content_rating type="oars-1.1"/>
+  <releases>
+    <release version="0.1.0" date="2026-09-11"/>
+  </releases>
+</component>

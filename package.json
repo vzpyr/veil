@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "build:flatpak": "flatpak-builder --user --install-deps-from=flathub --force-clean build-dir com.vzpyr.veil.yml --repo=repo && flatpak build-bundle repo veil.flatpak com.vzpyr.veil"
   },
   "dependencies": {
     "@mantine/carousel": "^7.17.1",
