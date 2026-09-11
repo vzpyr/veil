@@ -266,22 +266,22 @@ Function PageLeaveReinstall
   ${EndIf}
 
   ${If} $R0 = 0
-    ${If} $R1 = 1             
+    ${If} $R1 = 1
       Goto reinst_done
-    ${Else}                   
+    ${Else}
       Goto reinst_uninstall
     ${EndIf}
   ${ElseIf} $R0 = 1
-    ${If} $R1 = 1             
+    ${If} $R1 = 1
       Goto reinst_uninstall
     ${Else}
-      Goto reinst_done        
+      Goto reinst_done
     ${EndIf}
   ${ElseIf} $R0 = -1
-    ${If} $R1 = 1             
+    ${If} $R1 = 1
       Goto reinst_uninstall
     ${Else}
-      Goto reinst_done        
+      Goto reinst_done
     ${EndIf}
   ${EndIf}
 
@@ -431,12 +431,10 @@ Function .onInit
     Call RestorePreviousInstallLocation
   ${EndIf}
 
-
   !if "${INSTALLMODE}" == "both"
     !insertmacro MULTIUSER_INIT
   !endif
 FunctionEnd
-
 
 Section EarlyChecks
   !if "${ALLOWDOWNGRADES}" == "false"
@@ -684,7 +682,6 @@ Section Uninstall
       DeleteRegKey SHCTX "Software\Classes\\{{protocol}}"
     ${EndIf}
   {{/each}}
-
 
   Delete "$INSTDIR\uninstall.exe"
 
