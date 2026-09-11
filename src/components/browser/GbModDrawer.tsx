@@ -219,7 +219,7 @@ export default function GbModDrawer({
                   height="var(--height-carousel)"
                   slideSize="100%"
                   slideGap="sm"
-                  loop
+                  emblaOptions={{ loop: true }}
                 >
                   {images.map((img, idx) => (
                     <Carousel.Slide key={idx}>

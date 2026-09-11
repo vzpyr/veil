@@ -333,7 +333,7 @@ export const theme = createTheme({
       defaultProps: {
         radius: "pill",
       },
-      styles: (_theme, props) => ({
+      styles: (_theme: any, props: any) => ({
         root: {
           borderRadius: "var(--radius-pill)",
           paddingTop: "var(--space-2xs)",

@@ -11,27 +11,27 @@
     "build:flatpak": "flatpak-builder --user --install-deps-from=flathub --force-clean build-dir com.vzpyr.veil.yml --repo=repo && flatpak build-bundle repo veil.flatpak com.vzpyr.veil"
   },
   "dependencies": {
-    "@mantine/carousel": "^7.17.1",
-    "@mantine/core": "^7.17.1",
-    "@mantine/hooks": "^7.17.1",
-    "@mantine/notifications": "^7.17.1",
-    "@tauri-apps/api": "^2.2.0",
-    "@tauri-apps/plugin-dialog": "^2.2.0",
-    "@tauri-apps/plugin-opener": "^2.2.5",
-    "embla-carousel-react": "^8.5.2",
-    "lucide-react": "^1.44.0",
-    "motion": "^12.4.7",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "@mantine/carousel": "^9.6.1",
+    "@mantine/core": "^9.6.1",
+    "@mantine/hooks": "^9.6.1",
+    "@mantine/notifications": "^9.6.1",
+    "@tauri-apps/api": "^2.11.1",
+    "@tauri-apps/plugin-dialog": "^2.7.3",
+    "@tauri-apps/plugin-opener": "^2.5.5",
+    "embla-carousel-react": "^8.6.0",
+    "lucide-react": "^1.45.0",
+    "motion": "^13.2.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^2.2.7",
-    "@types/node": "^22.13.5",
-    "@types/react": "^19.0.10",
-    "@types/react-dom": "^19.0.4",
-    "@vitejs/plugin-react": "^4.3.4",
-    "prettier": "^3.5.2",
-    "typescript": "^5.7.3",
-    "vite": "^6.2.0"
+    "@tauri-apps/cli": "^2.11.4",
+    "@types/node": "^22.20.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "prettier": "^3.9.6",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.0"
   }
 }
