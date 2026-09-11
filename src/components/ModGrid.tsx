@@ -113,6 +113,7 @@ export default function ModGrid({
               value: "all",
               label: (
                 <Center
+                  h="var(--control-inner-height-xs)"
                   style={{
                     padding: "0 var(--space-xs)",
                     whiteSpace: "nowrap",
@@ -126,6 +127,7 @@ export default function ModGrid({
               value: "enabled",
               label: (
                 <Center
+                  h="var(--control-inner-height-xs)"
                   style={{
                     padding: "0 var(--space-xs)",
                     whiteSpace: "nowrap",
@@ -139,6 +141,7 @@ export default function ModGrid({
               value: "disabled",
               label: (
                 <Center
+                  h="var(--control-inner-height-xs)"
                   style={{
                     padding: "0 var(--space-xs)",
                     whiteSpace: "nowrap",
@@ -171,7 +174,10 @@ export default function ModGrid({
               {
                 value: "grid",
                 label: (
-                  <Center style={{ padding: "0 var(--space-3xs)" }}>
+                  <Center
+                    h="var(--control-inner-height-xs)"
+                    style={{ padding: "0 var(--space-3xs)" }}
+                  >
                     <LayoutGrid size={14} />
                   </Center>
                 ),
@@ -179,7 +185,10 @@ export default function ModGrid({
               {
                 value: "list",
                 label: (
-                  <Center style={{ padding: "0 var(--space-3xs)" }}>
+                  <Center
+                    h="var(--control-inner-height-xs)"
+                    style={{ padding: "0 var(--space-3xs)" }}
+                  >
                     <List size={14} />
                   </Center>
                 ),
