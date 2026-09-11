@@ -20,7 +20,9 @@ import {
   FolderPlus,
   PackagePlus,
   Pencil,
+  RefreshCw,
   Search,
+  Sparkles,
   Trash2,
   X,
 } from "lucide-react";
@@ -41,6 +43,10 @@ interface SidebarProps {
   onDeleteCategory: (categoryName: string) => void;
   onOpenManualInstall: () => void;
   onOpenModsFolder: () => void;
+  onCheckUpdates: () => void;
+  isCheckingUpdates: boolean;
+  onRescanMods: () => void;
+  isRefreshing: boolean;
   hasModsDir: boolean;
 }
 
@@ -57,6 +63,10 @@ export default function Sidebar({
   onDeleteCategory,
   onOpenManualInstall,
   onOpenModsFolder,
+  onCheckUpdates,
+  isCheckingUpdates,
+  onRescanMods,
+  isRefreshing,
   hasModsDir,
 }: SidebarProps) {
   return (
@@ -269,6 +279,28 @@ export default function Sidebar({
             disabled={!hasModsDir}
           >
             Install Mod
+          </Button>
+          <Button
+            fullWidth
+            variant="default"
+            size="xs"
+            radius="xl"
+            leftSection={<Sparkles size={14} />}
+            onClick={onCheckUpdates}
+            disabled={!hasModsDir || isCheckingUpdates}
+          >
+            Check Updates
+          </Button>
+          <Button
+            fullWidth
+            variant="default"
+            size="xs"
+            radius="xl"
+            leftSection={<RefreshCw size={14} />}
+            onClick={onRescanMods}
+            disabled={!hasModsDir || isRefreshing}
+          >
+            Rescan Mods
           </Button>
         </Stack>
       </Box>

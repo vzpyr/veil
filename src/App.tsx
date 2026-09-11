@@ -131,6 +131,24 @@ export default function App() {
     [modsDir],
   );
 
+  const handleRescanMods = async () => {
+    if (!modsDir) return;
+    try {
+      await refreshData();
+      notifications.show({
+        title: "Scan Complete",
+        message: "Mods directory rescanned successfully.",
+        color: "green",
+      });
+    } catch (err) {
+      notifications.show({
+        title: "Scan Error",
+        message: String(err),
+        color: "red",
+      });
+    }
+  };
+
   const handleCheckUpdates = async () => {
     if (mods.length === 0) return;
     try {
@@ -748,7 +766,7 @@ export default function App() {
         filters: [
           {
             name: "Mod Archives",
-            extensions: ["zip", "7z"],
+            extensions: ["zip", "7z", "rar"],
           },
         ],
       });
@@ -869,15 +887,8 @@ export default function App() {
         onSelectTab={setActiveTab}
         conflicts={conflicts}
         onOpenConflicts={() => setConflictDrawerOpen(true)}
-        onRefresh={() => refreshData()}
-        isRefreshing={isRefreshing}
         activeDownloadCount={activeDownloadCount}
         onOpenDownloadQueue={() => setQueueDrawerOpen(true)}
-        onCheckUpdates={handleCheckUpdates}
-        isCheckingUpdates={isCheckingUpdates}
-        updatesCount={
-          Object.values(updatesMap).filter((u) => u.available).length
-        }
       />
 
       <Flex style={{ flex: 1, overflow: "hidden" }}>
@@ -935,6 +946,10 @@ export default function App() {
                       handleReveal(modsDir);
                     }
                   }}
+                  onCheckUpdates={handleCheckUpdates}
+                  isCheckingUpdates={isCheckingUpdates}
+                  onRescanMods={handleRescanMods}
+                  isRefreshing={isRefreshing}
                   hasModsDir={Boolean(modsDir)}
                 />
 

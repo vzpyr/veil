@@ -118,8 +118,9 @@
   --sidebar-width: 240px;
 
   --size-logo-height: 26px;
+  --size-hairline: 1px;
 
-  --control-width-sm: 160px;
+  --control-width-sm: 150px;
   --control-width-md: 210px;
   --control-width-lg: 240px;
 
@@ -950,11 +951,10 @@ button[role="tab"][aria-selected="true"] .mantine-Tabs-tabSection,
   letter-spacing: 0.01em;
 }
 
-.mantine-Badge-root[data-variant="filled"][data-color="dark"] {
-  background-color: rgba(14, 17, 22, 0.85) !important;
+.badge-overlay {
+  background-color: var(--color-bg-surface-2) !important;
   color: var(--color-text-primary) !important;
   border: 1px solid var(--color-border-strong) !important;
-  backdrop-filter: blur(4px);
 }
 
 .mantine-Badge-root[data-variant="outline"][data-color="gray"] {

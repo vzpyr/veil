@@ -103,15 +103,21 @@ export default function ModCard({
         <Group
           style={{
             position: "absolute",
-            top: "var(--space-xs)",
-            left: "var(--space-xs)",
-            right: "var(--space-xs)",
+            top: "var(--space-sm)",
+            left: "var(--space-sm)",
+            right: "var(--space-sm)",
             justifyContent: "space-between",
           }}
         >
           <Group gap="2xs">
             {mod.category && (
-              <Badge size="xs" radius="xl" variant="filled" color="dark">
+              <Badge
+                size="xs"
+                radius="xl"
+                variant="filled"
+                color="dark"
+                className="badge-overlay"
+              >
                 {mod.category}
               </Badge>
             )}

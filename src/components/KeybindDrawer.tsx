@@ -1,6 +1,5 @@
 import {
   ActionIcon,
-  Alert,
   Badge,
   Button,
   Card,
@@ -18,9 +17,7 @@ import {
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import {
-  Check,
   CircleAlert,
-  Info,
   Keyboard,
   RefreshCw,
   SlidersHorizontal,
@@ -232,12 +229,6 @@ export default function KeybindDrawer({
         variable,
         newValue,
       });
-      notifications.show({
-        title: "Toggle Updated",
-        message: "Saved variable state to d3dx_user.ini.",
-        color: "green",
-        icon: <Check size={16} />,
-      });
     } catch (err) {
       setData(previousData);
       notifications.show({
@@ -272,12 +263,6 @@ export default function KeybindDrawer({
         iniPath: keybind.ini_path,
         section: keybind.section,
         newKey: newCombo,
-      });
-      notifications.show({
-        title: "Keybind Updated",
-        message: `Saved key combination ${newCombo} to ${keybind.label}.`,
-        color: "green",
-        icon: <Check size={16} />,
       });
     } catch (err) {
       setData((prev) =>
@@ -357,6 +342,7 @@ export default function KeybindDrawer({
         setRecordingIndex(null);
         onClose();
       }}
+      closeOnEscape={recordingIndex === null}
       position="right"
       size="lg"
       radius="lg"
@@ -383,11 +369,6 @@ export default function KeybindDrawer({
                 <Text fw={600} size="sm">
                   {mod.name}
                 </Text>
-                {mod.category && (
-                  <Badge size="xs" radius="xl" variant="filled" color="dark">
-                    {mod.category}
-                  </Badge>
-                )}
               </Stack>
               <Tooltip label="Refresh keybinds and toggle states">
                 <ActionIcon
@@ -403,16 +384,6 @@ export default function KeybindDrawer({
             </Group>
           </Card>
         )}
-
-        <Alert
-          color="gray"
-          variant="light"
-          radius="md"
-          icon={<Info size={16} />}
-        >
-          Toggle states are persisted to d3dx_user.ini in your loader root
-          folder. Keybind remappings update the mod configuration directly.
-        </Alert>
 
         {loading ? (
           <Center py="xl">

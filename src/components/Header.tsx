@@ -1,6 +1,7 @@
 import {
   ActionIcon,
   Badge,
+  Box,
   Button,
   Center,
   Group,
@@ -10,15 +11,19 @@ import {
   Text,
   Tooltip,
 } from "@mantine/core";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import {
+  Copy,
   Download,
   Folder,
   Globe,
-  RefreshCw,
+  Minus,
   Settings,
-  Sparkles,
+  Square,
   TriangleAlert,
+  X,
 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { ConflictGroup, GameDefinition } from "../types";
 import veilLogo from "../assets/veil.png";
 
@@ -30,13 +35,8 @@ interface HeaderProps {
   onSelectTab: (tab: string) => void;
   conflicts: ConflictGroup[];
   onOpenConflicts: () => void;
-  onRefresh: () => void;
-  isRefreshing: boolean;
   activeDownloadCount: number;
   onOpenDownloadQueue: () => void;
-  onCheckUpdates?: () => void;
-  isCheckingUpdates?: boolean;
-  updatesCount?: number;
 }
 
 export default function Header({
@@ -47,14 +47,43 @@ export default function Header({
   onSelectTab,
   conflicts,
   onOpenConflicts,
-  onRefresh,
-  isRefreshing,
   activeDownloadCount,
   onOpenDownloadQueue,
-  onCheckUpdates,
-  isCheckingUpdates,
-  updatesCount = 0,
 }: HeaderProps) {
+  const appWindow = useMemo(() => getCurrentWindow(), []);
+  const [isMaximized, setIsMaximized] = useState(false);
+
+  useEffect(() => {
+    let disposed = false;
+    let unlisten: (() => void) | undefined;
+
+    const syncMaximized = () => {
+      void appWindow.isMaximized().then((maximized) => {
+        if (!disposed) {
+          setIsMaximized(maximized);
+        }
+      });
+    };
+
+    void appWindow.onResized(syncMaximized).then((fn) => {
+      if (disposed) {
+        fn();
+        return;
+      }
+      unlisten = fn;
+    });
+    syncMaximized();
+
+    return () => {
+      disposed = true;
+      unlisten?.();
+    };
+  }, [appWindow]);
+
+  const handleMinimize = () => void appWindow.minimize();
+  const handleToggleMaximize = () => void appWindow.toggleMaximize();
+  const handleClose = () => void appWindow.close();
+
   const gameSelectData = games.map((g) => ({
     value: g.id,
     label: g.name,
@@ -74,7 +103,7 @@ export default function Header({
         >
           <Folder size={16} />
           <Text size="xs" fw={600}>
-            Installed
+            Mods
           </Text>
         </Center>
       ),
@@ -118,16 +147,19 @@ export default function Header({
   ];
 
   return (
-    <Group
+    <Box
       h="var(--header-height)"
       px="sm"
-      justify="space-between"
+      data-tauri-drag-region="deep"
       style={{
         backgroundColor: "var(--color-bg-surface-1)",
         borderBottom: "1px solid var(--color-border-subtle)",
+        display: "grid",
+        gridTemplateColumns: "minmax(0, 1fr) auto minmax(0, 1fr)",
+        alignItems: "center",
       }}
     >
-      <Group gap="sm">
+      <Group gap="sm" wrap="nowrap" style={{ justifySelf: "start" }}>
         <Image
           src={veilLogo}
           h="var(--size-logo-height)"
@@ -138,7 +170,7 @@ export default function Header({
 
         <Select
           size="xs"
-          w="var(--control-width-md)"
+          w="var(--control-width-sm)"
           data={gameSelectData}
           value={activeGameId}
           onChange={(val) => val && onSelectGame(val)}
@@ -155,7 +187,7 @@ export default function Header({
         data={tabData}
       />
 
-      <Group gap="xs">
+      <Group gap="xs" wrap="nowrap" style={{ justifySelf: "end" }}>
         {conflicts.length > 0 && (
           <Tooltip label={`${conflicts.length} mod conflicts detected`}>
             <Button
@@ -204,44 +236,45 @@ export default function Header({
           </ActionIcon>
         </Tooltip>
 
-        {onCheckUpdates && (
-          <Tooltip label="Check mod updates">
-            <ActionIcon
-              variant={updatesCount > 0 ? "light" : "default"}
-              color={updatesCount > 0 ? "gray" : undefined}
-              size="md"
-              radius="xl"
-              onClick={onCheckUpdates}
-              loading={isCheckingUpdates}
-              style={{ position: "relative" }}
-            >
-              <Sparkles size={16} />
-              {updatesCount > 0 && (
-                <Badge
-                  size="xs"
-                  circle
-                  color="dark"
-                  className="badge-counter-dot"
-                >
-                  {updatesCount}
-                </Badge>
-              )}
-            </ActionIcon>
-          </Tooltip>
-        )}
+        <Box
+          w="var(--size-hairline)"
+          h="var(--space-lg)"
+          style={{ backgroundColor: "var(--color-border-strong)" }}
+        />
 
-        <Tooltip label="Rescan mods directory">
+        <Tooltip label="Minimize">
           <ActionIcon
-            variant="default"
+            variant="subtle"
             size="md"
             radius="xl"
-            onClick={onRefresh}
-            loading={isRefreshing}
+            onClick={handleMinimize}
           >
-            <RefreshCw size={16} />
+            <Minus size={16} />
+          </ActionIcon>
+        </Tooltip>
+
+        <Tooltip label={isMaximized ? "Restore" : "Maximize"}>
+          <ActionIcon
+            variant="subtle"
+            size="md"
+            radius="xl"
+            onClick={handleToggleMaximize}
+          >
+            {isMaximized ? <Copy size={16} /> : <Square size={16} />}
+          </ActionIcon>
+        </Tooltip>
+
+        <Tooltip label="Close">
+          <ActionIcon
+            variant="subtle"
+            size="md"
+            radius="xl"
+            onClick={handleClose}
+          >
+            <X size={16} />
           </ActionIcon>
         </Tooltip>
       </Group>
-    </Group>
+    </Box>
   );
 }
