@@ -58,10 +58,13 @@ pub fn format_section_label(section_name: &str) -> String {
                 result.push(' ');
             }
         } else if c.is_uppercase() {
-            if let Some(prev) = prev_char {
-                if !prev.is_uppercase() && prev != '_' && prev != '-' && !result.ends_with(' ') {
-                    result.push(' ');
-                }
+            if let Some(prev) = prev_char
+                && !prev.is_uppercase()
+                && prev != '_'
+                && prev != '-'
+                && !result.ends_with(' ')
+            {
+                result.push(' ');
             }
             result.push(c);
         } else {
@@ -95,12 +98,11 @@ fn collect_ini_files(dir: &Path) -> Vec<PathBuf> {
             let path = entry.path();
             if path.is_dir() {
                 stack.push(path);
-            } else if path.is_file() {
-                if let Some(ext) = path.extension() {
-                    if ext.eq_ignore_ascii_case("ini") {
-                        files.push(path);
-                    }
-                }
+            } else if path.is_file()
+                && let Some(ext) = path.extension()
+                && ext.eq_ignore_ascii_case("ini")
+            {
+                files.push(path);
             }
         }
     }
@@ -169,30 +171,32 @@ pub fn parse_mod_keybinds_and_variables(
                     ini_path: ini_path.to_string_lossy().to_string(),
                 });
 
-                if !b_type.eq_ignore_ascii_case("hold") {
-                    if let Some(var_name) = section_var {
-                        let mut possible = section_vals.to_vec();
-                        if b_type.eq_ignore_ascii_case("toggle") && possible.len() == 1 {
-                            if !possible.contains(&0) {
-                                possible.insert(0, 0);
-                            }
-                        }
-                        if possible.is_empty() {
-                            possible = vec![0, 1];
-                        }
+                if !b_type.eq_ignore_ascii_case("hold")
+                    && let Some(var_name) = section_var
+                {
+                    let mut possible = section_vals.to_vec();
+                    if b_type.eq_ignore_ascii_case("toggle")
+                        && possible.len() == 1
+                        && !possible.contains(&0)
+                    {
+                        possible.insert(0, 0);
+                    }
+                    if possible.is_empty() {
+                        possible = vec![0, 1];
+                    }
 
-                        let entry = variables_map.entry(var_name.clone()).or_insert_with(|| {
-                            ModVariableState {
+                    let entry =
+                        variables_map
+                            .entry(var_name.clone())
+                            .or_insert_with(|| ModVariableState {
                                 variable: var_name.clone(),
                                 label,
                                 current_value: possible.first().copied().unwrap_or(0),
                                 possible_values: Vec::new(),
-                            }
-                        });
-                        for v in &possible {
-                            if !entry.possible_values.contains(v) {
-                                entry.possible_values.push(*v);
-                            }
+                            });
+                    for v in &possible {
+                        if !entry.possible_values.contains(v) {
+                            entry.possible_values.push(*v);
                         }
                     }
                 }
@@ -238,35 +242,35 @@ pub fn parse_mod_keybinds_and_variables(
                         String::new()
                     };
 
-                    if !var_name.is_empty() {
-                        if let Ok(val) = right_trimmed.parse::<i64>() {
-                            constants_defaults.insert(var_name, val);
-                        }
+                    if !var_name.is_empty()
+                        && let Ok(val) = right_trimmed.parse::<i64>()
+                    {
+                        constants_defaults.insert(var_name, val);
                     }
                 }
-            } else if current_section.to_ascii_lowercase().starts_with("[key") {
-                if let Some((left, right)) = clean.split_once('=') {
-                    let key_name = left.trim().to_ascii_lowercase();
-                    let val = right.trim();
+            } else if current_section.to_ascii_lowercase().starts_with("[key")
+                && let Some((left, right)) = clean.split_once('=')
+            {
+                let key_name = left.trim().to_ascii_lowercase();
+                let val = right.trim();
 
-                    if key_name == "key" {
-                        section_key = val.to_string();
-                    } else if key_name == "type" {
-                        section_type = val.to_string();
-                    } else if key_name.starts_with('$') {
-                        let var_name = left.trim().to_string();
-                        section_var = Some(var_name);
-                        let mut vals = Vec::new();
-                        for part in val.split(',') {
-                            if let Ok(num) = part.trim().parse::<i64>() {
-                                vals.push(num);
-                            }
+                if key_name == "key" {
+                    section_key = val.to_string();
+                } else if key_name == "type" {
+                    section_type = val.to_string();
+                } else if key_name.starts_with('$') {
+                    let var_name = left.trim().to_string();
+                    section_var = Some(var_name);
+                    let mut vals = Vec::new();
+                    for part in val.split(',') {
+                        if let Ok(num) = part.trim().parse::<i64>() {
+                            vals.push(num);
                         }
-                        if vals.is_empty() {
-                            vals = vec![0, 1];
-                        }
-                        section_vals = vals;
                     }
+                    if vals.is_empty() {
+                        vals = vec![0, 1];
+                    }
+                    section_vals = vals;
                 }
             }
         }
@@ -299,13 +303,11 @@ pub fn parse_mod_keybinds_and_variables(
         .unwrap_or("")
         .to_string();
 
-    if has_d3dx_user {
-        if let Ok(user_ini_content) = fs::read_to_string(&d3dx_user_path) {
-            let user_values = parse_d3dx_user_values(&user_ini_content, &mod_folder_name);
-            for (var, val) in user_values {
-                if let Some(state) = variables_map.get_mut(&var) {
-                    state.current_value = val;
-                }
+    if has_d3dx_user && let Ok(user_ini_content) = fs::read_to_string(&d3dx_user_path) {
+        let user_values = parse_d3dx_user_values(&user_ini_content, &mod_folder_name);
+        for (var, val) in user_values {
+            if let Some(state) = variables_map.get_mut(&var) {
+                state.current_value = val;
             }
         }
     }
@@ -343,19 +345,17 @@ pub fn parse_d3dx_user_values(content: &str, mod_folder_name: &str) -> HashMap<S
             continue;
         }
 
-        if in_constants {
-            if let Some((left, right)) = clean.split_once('=') {
-                let left_trimmed = left.trim();
-                let right_trimmed = right.trim();
-                let lower_left = left_trimmed.to_ascii_lowercase();
+        if in_constants && let Some((left, right)) = clean.split_once('=') {
+            let left_trimmed = left.trim();
+            let right_trimmed = right.trim();
+            let lower_left = left_trimmed.to_ascii_lowercase();
 
-                if let Ok(val) = right_trimmed.parse::<i64>() {
-                    if lower_left.starts_with(&target_prefix) {
-                        let var_name = format!("${}", &left_trimmed[target_prefix.len()..]);
-                        results.insert(var_name, val);
-                    } else if left_trimmed.starts_with('$') && !left_trimmed.contains('\\') {
-                        results.insert(left_trimmed.to_string(), val);
-                    }
+            if let Ok(val) = right_trimmed.parse::<i64>() {
+                if lower_left.starts_with(&target_prefix) {
+                    let var_name = format!("${}", &left_trimmed[target_prefix.len()..]);
+                    results.insert(var_name, val);
+                } else if left_trimmed.starts_with('$') && !left_trimmed.contains('\\') {
+                    results.insert(left_trimmed.to_string(), val);
                 }
             }
         }
@@ -392,12 +392,12 @@ pub fn update_ini_keybind(
 
         if inside_target {
             let clean = strip_comments(trimmed);
-            if let Some((left, _)) = clean.split_once('=') {
-                if left.trim().eq_ignore_ascii_case("key") {
-                    lines[i] = format!("key = {}", new_key);
-                    replaced = true;
-                    break;
-                }
+            if let Some((left, _)) = clean.split_once('=')
+                && left.trim().eq_ignore_ascii_case("key")
+            {
+                lines[i] = format!("key = {}", new_key);
+                replaced = true;
+                break;
             }
         }
     }
@@ -428,11 +428,7 @@ pub fn set_d3dx_user_toggle(
     let loader_root = mods_dir.parent().unwrap_or(mods_dir);
     let d3dx_user_path = loader_root.join("d3dx_user.ini");
 
-    let clean_var = if variable.starts_with('$') {
-        &variable[1..]
-    } else {
-        variable
-    };
+    let clean_var = variable.strip_prefix('$').unwrap_or(variable);
 
     let target_key = format!("$\\{}\\{}", mod_folder_name, clean_var);
     let target_lower = target_key.to_ascii_lowercase();
@@ -448,8 +444,8 @@ pub fn set_d3dx_user_toggle(
     let mut constants_end_idx = None;
     let mut updated = false;
 
-    for i in 0..lines.len() {
-        let trimmed = lines[i].trim();
+    for (i, line) in lines.iter_mut().enumerate() {
+        let trimmed = line.trim();
         if trimmed.starts_with('[') && trimmed.ends_with(']') {
             if constants_found {
                 constants_end_idx = Some(i);
@@ -463,12 +459,12 @@ pub fn set_d3dx_user_toggle(
 
         if constants_found {
             let clean = strip_comments(trimmed);
-            if let Some((left, _)) = clean.split_once('=') {
-                if left.trim().to_ascii_lowercase() == target_lower {
-                    lines[i] = format!("{} = {}", target_key, new_value);
-                    updated = true;
-                    break;
-                }
+            if let Some((left, _)) = clean.split_once('=')
+                && left.trim().to_ascii_lowercase() == target_lower
+            {
+                *line = format!("{} = {}", target_key, new_value);
+                updated = true;
+                break;
             }
         }
     }

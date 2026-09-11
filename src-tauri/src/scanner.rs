@@ -44,12 +44,12 @@ pub fn extract_hashes_from_ini(content: &str) -> Vec<String> {
         };
 
         let lower = clean_line.to_ascii_lowercase();
-        if lower.starts_with("hash") {
-            if let Some((_, val)) = lower.split_once('=') {
-                let hash_val = val.trim().to_string();
-                if !hash_val.is_empty() {
-                    hashes.insert(hash_val);
-                }
+        if lower.starts_with("hash")
+            && let Some((_, val)) = lower.split_once('=')
+        {
+            let hash_val = val.trim().to_string();
+            if !hash_val.is_empty() {
+                hashes.insert(hash_val);
             }
         }
     }
@@ -72,16 +72,14 @@ fn collect_hashes_from_folder(dir: &Path) -> Vec<String> {
             let path = entry.path();
             if path.is_dir() {
                 stack.push(path);
-            } else if path.is_file() {
-                if let Some(ext) = path.extension() {
-                    if ext.eq_ignore_ascii_case("ini") {
-                        if let Ok(bytes) = fs::read(&path) {
-                            let content = String::from_utf8_lossy(&bytes);
-                            for hash in extract_hashes_from_ini(&content) {
-                                all_hashes.insert(hash);
-                            }
-                        }
-                    }
+            } else if path.is_file()
+                && let Some(ext) = path.extension()
+                && ext.eq_ignore_ascii_case("ini")
+                && let Ok(bytes) = fs::read(&path)
+            {
+                let content = String::from_utf8_lossy(&bytes);
+                for hash in extract_hashes_from_ini(&content) {
+                    all_hashes.insert(hash);
                 }
             }
         }
@@ -104,16 +102,13 @@ fn find_preview_image(dir: &Path) -> Option<String> {
     let entries = fs::read_dir(dir).ok()?;
     for entry in entries.flatten() {
         let path = entry.path();
-        if path.is_file() {
-            if let Some(stem) = path.file_stem().and_then(|s| s.to_str()) {
-                if stem.to_ascii_lowercase().starts_with("preview") {
-                    if let Some(ext) = path.extension().and_then(|e| e.to_str()) {
-                        if image_extensions.iter().any(|e| e.eq_ignore_ascii_case(ext)) {
-                            return Some(path.to_string_lossy().to_string());
-                        }
-                    }
-                }
-            }
+        if path.is_file()
+            && let Some(stem) = path.file_stem().and_then(|s| s.to_str())
+            && stem.to_ascii_lowercase().starts_with("preview")
+            && let Some(ext) = path.extension().and_then(|e| e.to_str())
+            && image_extensions.iter().any(|e| e.eq_ignore_ascii_case(ext))
+        {
+            return Some(path.to_string_lossy().to_string());
         }
     }
 
@@ -239,23 +234,23 @@ pub fn list_categories(mods_dir: &Path) -> Result<Vec<CategoryItem>, String> {
 
     for entry in entries.flatten() {
         let path = entry.path();
-        if path.is_dir() {
-            if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
-                if name.starts_with('.') {
-                    continue;
-                }
-                if name.eq_ignore_ascii_case(UNCATEGORIZED_DIR_NAME) {
-                    continue;
-                }
-                let sub_count = fs::read_dir(&path)
-                    .map(|entries| entries.flatten().filter(|e| e.path().is_dir()).count())
-                    .unwrap_or(0);
-
-                categories.push(CategoryItem {
-                    name: name.to_string(),
-                    mod_count: sub_count,
-                });
+        if path.is_dir()
+            && let Some(name) = path.file_name().and_then(|n| n.to_str())
+        {
+            if name.starts_with('.') {
+                continue;
             }
+            if name.eq_ignore_ascii_case(UNCATEGORIZED_DIR_NAME) {
+                continue;
+            }
+            let sub_count = fs::read_dir(&path)
+                .map(|entries| entries.flatten().filter(|e| e.path().is_dir()).count())
+                .unwrap_or(0);
+
+            categories.push(CategoryItem {
+                name: name.to_string(),
+                mod_count: sub_count,
+            });
         }
     }
 
@@ -317,14 +312,14 @@ pub fn rename_category(mods_dir: &Path, old_name: &str, new_name: &str) -> Resul
     let new_active_cat = active_dir.join(&sanitized_new);
 
     let mut enabled_mods = Vec::new();
-    if old_active_cat.exists() {
-        if let Ok(entries) = fs::read_dir(&old_active_cat) {
-            for entry in entries.flatten() {
-                if entry.path().symlink_metadata().is_ok() {
-                    if let Some(name) = entry.file_name().to_str() {
-                        enabled_mods.push(name.to_string());
-                    }
-                }
+    if old_active_cat.exists()
+        && let Ok(entries) = fs::read_dir(&old_active_cat)
+    {
+        for entry in entries.flatten() {
+            if entry.path().symlink_metadata().is_ok()
+                && let Some(name) = entry.file_name().to_str()
+            {
+                enabled_mods.push(name.to_string());
             }
         }
     }
@@ -544,10 +539,11 @@ pub fn move_mod_category(
 
     fs::rename(&old_source, &new_source).map_err(|err| err.to_string())?;
 
-    if let Some(old_parent) = old_source.parent() {
-        if old_parent != disabled_dir && is_dir_empty_or_hidden(old_parent) {
-            let _ = fs::remove_dir_all(old_parent);
-        }
+    if let Some(old_parent) = old_source.parent()
+        && old_parent != disabled_dir
+        && is_dir_empty_or_hidden(old_parent)
+    {
+        let _ = fs::remove_dir_all(old_parent);
     }
 
     if was_enabled {
@@ -573,10 +569,11 @@ pub fn delete_mod(mods_dir: &Path, mod_rel_path: &str) -> Result<(), String> {
         fs::remove_dir_all(&source_dir).map_err(|err| err.to_string())?;
     }
 
-    if let Some(parent) = source_dir.parent() {
-        if parent != disabled_dir && is_dir_empty_or_hidden(parent) {
-            let _ = fs::remove_dir_all(parent);
-        }
+    if let Some(parent) = source_dir.parent()
+        && parent != disabled_dir
+        && is_dir_empty_or_hidden(parent)
+    {
+        let _ = fs::remove_dir_all(parent);
     }
 
     Ok(())

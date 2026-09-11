@@ -8,7 +8,7 @@ pub mod scanner;
 pub mod symlink;
 
 use archive::{extract_any_archive, sanitize_folder_name};
-use config::{AppConfig, GameSettings, get_config_path, read_config, write_config};
+use config::{AppConfig, get_config_path, read_config, write_config};
 use conflict::{ConflictGroup, detect_conflicts};
 use gamebanana::{
     CancelRegistry, TempRegistry, clear_temp_artifacts, clear_temp_paths, download_and_install_mod,
@@ -64,10 +64,7 @@ fn set_game_mods_dir(
         ensure_veil_dirs(p)?;
     }
 
-    let entry = config
-        .games
-        .entry(game_id)
-        .or_insert_with(GameSettings::default);
+    let entry = config.games.entry(game_id).or_default();
     entry.mods_dir = if trimmed.is_empty() {
         None
     } else {
@@ -270,6 +267,7 @@ fn extract_archive_file(
 }
 
 #[tauri::command]
+#[allow(clippy::too_many_arguments)]
 async fn download_mod(
     app: AppHandle,
     cancel: State<'_, CancelRegistry>,

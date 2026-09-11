@@ -111,6 +111,7 @@ pub fn clear_temp_paths(archive_path: &Path, extract_dir: &Path) {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub async fn download_and_install_mod(
     app: AppHandle,
     cancel: &CancelRegistry,
@@ -169,7 +170,7 @@ pub async fn download_and_install_mod(
     let ext = response
         .url()
         .path_segments()
-        .and_then(|segments| segments.last())
+        .and_then(|mut segments| segments.next_back())
         .and_then(|name| Path::new(name).extension())
         .and_then(|ext| ext.to_str())
         .unwrap_or("zip");
@@ -292,17 +293,14 @@ pub async fn download_and_install_mod(
     };
     clear_temp_paths(&temp_archive_path, &temp_extract_dir);
 
-    if let Some(img_url) = preview_url {
-        if !img_url.is_empty() {
-            if let Ok(img_resp) = client.get(&img_url).send().await {
-                if img_resp.status().is_success() {
-                    if let Ok(img_bytes) = img_resp.bytes().await {
-                        let preview_dest = extracted_dir.join("preview.png");
-                        let _ = fs::write(preview_dest, img_bytes);
-                    }
-                }
-            }
-        }
+    if let Some(img_url) = preview_url
+        && !img_url.is_empty()
+        && let Ok(img_resp) = client.get(&img_url).send().await
+        && img_resp.status().is_success()
+        && let Ok(img_bytes) = img_resp.bytes().await
+    {
+        let preview_dest = extracted_dir.join("preview.png");
+        let _ = fs::write(preview_dest, img_bytes);
     }
 
     let meta = serde_json::json!({

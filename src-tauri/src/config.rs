@@ -4,15 +4,9 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use tauri::{AppHandle, Manager};
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct GameSettings {
     pub mods_dir: Option<String>,
-}
-
-impl Default for GameSettings {
-    fn default() -> Self {
-        Self { mods_dir: None }
-    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -122,9 +116,11 @@ mod tests {
     fn test_write_and_read_config() {
         let temp = tempdir().unwrap();
         let path = temp.path().join("config.json");
-        let mut config = AppConfig::default();
-        config.auto_check_updates = true;
-        config.view_mode = "list".to_string();
+        let config = AppConfig {
+            auto_check_updates: true,
+            view_mode: "list".to_string(),
+            ..AppConfig::default()
+        };
 
         write_config(&path, &config).unwrap();
         let loaded = read_config(&path);
@@ -132,4 +128,3 @@ mod tests {
         assert_eq!(loaded.view_mode, "list");
     }
 }
-
