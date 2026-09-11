@@ -160,7 +160,7 @@ export default function Header({
           h="var(--size-logo-height)"
           w="auto"
           fit="contain"
-          alt="veil"
+          alt="Veil"
         />
 
         <Select
