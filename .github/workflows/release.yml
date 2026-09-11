@@ -12,8 +12,13 @@ jobs:
   build:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            bundles: deb,rpm,appimage
+          - os: windows-latest
+            bundles: nsis
 
     steps:
       - uses: actions/checkout@v4
@@ -24,11 +29,15 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@stable
 
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
       - name: Install Linux dependencies
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev flatpak flatpak-builder
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf rpm flatpak flatpak-builder
           flatpak remote-add --if-not-exists --user flathub https://flathub.org/repo/flathub.flatpakrepo
           flatpak install -y --user flathub org.gnome.Platform//50 org.gnome.Sdk//50
 
@@ -37,22 +46,47 @@ jobs:
 
       - name: Build Linux
         if: matrix.os == 'ubuntu-latest'
+        env:
+          NO_STRIP: "true"
         run: |
-          npm run tauri build -- --bundles deb,appimage
+          npm run tauri build -- --bundles ${{ matrix.bundles }}
           flatpak-builder --user --install-deps-from=flathub --force-clean build-dir com.vzpyr.veil.yml --repo=repo
           flatpak build-bundle repo veil.flatpak com.vzpyr.veil
 
       - name: Build Windows
         if: matrix.os == 'windows-latest'
-        run: npm run tauri build -- --bundles nsis
+        run: npm run tauri build -- --bundles ${{ matrix.bundles }}
+
+      - name: Rename
+        shell: bash
+        env:
+          VERSION: ${{ github.ref_name }}
+        run: |
+          if [ -f veil.flatpak ]; then
+            mv veil.flatpak "veil-${VERSION#v}-x86_64.flatpak"
+          fi
+          if [ -f src-tauri/target/release/veil.exe ]; then
+            cp src-tauri/target/release/veil.exe "src-tauri/target/release/bundle/nsis/veil-${VERSION#v}-x64.exe"
+          fi
+          cd src-tauri/target
+          while IFS= read -r f; do
+            d="${f%/*}"
+            case "$f" in
+              *.deb) mv "$f" "$d/veil-${VERSION#v}-amd64.deb" ;;
+              *.rpm) mv "$f" "$d/veil-${VERSION#v}-x86_64.rpm" ;;
+              *.AppImage) mv "$f" "$d/veil-${VERSION#v}-x86_64.AppImage" ;;
+              *setup.exe) mv "$f" "$d/veil-${VERSION#v}-x64-setup.exe" ;;
+            esac
+          done < <(find . -path '*/bundle/*/*' -type f \( -name '*.deb' -o -name '*.rpm' -o -name '*.AppImage' -o -name '*setup.exe' \))
 
       - name: Upload
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            src-tauri/target/release/bundle/deb/*.deb
-            src-tauri/target/release/bundle/appimage/*.AppImage
+            src-tauri/target/**/bundle/deb/*.deb
+            src-tauri/target/**/bundle/rpm/*.rpm
+            src-tauri/target/**/bundle/appimage/*.AppImage
             *.flatpak
-            src-tauri/target/release/bundle/nsis/*.exe
+            src-tauri/target/**/bundle/nsis/*.exe
           draft: true
           generate_release_notes: true
