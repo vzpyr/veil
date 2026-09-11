@@ -3,6 +3,11 @@ use std::io::{self, BufReader};
 use std::path::{Component, Path, PathBuf};
 use zip::ZipArchive;
 
+const WINDOWS_RESERVED: [&str; 22] = [
+    "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8",
+    "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
+];
+
 pub fn sanitize_folder_name(name: &str) -> String {
     let mut sanitized = String::new();
     for c in name.chars() {
@@ -23,10 +28,14 @@ pub fn sanitize_folder_name(name: &str) -> String {
     }
     let trimmed = sanitized.trim().trim_matches('.').to_string();
     if trimmed.is_empty() {
-        "unnamed_mod".to_string()
-    } else {
-        trimmed
+        return "unnamed_mod".to_string();
     }
+    let dot = trimmed.find('.').unwrap_or(trimmed.len());
+    let stem = &trimmed[..dot];
+    if WINDOWS_RESERVED.contains(&stem.to_ascii_uppercase().as_str()) {
+        return format!("{}_{}", stem, &trimmed[dot..]);
+    }
+    trimmed
 }
 
 pub fn is_safe_path(path: &Path) -> bool {
@@ -80,6 +89,46 @@ pub fn resolve_destination_folder(
         }
     }
     primary
+}
+
+pub fn reserve_temp_paths(
+    temp_dir: &Path,
+    sanitized_name: &str,
+    archive_ext: &str,
+) -> Result<(PathBuf, PathBuf, File), String> {
+    let mut index: u64 = 0;
+    loop {
+        let stem = if index == 0 {
+            sanitized_name.to_string()
+        } else {
+            format!("{} ({})", sanitized_name, index)
+        };
+        let archive_path = temp_dir.join(format!("{}.{}", stem, archive_ext));
+        let extract_dir = temp_dir.join(&stem);
+        match fs::create_dir(&extract_dir) {
+            Ok(()) => {}
+            Err(err) if err.kind() == io::ErrorKind::AlreadyExists => {
+                index += 1;
+                continue;
+            }
+            Err(err) => return Err(err.to_string()),
+        }
+        match fs::OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(&archive_path)
+        {
+            Ok(file) => return Ok((archive_path, extract_dir, file)),
+            Err(err) if err.kind() == io::ErrorKind::AlreadyExists => {
+                let _ = fs::remove_dir(&extract_dir);
+                index += 1;
+            }
+            Err(err) => {
+                let _ = fs::remove_dir(&extract_dir);
+                return Err(err.to_string());
+            }
+        }
+    }
 }
 
 fn copy_dir_recursive(src: &Path, dst: &Path) -> Result<(), String> {
@@ -479,6 +528,33 @@ mod tests {
         assert!(extracted_dir.join("mod.ini").exists());
         assert!(extracted_dir.join("preview.png").exists());
         assert!(!extracted_dir.join("old_obsolete.txt").exists());
+    }
+
+    #[test]
+    fn test_sanitize_folder_name_reserved() {
+        assert_eq!(sanitize_folder_name("CON"), "CON_");
+        assert_eq!(sanitize_folder_name("lpt3"), "lpt3_");
+        assert_eq!(sanitize_folder_name("CON.txt"), "CON_.txt");
+        assert_eq!(sanitize_folder_name("Console"), "Console");
+        assert_eq!(sanitize_folder_name("CON (1)"), "CON (1)");
+    }
+
+    #[test]
+    fn test_reserve_temp_paths_suffixes_atomically() {
+        let temp = tempdir().unwrap();
+        let base = temp.path();
+
+        let (archive, extract, _file) = reserve_temp_paths(base, "Nicole", "zip").unwrap();
+        assert_eq!(archive.file_name().unwrap(), "Nicole.zip");
+        assert_eq!(extract.file_name().unwrap(), "Nicole");
+
+        let (archive_1, extract_1, _file_1) = reserve_temp_paths(base, "Nicole", "zip").unwrap();
+        assert_eq!(archive_1.file_name().unwrap(), "Nicole (1).zip");
+        assert_eq!(extract_1.file_name().unwrap(), "Nicole (1)");
+
+        let (archive_2, extract_2, _file_2) = reserve_temp_paths(base, "Nicole", "7z").unwrap();
+        assert_eq!(archive_2.file_name().unwrap(), "Nicole (2).7z");
+        assert_eq!(extract_2.file_name().unwrap(), "Nicole (2)");
     }
 
     #[test]

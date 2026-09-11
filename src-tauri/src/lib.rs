@@ -10,7 +10,9 @@ pub mod symlink;
 use archive::{extract_any_archive, sanitize_folder_name};
 use config::{AppConfig, GameSettings, get_config_path, read_config, write_config};
 use conflict::{ConflictGroup, detect_conflicts};
-use gamebanana::{CancelRegistry, clear_temp_artifacts, download_and_install_mod};
+use gamebanana::{
+    CancelRegistry, TempRegistry, clear_temp_artifacts, clear_temp_paths, download_and_install_mod,
+};
 use games::{GameDefinition, get_supported_games};
 use keybinds::{
     ModKeybindData, parse_mod_keybinds_and_variables, set_d3dx_user_toggle, update_ini_keybind,
@@ -19,11 +21,8 @@ use scanner::{
     CategoryItem, ModItem, create_category, delete_category, delete_mod, link_mod, list_categories,
     move_mod_category, rename_category, scan_mods, set_mod_preview, toggle_mod_status, unlink_mod,
 };
-use std::fs;
 use std::path::Path;
-use symlink::{
-    UNCATEGORIZED_DIR_NAME, ensure_veil_dirs, get_disabled_dir, prune_orphaned_symlinks,
-};
+use symlink::{ensure_veil_dirs, get_disabled_dir, prune_orphaned_symlinks, resolve_category_dir};
 use tauri::{AppHandle, State};
 
 #[tauri::command]
@@ -85,6 +84,18 @@ fn set_auto_categorize(app: AppHandle, auto_categorize: bool) -> Result<AppConfi
 }
 
 #[tauri::command]
+fn set_show_nsfw(app: AppHandle, show_nsfw: String) -> Result<AppConfig, String> {
+    if !matches!(show_nsfw.as_str(), "hide" | "warn" | "show") {
+        return Err(format!("Invalid NSFW visibility: {}", show_nsfw));
+    }
+    let path = get_config_path(&app)?;
+    let mut config = read_config(&path);
+    config.show_nsfw = show_nsfw;
+    write_config(&path, &config)?;
+    Ok(config)
+}
+
+#[tauri::command]
 fn scan_installed_mods(mods_dir: String) -> Result<Vec<ModItem>, String> {
     let path = Path::new(&mods_dir);
     ensure_veil_dirs(path)?;
@@ -137,30 +148,14 @@ fn delete_installed_mod(mods_dir: String, mod_id: String) -> Result<(), String> 
 
 #[tauri::command]
 fn cancel_download(
-    state: State<'_, CancelRegistry>,
-    mods_dir: String,
+    cancel: State<'_, CancelRegistry>,
+    temp: State<'_, TempRegistry>,
     key: String,
-    mod_name: String,
 ) -> Result<(), String> {
-    state.cancel(&key);
+    cancel.cancel(&key);
 
-    let sanitized = sanitize_folder_name(&mod_name);
-    let temp_base = Path::new(&mods_dir).join(".veil_temp").join(&sanitized);
-    let _ = fs::remove_dir_all(&temp_base);
-    let archive_prefix = format!("{}.", sanitized);
-    if let Some(parent) = temp_base.parent() {
-        if let Ok(entries) = fs::read_dir(parent) {
-            for entry in entries.flatten() {
-                if entry
-                    .file_name()
-                    .to_string_lossy()
-                    .starts_with(&archive_prefix)
-                {
-                    let _ = fs::remove_file(entry.path());
-                }
-            }
-            let _ = fs::remove_dir(parent);
-        }
+    if let Some((archive_path, extract_dir)) = temp.take(&key) {
+        clear_temp_paths(&archive_path, &extract_dir);
     }
 
     Ok(())
@@ -178,28 +173,7 @@ fn extract_archive_file(
     ensure_veil_dirs(path)?;
 
     let disabled_dir = get_disabled_dir(path);
-    let target_parent_dir = match &category {
-        Some(cat) => {
-            let sanitized = cat.trim().replace(['/', '\\'], "");
-            if sanitized.is_empty()
-                || sanitized.eq_ignore_ascii_case("__root__")
-                || sanitized.eq_ignore_ascii_case(UNCATEGORIZED_DIR_NAME)
-            {
-                let cat_dir = disabled_dir.join(UNCATEGORIZED_DIR_NAME);
-                std::fs::create_dir_all(&cat_dir).map_err(|e| e.to_string())?;
-                cat_dir
-            } else {
-                let cat_dir = disabled_dir.join(&sanitized);
-                std::fs::create_dir_all(&cat_dir).map_err(|e| e.to_string())?;
-                cat_dir
-            }
-        }
-        None => {
-            let cat_dir = disabled_dir.join(UNCATEGORIZED_DIR_NAME);
-            std::fs::create_dir_all(&cat_dir).map_err(|e| e.to_string())?;
-            cat_dir
-        }
-    };
+    let target_parent_dir = resolve_category_dir(&disabled_dir, category.as_deref())?;
 
     let action = duplicate_action.unwrap_or_else(|| "replace".to_string());
     let temp_download_dir = path.join(".veil_temp");
@@ -214,6 +188,9 @@ fn extract_archive_file(
         &|| false,
     )?;
     let _ = std::fs::remove_dir_all(&temp_extract_dir);
+    if let Some(parent) = temp_extract_dir.parent() {
+        let _ = std::fs::remove_dir(parent);
+    }
     let rel_id = extracted
         .strip_prefix(&disabled_dir)
         .map_err(|e| e.to_string())?
@@ -227,6 +204,7 @@ fn extract_archive_file(
 async fn download_mod(
     app: AppHandle,
     cancel: State<'_, CancelRegistry>,
+    temp: State<'_, TempRegistry>,
     download_url: String,
     mods_dir: String,
     mod_name: String,
@@ -241,6 +219,7 @@ async fn download_mod(
     download_and_install_mod(
         app,
         &cancel,
+        &temp,
         download_url,
         mods_dir,
         mod_name,
@@ -336,6 +315,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .manage(CancelRegistry::default())
+        .manage(TempRegistry::default())
         .setup(|app| {
             if let Ok(config_path) = get_config_path(app.handle()) {
                 let config = read_config(&config_path);
@@ -351,6 +331,7 @@ pub fn run() {
             set_active_game,
             set_game_mods_dir,
             set_auto_categorize,
+            set_show_nsfw,
             scan_installed_mods,
             get_mod_conflicts,
             get_categories,

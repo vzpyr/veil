@@ -25,7 +25,8 @@ import {
   GbSubfeedItem,
   searchGameBananaMods,
 } from "../../api/gamebanana";
-import { DownloadQueueItem, GameDefinition } from "../../types";
+import { DownloadQueueItem, GameDefinition, NsfwVisibility } from "../../types";
+import { gbModNsfwLevel, isGbModNsfw } from "../../api/gamebanana";
 import { staggerItem } from "../../motion";
 import GbModCard from "./GbModCard";
 import GbModDrawer from "./GbModDrawer";
@@ -34,6 +35,7 @@ interface GbBrowserViewProps {
   activeGame: GameDefinition;
   modsDir?: string;
   autoCategorize: boolean;
+  showNsfw: NsfwVisibility;
   downloadQueue: DownloadQueueItem[];
   onEnqueueDownload: (
     file: GbModFile,
@@ -49,6 +51,7 @@ export default function GbBrowserView({
   activeGame,
   modsDir,
   autoCategorize,
+  showNsfw,
   downloadQueue,
   onEnqueueDownload,
 }: GbBrowserViewProps) {
@@ -283,18 +286,22 @@ export default function GbBrowserView({
             cols={{ base: 1, sm: 2, md: 3, lg: 4, xl: 5, xxl: 6 }}
             spacing="sm"
           >
-            {items.map((item, index) => (
-              <motion.div
-                key={item._idRow}
-                variants={staggerItem()}
-                initial="hidden"
-                animate="visible"
-                custom={index}
-                style={{ height: "100%" }}
-              >
-                <GbModCard item={item} onSelect={setSelectedModId} />
-              </motion.div>
-            ))}
+            {items
+              .filter((item) =>
+                showNsfw === "hide" ? gbModNsfwLevel(item) === "none" : true,
+              )
+              .map((item, index) => (
+                <motion.div
+                  key={item._idRow}
+                  variants={staggerItem()}
+                  initial="hidden"
+                  animate="visible"
+                  custom={index}
+                  style={{ height: "100%" }}
+                >
+                  <GbModCard item={item} onSelect={setSelectedModId} />
+                </motion.div>
+              ))}
           </SimpleGrid>
         )}
       </Box>

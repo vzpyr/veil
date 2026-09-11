@@ -3,6 +3,7 @@ import {
   Button,
   Card,
   Group,
+  Select,
   Stack,
   Switch,
   Text,
@@ -11,22 +12,32 @@ import {
 import { Folder, FolderOpen } from "lucide-react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { revealItemInDir } from "@tauri-apps/plugin-opener";
-import { GameDefinition, GameSettings } from "../types";
+import { GameDefinition, GameSettings, NsfwVisibility } from "../types";
+
+const nsfwOptions = [
+  { value: "hide", label: "Completely Hidden" },
+  { value: "warn", label: "Show with Badge" },
+  { value: "show", label: "Show Normally" },
+];
 
 interface SettingsViewProps {
   activeGame: GameDefinition;
   settings: GameSettings;
   autoCategorize: boolean;
+  showNsfw: NsfwVisibility;
   onUpdateModsDir: (dir: string) => void;
   onUpdateAutoCategorize: (enabled: boolean) => void;
+  onShowNsfwChange: (value: NsfwVisibility) => void;
 }
 
 export default function SettingsView({
   activeGame,
   settings,
   autoCategorize,
+  showNsfw,
   onUpdateModsDir,
   onUpdateAutoCategorize,
+  onShowNsfwChange,
 }: SettingsViewProps) {
   const handleBrowseFolder = async () => {
     const selected = await open({
@@ -108,6 +119,31 @@ export default function SettingsView({
               size="md"
               checked={autoCategorize}
               onChange={(e) => onUpdateAutoCategorize(e.currentTarget.checked)}
+            />
+          </Group>
+        </Card>
+
+        <Card p="sm">
+          <Group justify="space-between" align="center" gap="xs" wrap="nowrap">
+            <Box style={{ flex: 1, minWidth: 0 }}>
+              <Text fw={600} size="sm">
+                NSFW Mods
+              </Text>
+              <Text c="dimmed" size="xs">
+                Controls how age-gated GameBanana mods appear in the browser.
+              </Text>
+            </Box>
+            <Select
+              size="xs"
+              w="var(--control-width-md)"
+              data={nsfwOptions}
+              value={showNsfw}
+              onChange={(val) => {
+                if (val === "hide" || val === "warn" || val === "show") {
+                  onShowNsfwChange(val);
+                }
+              }}
+              allowDeselect={false}
             />
           </Group>
         </Card>

@@ -43,6 +43,31 @@ export interface GbSubfeedItem {
     _idRow: number;
     _sName: string;
   };
+  _bHasContentRatings?: boolean;
+  _sInitialVisibility?: string;
+}
+
+export function isGbModNsfw(
+  item: Pick<GbSubfeedItem, "_bHasContentRatings" | "_sInitialVisibility">,
+): boolean {
+  return (
+    item._bHasContentRatings === true || item._sInitialVisibility === "hide"
+  );
+}
+
+export function gbModNsfwLevel(
+  item: Pick<GbSubfeedItem, "_bHasContentRatings" | "_sInitialVisibility">,
+): "none" | "mild" | "strict" {
+  if (item._bHasContentRatings === true) {
+    return "strict";
+  }
+  if (item._sInitialVisibility === "hide") {
+    return "strict";
+  }
+  if (item._sInitialVisibility === "warn") {
+    return "mild";
+  }
+  return "none";
 }
 
 export interface GbModFile {
@@ -82,6 +107,26 @@ export interface GbModProfile {
   _nLikeCount?: number;
   _nViewCount?: number;
   _nDownloadCount?: number;
+  _aContentRatings?: Record<string, string>;
+  _sInitialVisibility?: string;
+}
+
+export function gbProfileNsfwLevel(
+  profile: GbModProfile,
+): "none" | "mild" | "strict" {
+  if (
+    profile._aContentRatings &&
+    Object.keys(profile._aContentRatings).length > 0
+  ) {
+    return "strict";
+  }
+  if (profile._sInitialVisibility === "hide") {
+    return "strict";
+  }
+  if (profile._sInitialVisibility === "warn") {
+    return "mild";
+  }
+  return "none";
 }
 
 export interface GbUpdate {

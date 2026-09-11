@@ -8,8 +8,8 @@ import {
   Text,
   Tooltip,
 } from "@mantine/core";
-import { Eye, Heart, ImageIcon } from "lucide-react";
-import { GbSubfeedItem } from "../../api/gamebanana";
+import { Eye, Heart, ImageIcon, TriangleAlert } from "lucide-react";
+import { GbSubfeedItem, gbModNsfwLevel } from "../../api/gamebanana";
 
 interface GbModCardProps {
   item: GbSubfeedItem;
@@ -21,6 +21,7 @@ export default function GbModCard({ item, onSelect }: GbModCardProps) {
   const imageUrl = firstImage
     ? `${firstImage._sBaseUrl}/${firstImage._sFile530 || firstImage._sFile220 || firstImage._sFile}`
     : null;
+  const nsfwLevel = gbModNsfwLevel(item);
 
   return (
     <Card
@@ -73,6 +74,30 @@ export default function GbModCard({ item, onSelect }: GbModCardProps) {
           >
             {item._aCategory._sName}
           </Badge>
+        )}
+
+        {nsfwLevel !== "none" && (
+          <Tooltip
+            label={
+              nsfwLevel === "strict" ? "Explicit content" : "Mature content"
+            }
+          >
+            <Badge
+              size="xs"
+              radius="xl"
+              variant="filled"
+              color="red"
+              className="animate-scale-in"
+              leftSection={<TriangleAlert size={10} />}
+              style={{
+                position: "absolute",
+                top: "var(--space-xs)",
+                right: "var(--space-xs)",
+              }}
+            >
+              NSFW
+            </Badge>
+          </Tooltip>
         )}
       </Card.Section>
 

@@ -1,12 +1,12 @@
-use crate::archive::{extract_any_archive, sanitize_folder_name};
-use crate::symlink::{UNCATEGORIZED_DIR_NAME, ensure_veil_dirs, get_disabled_dir};
+use crate::archive::{extract_any_archive, reserve_temp_paths, sanitize_folder_name};
+use crate::symlink::{ensure_veil_dirs, get_disabled_dir, resolve_category_dir};
 use futures_util::StreamExt;
 use reqwest::Client;
 use serde::Serialize;
-use std::collections::HashSet;
-use std::fs::{self, File};
+use std::collections::{HashMap, HashSet};
+use std::fs::{self};
 use std::io::{BufWriter, Write};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use std::time::Instant;
 use tauri::{AppHandle, Emitter};
@@ -76,15 +76,45 @@ pub fn clear_temp_artifacts(mods_dir: &Path) {
     let _ = fs::remove_dir_all(mods_dir.join(".veil_temp"));
 }
 
-fn clear_temp_item(temp_dir: &Path, archive_path: &Path, extract_dir: &Path) {
+#[derive(Default)]
+pub struct TempRegistry(Mutex<HashMap<String, (PathBuf, PathBuf)>>);
+
+impl TempRegistry {
+    pub fn register(&self, key: &str, archive_path: PathBuf, extract_dir: PathBuf) {
+        self.0
+            .lock()
+            .unwrap()
+            .insert(key.to_string(), (archive_path, extract_dir));
+    }
+
+    pub fn take(&self, key: &str) -> Option<(PathBuf, PathBuf)> {
+        self.0.lock().unwrap().remove(key)
+    }
+}
+
+struct TempGuard<'a> {
+    key: &'a str,
+    registry: &'a TempRegistry,
+}
+
+impl Drop for TempGuard<'_> {
+    fn drop(&mut self) {
+        self.registry.take(self.key);
+    }
+}
+
+pub fn clear_temp_paths(archive_path: &Path, extract_dir: &Path) {
     let _ = fs::remove_file(archive_path);
     let _ = fs::remove_dir_all(extract_dir);
-    let _ = fs::remove_dir(temp_dir);
+    if let Some(parent) = archive_path.parent() {
+        let _ = fs::remove_dir(parent);
+    }
 }
 
 pub async fn download_and_install_mod(
     app: AppHandle,
     cancel: &CancelRegistry,
+    registry: &TempRegistry,
     download_url: String,
     mods_dir: String,
     mod_name: String,
@@ -101,33 +131,11 @@ pub async fn download_and_install_mod(
     cancel.clear(&key);
 
     let disabled_dir = get_disabled_dir(mods_path);
-    let target_parent_dir = match &category {
-        Some(cat) => {
-            let sanitized = cat.trim().replace(['/', '\\'], "");
-            if sanitized.is_empty()
-                || sanitized.eq_ignore_ascii_case("__root__")
-                || sanitized.eq_ignore_ascii_case(UNCATEGORIZED_DIR_NAME)
-            {
-                let cat_dir = disabled_dir.join(UNCATEGORIZED_DIR_NAME);
-                fs::create_dir_all(&cat_dir).map_err(|e| e.to_string())?;
-                cat_dir
-            } else {
-                let cat_dir = disabled_dir.join(&sanitized);
-                fs::create_dir_all(&cat_dir).map_err(|e| e.to_string())?;
-                cat_dir
-            }
-        }
-        None => {
-            let cat_dir = disabled_dir.join(UNCATEGORIZED_DIR_NAME);
-            fs::create_dir_all(&cat_dir).map_err(|e| e.to_string())?;
-            cat_dir
-        }
-    };
+    let target_parent_dir = resolve_category_dir(&disabled_dir, category.as_deref())?;
 
     let temp_download_dir = mods_path.join(".veil_temp");
     fs::create_dir_all(&temp_download_dir).map_err(|e| e.to_string())?;
     let sanitized_mod_name = sanitize_folder_name(&mod_name);
-    let temp_extract_dir = temp_download_dir.join(&sanitized_mod_name);
 
     let client = Client::builder()
         .user_agent("VeilModManager/0.1.0")
@@ -166,11 +174,15 @@ pub async fn download_and_install_mod(
         .and_then(|ext| ext.to_str())
         .unwrap_or("zip");
 
-    let temp_archive_path = temp_download_dir.join(format!("{}.{}", sanitized_mod_name, ext));
+    let (temp_archive_path, temp_extract_dir, temp_archive_file) =
+        reserve_temp_paths(&temp_download_dir, &sanitized_mod_name, ext)?;
+    registry.register(&key, temp_archive_path.clone(), temp_extract_dir.clone());
+    let _temp_guard = TempGuard {
+        key: &key,
+        registry,
+    };
+    let mut writer = BufWriter::new(temp_archive_file);
     let total_size = response.content_length().unwrap_or(0);
-
-    let file = File::create(&temp_archive_path).map_err(|e| e.to_string())?;
-    let mut writer = BufWriter::new(file);
 
     let mut stream = response.bytes_stream();
     let mut downloaded: u64 = 0;
@@ -180,7 +192,7 @@ pub async fn download_and_install_mod(
     loop {
         if cancel.is_cancelled(&key) {
             drop(writer);
-            clear_temp_item(&temp_download_dir, &temp_archive_path, &temp_extract_dir);
+            clear_temp_paths(&temp_archive_path, &temp_extract_dir);
             return Err("Download cancelled".to_string());
         }
 
@@ -198,7 +210,7 @@ pub async fn download_and_install_mod(
                         "error": err_msg.clone()
                     }),
                 );
-                clear_temp_item(&temp_download_dir, &temp_archive_path, &temp_extract_dir);
+                clear_temp_paths(&temp_archive_path, &temp_extract_dir);
                 return Err(err_msg);
             }
         };
@@ -244,7 +256,7 @@ pub async fn download_and_install_mod(
     drop(writer);
 
     if cancel.is_cancelled(&key) {
-        clear_temp_item(&temp_download_dir, &temp_archive_path, &temp_extract_dir);
+        clear_temp_paths(&temp_archive_path, &temp_extract_dir);
         return Err("Download cancelled".to_string());
     }
 
@@ -267,7 +279,7 @@ pub async fn download_and_install_mod(
     ) {
         Ok(dir) => dir,
         Err(err) => {
-            clear_temp_item(&temp_download_dir, &temp_archive_path, &temp_extract_dir);
+            clear_temp_paths(&temp_archive_path, &temp_extract_dir);
             let _ = app.emit(
                 "download-error",
                 serde_json::json!({
@@ -278,7 +290,7 @@ pub async fn download_and_install_mod(
             return Err(err);
         }
     };
-    clear_temp_item(&temp_download_dir, &temp_archive_path, &temp_extract_dir);
+    clear_temp_paths(&temp_archive_path, &temp_extract_dir);
 
     if let Some(img_url) = preview_url {
         if !img_url.is_empty() {

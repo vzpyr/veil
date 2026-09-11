@@ -34,6 +34,7 @@ import {
   GameDefinition,
   ModItem,
   ModUpdateInfo,
+  NsfwVisibility,
 } from "./types";
 
 export default function App() {
@@ -93,6 +94,7 @@ export default function App() {
     activeGame && config ? config.games[activeGame.id] : undefined;
   const modsDir = activeSettings?.mods_dir;
   const autoCategorize = config?.auto_categorize ?? true;
+  const showNsfw = config?.show_nsfw ?? "hide";
 
   const refreshData = useCallback(
     async (dir?: string) => {
@@ -365,6 +367,21 @@ export default function App() {
     try {
       const updatedConfig = await invoke<AppConfig>("set_auto_categorize", {
         autoCategorize: auto,
+      });
+      setConfig(updatedConfig);
+    } catch (err) {
+      notifications.show({
+        title: "Settings Error",
+        message: String(err),
+        color: "red",
+      });
+    }
+  };
+
+  const handleUpdateShowNsfw = async (value: NsfwVisibility) => {
+    try {
+      const updatedConfig = await invoke<AppConfig>("set_show_nsfw", {
+        showNsfw: value,
       });
       setConfig(updatedConfig);
     } catch (err) {
@@ -658,6 +675,16 @@ export default function App() {
     categoryName?: string,
     previewUrl?: string,
   ) => {
+    const key = String(file._idRow);
+    if (
+      downloadQueue.some(
+        (i) =>
+          i.id === key && i.status !== "completed" && i.status !== "failed",
+      )
+    ) {
+      return;
+    }
+
     const existing = mods.find(
       (m) =>
         (m.gamebanana_id && m.gamebanana_id === gamebananaId) ||
@@ -694,15 +721,8 @@ export default function App() {
   };
 
   const handleCancelQueueItem = (id: string) => {
-    const item = downloadQueue.find((i) => i.id === id);
     setDownloadQueue((prev) => prev.filter((i) => i.id !== id));
-    if (modsDir) {
-      invoke("cancel_download", {
-        key: id,
-        modsDir,
-        modName: item?.modName ?? "",
-      }).catch(() => {});
-    }
+    invoke("cancel_download", { key: id }).catch(() => {});
   };
 
   const handleRetryQueueItem = (id: string) => {
@@ -972,6 +992,7 @@ export default function App() {
                   activeGame={activeGame}
                   modsDir={modsDir}
                   autoCategorize={autoCategorize}
+                  showNsfw={showNsfw}
                   downloadQueue={downloadQueue}
                   onEnqueueDownload={handleEnqueueDownload}
                 />
@@ -990,8 +1011,10 @@ export default function App() {
                   activeGame={activeGame}
                   settings={activeSettings}
                   autoCategorize={autoCategorize}
+                  showNsfw={showNsfw}
                   onUpdateModsDir={handleUpdateModsDir}
                   onUpdateAutoCategorize={handleUpdateAutoCategorize}
+                  onShowNsfwChange={handleUpdateShowNsfw}
                 />
               </Box>
             )}

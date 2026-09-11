@@ -1,6 +1,7 @@
+use crate::archive::sanitize_folder_name;
 use crate::symlink::{
-    UNCATEGORIZED_DIR_NAME, create_mod_symlink, get_active_dir, get_disabled_dir,
-    remove_mod_symlink,
+    UNCATEGORIZED_DIR_NAME, create_mod_symlink, effective_category_name, get_active_dir,
+    get_disabled_dir, remove_mod_symlink,
 };
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
@@ -266,10 +267,11 @@ pub fn list_categories(mods_dir: &Path) -> Result<Vec<CategoryItem>, String> {
 }
 
 pub fn create_category(mods_dir: &Path, category_name: &str) -> Result<(), String> {
-    let sanitized = category_name.trim().replace(['/', '\\'], "");
-    if sanitized.is_empty() {
+    let trimmed = category_name.trim();
+    if trimmed.is_empty() {
         return Err("Category name cannot be empty".to_string());
     }
+    let sanitized = sanitize_folder_name(trimmed);
     if sanitized.eq_ignore_ascii_case(UNCATEGORIZED_DIR_NAME) {
         return Err("Cannot use reserved category name 'Uncategorized'".to_string());
     }
@@ -282,12 +284,13 @@ pub fn create_category(mods_dir: &Path, category_name: &str) -> Result<(), Strin
 }
 
 pub fn rename_category(mods_dir: &Path, old_name: &str, new_name: &str) -> Result<(), String> {
-    let sanitized_old = old_name.trim().replace(['/', '\\'], "");
-    let sanitized_new = new_name.trim().replace(['/', '\\'], "");
-
-    if sanitized_old.is_empty() || sanitized_new.is_empty() {
+    let trimmed_old = old_name.trim();
+    let trimmed_new = new_name.trim();
+    if trimmed_old.is_empty() || trimmed_new.is_empty() {
         return Err("Category name cannot be empty".to_string());
     }
+    let sanitized_old = sanitize_folder_name(trimmed_old);
+    let sanitized_new = sanitize_folder_name(trimmed_new);
     if sanitized_old.eq_ignore_ascii_case(UNCATEGORIZED_DIR_NAME) {
         return Err("Cannot rename the reserved Uncategorized category".to_string());
     }
@@ -354,10 +357,11 @@ pub fn delete_category(
     category_name: &str,
     delete_mods: bool,
 ) -> Result<(), String> {
-    let sanitized = category_name.trim().replace(['/', '\\'], "");
-    if sanitized.is_empty() {
+    let trimmed = category_name.trim();
+    if trimmed.is_empty() {
         return Err("Category name cannot be empty".to_string());
     }
+    let sanitized = sanitize_folder_name(trimmed);
     if sanitized.eq_ignore_ascii_case(UNCATEGORIZED_DIR_NAME) {
         return Err("Cannot delete the reserved Uncategorized category".to_string());
     }
@@ -475,20 +479,7 @@ pub fn move_mod_category(
         None => return Err("Invalid mod folder name".to_string()),
     };
 
-    let target_cat_name = match &target_category {
-        Some(cat) => {
-            let sanitized = cat.trim().replace(['/', '\\'], "");
-            if sanitized.is_empty()
-                || sanitized.eq_ignore_ascii_case("__root__")
-                || sanitized.eq_ignore_ascii_case(UNCATEGORIZED_DIR_NAME)
-            {
-                UNCATEGORIZED_DIR_NAME.to_string()
-            } else {
-                sanitized
-            }
-        }
-        None => UNCATEGORIZED_DIR_NAME.to_string(),
-    };
+    let target_cat_name = effective_category_name(target_category.as_deref());
 
     let new_rel_path = format!("{}/{}", target_cat_name, mod_folder_name);
     let new_source = disabled_dir.join(&new_rel_path);

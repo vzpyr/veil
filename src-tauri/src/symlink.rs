@@ -1,3 +1,4 @@
+use crate::archive::sanitize_folder_name;
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -11,6 +12,31 @@ pub fn get_disabled_dir(mods_dir: &Path) -> PathBuf {
 
 pub fn get_active_dir(mods_dir: &Path) -> PathBuf {
     mods_dir.join(ACTIVE_DIR_NAME)
+}
+
+pub fn effective_category_name(category: Option<&str>) -> String {
+    match category.map(str::trim) {
+        Some(cat) if !cat.is_empty() => {
+            let sanitized = sanitize_folder_name(cat);
+            if sanitized.eq_ignore_ascii_case("__root__")
+                || sanitized.eq_ignore_ascii_case(UNCATEGORIZED_DIR_NAME)
+            {
+                UNCATEGORIZED_DIR_NAME.to_string()
+            } else {
+                sanitized
+            }
+        }
+        _ => UNCATEGORIZED_DIR_NAME.to_string(),
+    }
+}
+
+pub fn resolve_category_dir(
+    disabled_dir: &Path,
+    category: Option<&str>,
+) -> Result<PathBuf, String> {
+    let dir = disabled_dir.join(effective_category_name(category));
+    fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
+    Ok(dir)
 }
 
 pub fn ensure_veil_dirs(mods_dir: &Path) -> Result<(), String> {
