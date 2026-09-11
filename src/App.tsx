@@ -140,6 +140,7 @@ export default function App() {
   const handleRescanMods = async () => {
     if (!modsDir) return;
     try {
+      await invoke("cleanup_on_boot", { modsDir });
       await refreshData();
       notifications.show({
         title: "Scan Complete",
@@ -332,6 +333,7 @@ export default function App() {
           loadedConfig.active_game_id || loadedGames[0]?.id;
         const currentModsDir = loadedConfig.games[currentActiveId]?.mods_dir;
         if (currentModsDir) {
+          await invoke("cleanup_on_boot", { modsDir: currentModsDir });
           await refreshData(currentModsDir);
         }
       } catch (err) {
@@ -356,6 +358,9 @@ export default function App() {
       setSelectedCategory(null);
       setSearchQuery("");
       const nextModsDir = updatedConfig.games[gameId]?.mods_dir;
+      if (nextModsDir) {
+        await invoke("cleanup_on_boot", { modsDir: nextModsDir });
+      }
       await refreshData(nextModsDir);
     } catch (err) {
       notifications.show({

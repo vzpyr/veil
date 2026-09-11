@@ -47,10 +47,7 @@ pub fn ensure_veil_dirs(mods_dir: &Path) -> Result<(), String> {
         ));
     }
     let disabled_dir = get_disabled_dir(mods_dir);
-    let active_dir = get_active_dir(mods_dir);
     fs::create_dir_all(&disabled_dir).map_err(|err| err.to_string())?;
-    fs::create_dir_all(&active_dir).map_err(|err| err.to_string())?;
-    fs::create_dir_all(disabled_dir.join(UNCATEGORIZED_DIR_NAME)).map_err(|err| err.to_string())?;
     Ok(())
 }
 
@@ -117,10 +114,33 @@ pub fn remove_mod_symlink(target_path: &Path) -> Result<(), String> {
         return Err("Unsupported operating system for symbolic links".to_string());
     }
 
-    if let Some(parent) = target_path.parent() {
-        if let Ok(mut entries) = fs::read_dir(parent) {
-            if entries.next().is_none() {
-                let _ = fs::remove_dir(parent);
+    if let Some(category_dir) = target_path.parent() {
+        let is_cat_empty = match fs::read_dir(category_dir) {
+            Ok(mut entries) => entries.all(|e| {
+                if let Ok(entry) = e {
+                    entry.file_name().to_string_lossy().starts_with('.')
+                } else {
+                    true
+                }
+            }),
+            Err(_) => false,
+        };
+        if is_cat_empty {
+            let _ = fs::remove_dir_all(category_dir);
+            if let Some(active_dir) = category_dir.parent() {
+                let is_active_empty = match fs::read_dir(active_dir) {
+                    Ok(mut entries) => entries.all(|e| {
+                        if let Ok(entry) = e {
+                            entry.file_name().to_string_lossy().starts_with('.')
+                        } else {
+                            true
+                        }
+                    }),
+                    Err(_) => false,
+                };
+                if is_active_empty {
+                    let _ = fs::remove_dir_all(active_dir);
+                }
             }
         }
     }
@@ -143,7 +163,63 @@ pub fn prune_orphaned_symlinks(mods_dir: &Path) -> Result<usize, String> {
 
     let mut pruned_count = 0;
     prune_dir_recursive(&active_dir, &mut pruned_count)?;
+    cleanup_empty_active_dir(mods_dir)?;
     Ok(pruned_count)
+}
+
+pub fn cleanup_empty_active_dir(mods_dir: &Path) -> Result<(), String> {
+    let active_dir = get_active_dir(mods_dir);
+    if !active_dir.exists() {
+        return Ok(());
+    }
+
+    prune_empty_dirs_recursive(&active_dir)?;
+
+    let is_empty = match fs::read_dir(&active_dir) {
+        Ok(mut entries) => entries.all(|e| {
+            if let Ok(entry) = e {
+                entry.file_name().to_string_lossy().starts_with('.')
+            } else {
+                true
+            }
+        }),
+        Err(_) => false,
+    };
+
+    if is_empty {
+        let _ = fs::remove_dir_all(&active_dir);
+    }
+
+    Ok(())
+}
+
+fn prune_empty_dirs_recursive(dir: &Path) -> Result<bool, String> {
+    let entries = match fs::read_dir(dir) {
+        Ok(e) => e,
+        Err(_) => return Ok(false),
+    };
+
+    let mut has_items = false;
+    for entry in entries.flatten() {
+        let path = entry.path();
+        let meta = match path.symlink_metadata() {
+            Ok(m) => m,
+            Err(_) => continue,
+        };
+
+        if meta.file_type().is_symlink() || meta.is_file() {
+            has_items = true;
+        } else if meta.is_dir() {
+            let child_has_items = prune_empty_dirs_recursive(&path)?;
+            if child_has_items {
+                has_items = true;
+            } else {
+                let _ = fs::remove_dir_all(&path);
+            }
+        }
+    }
+
+    Ok(has_items)
 }
 
 fn prune_dir_recursive(current: &Path, count: &mut usize) -> Result<(), String> {

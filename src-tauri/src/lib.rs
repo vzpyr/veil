@@ -18,11 +18,15 @@ use keybinds::{
     ModKeybindData, parse_mod_keybinds_and_variables, set_d3dx_user_toggle, update_ini_keybind,
 };
 use scanner::{
-    CategoryItem, ModItem, create_category, delete_category, delete_mod, link_mod, list_categories,
-    move_mod_category, rename_category, scan_mods, set_mod_preview, toggle_mod_status, unlink_mod,
+    CategoryItem, ModItem, cleanup_empty_categories, create_category, delete_category, delete_mod,
+    link_mod, list_categories, move_mod_category, rename_category, scan_mods, set_mod_preview,
+    toggle_mod_status, unlink_mod,
 };
 use std::path::Path;
-use symlink::{ensure_veil_dirs, get_disabled_dir, prune_orphaned_symlinks, resolve_category_dir};
+use symlink::{
+    cleanup_empty_active_dir, ensure_veil_dirs, get_disabled_dir, prune_orphaned_symlinks,
+    resolve_category_dir,
+};
 use tauri::{AppHandle, State};
 
 #[tauri::command]
@@ -107,10 +111,23 @@ fn set_color_scheme(app: AppHandle, color_scheme: String) -> Result<AppConfig, S
 }
 
 #[tauri::command]
+fn cleanup_on_boot(mods_dir: String) -> Result<(), String> {
+    let path = Path::new(&mods_dir);
+    if !path.exists() {
+        return Ok(());
+    }
+    prune_orphaned_symlinks(path)?;
+    cleanup_empty_active_dir(path)?;
+    cleanup_empty_categories(path)?;
+    Ok(())
+}
+
+#[tauri::command]
 fn scan_installed_mods(mods_dir: String) -> Result<Vec<ModItem>, String> {
     let path = Path::new(&mods_dir);
     ensure_veil_dirs(path)?;
     prune_orphaned_symlinks(path)?;
+    cleanup_empty_active_dir(path)?;
     scan_mods(path)
 }
 
@@ -344,6 +361,7 @@ pub fn run() {
             set_auto_categorize,
             set_show_nsfw,
             set_color_scheme,
+            cleanup_on_boot,
             scan_installed_mods,
             get_mod_conflicts,
             get_categories,

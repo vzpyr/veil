@@ -150,9 +150,6 @@ pub fn scan_mods(mods_dir: &Path) -> Result<Vec<ModItem>, String> {
         return Ok(Vec::new());
     }
 
-    let uncategorized_dir = disabled_dir.join(UNCATEGORIZED_DIR_NAME);
-    let _ = fs::create_dir_all(&uncategorized_dir);
-
     let mut mods = Vec::new();
     let entries = fs::read_dir(&disabled_dir).map_err(|err| err.to_string())?;
 
@@ -418,6 +415,54 @@ pub fn delete_category(
         let _ = fs::remove_dir_all(&cat_dir);
     }
 
+    crate::symlink::cleanup_empty_active_dir(mods_dir)?;
+    Ok(())
+}
+
+fn is_dir_empty_or_hidden(dir: &Path) -> bool {
+    match fs::read_dir(dir) {
+        Ok(mut entries) => entries.all(|e| {
+            if let Ok(entry) = e {
+                entry.file_name().to_string_lossy().starts_with('.')
+            } else {
+                true
+            }
+        }),
+        Err(_) => false,
+    }
+}
+
+pub fn cleanup_empty_categories(mods_dir: &Path) -> Result<(), String> {
+    let disabled_dir = get_disabled_dir(mods_dir);
+    if !disabled_dir.exists() {
+        return Ok(());
+    }
+
+    let entries = match fs::read_dir(&disabled_dir) {
+        Ok(e) => e,
+        Err(err) => return Err(err.to_string()),
+    };
+
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if !path.is_dir() {
+            continue;
+        }
+
+        let name = match path.file_name().and_then(|n| n.to_str()) {
+            Some(n) => n,
+            None => continue,
+        };
+
+        if name.starts_with('.') {
+            continue;
+        }
+
+        if is_dir_empty_or_hidden(&path) {
+            let _ = fs::remove_dir_all(&path);
+        }
+    }
+
     Ok(())
 }
 
@@ -436,26 +481,18 @@ pub fn set_mod_preview(
         ));
     }
 
-    if let Ok(entries) = fs::read_dir(&mod_folder) {
-        for entry in entries.flatten() {
-            let path = entry.path();
-            if path.is_file() {
-                let file_name = path
-                    .file_name()
-                    .and_then(|n| n.to_str())
-                    .unwrap_or("")
-                    .to_ascii_lowercase();
-                if file_name.starts_with("preview.") {
-                    let _ = fs::remove_file(&path);
-                }
-            }
+    let image_extensions = ["png", "jpg", "jpeg", "webp", "gif"];
+    for ext in &image_extensions {
+        let old_preview = mod_folder.join(format!("preview.{}", ext));
+        if old_preview.is_file() {
+            let _ = fs::remove_file(old_preview);
         }
     }
 
-    let target_preview = mod_folder.join("preview.png");
-    fs::write(&target_preview, image_bytes).map_err(|e| e.to_string())?;
+    let dest_path = mod_folder.join("preview.png");
+    fs::write(&dest_path, image_bytes).map_err(|err| err.to_string())?;
 
-    Ok(target_preview.to_string_lossy().to_string())
+    Ok(dest_path.to_string_lossy().to_string())
 }
 
 pub fn move_mod_category(
@@ -469,13 +506,13 @@ pub fn move_mod_category(
     let old_source = disabled_dir.join(mod_rel_path);
     if !old_source.exists() {
         return Err(format!(
-            "Mod source path does not exist: {}",
+            "Source mod folder does not exist: {}",
             old_source.display()
         ));
     }
 
     let mod_folder_name = match old_source.file_name().and_then(|n| n.to_str()) {
-        Some(name) => name.to_string(),
+        Some(n) => n.to_string(),
         None => return Err("Invalid mod folder name".to_string()),
     };
 
@@ -508,14 +545,8 @@ pub fn move_mod_category(
     fs::rename(&old_source, &new_source).map_err(|err| err.to_string())?;
 
     if let Some(old_parent) = old_source.parent() {
-        if old_parent != disabled_dir
-            && old_parent.file_name().and_then(|n| n.to_str()) != Some(UNCATEGORIZED_DIR_NAME)
-        {
-            if let Ok(mut remaining) = fs::read_dir(old_parent) {
-                if remaining.next().is_none() {
-                    let _ = fs::remove_dir(old_parent);
-                }
-            }
+        if old_parent != disabled_dir && is_dir_empty_or_hidden(old_parent) {
+            let _ = fs::remove_dir_all(old_parent);
         }
     }
 
@@ -534,6 +565,7 @@ pub fn delete_mod(mods_dir: &Path, mod_rel_path: &str) -> Result<(), String> {
     let active_link = active_dir.join(mod_rel_path);
     if active_link.symlink_metadata().is_ok() {
         remove_mod_symlink(&active_link)?;
+        crate::symlink::cleanup_empty_active_dir(mods_dir)?;
     }
 
     let source_dir = disabled_dir.join(mod_rel_path);
@@ -542,14 +574,8 @@ pub fn delete_mod(mods_dir: &Path, mod_rel_path: &str) -> Result<(), String> {
     }
 
     if let Some(parent) = source_dir.parent() {
-        if parent != disabled_dir
-            && parent.file_name().and_then(|n| n.to_str()) != Some(UNCATEGORIZED_DIR_NAME)
-        {
-            if let Ok(mut remaining) = fs::read_dir(parent) {
-                if remaining.next().is_none() {
-                    let _ = fs::remove_dir(parent);
-                }
-            }
+        if parent != disabled_dir && is_dir_empty_or_hidden(parent) {
+            let _ = fs::remove_dir_all(parent);
         }
     }
 
@@ -578,6 +604,7 @@ pub fn toggle_mod_status(
         Ok(true)
     } else {
         remove_mod_symlink(&target_path)?;
+        crate::symlink::cleanup_empty_active_dir(mods_dir)?;
         Ok(false)
     }
 }
@@ -853,4 +880,75 @@ mod tests {
                 .exists()
         );
     }
+
+    #[test]
+    fn test_delete_mod_removes_empty_category_and_uncategorized() {
+        let temp = tempdir().unwrap();
+        let mods_dir = temp.path();
+
+        let disabled_dir = get_disabled_dir(mods_dir);
+        let custom_cat = disabled_dir.join("Characters");
+        let mod_a = custom_cat.join("ModA");
+        fs::create_dir_all(&mod_a).unwrap();
+        fs::write(mod_a.join("a.ini"), "hash = 11111111").unwrap();
+
+        let uncat_dir = disabled_dir.join(crate::symlink::UNCATEGORIZED_DIR_NAME);
+        let mod_b = uncat_dir.join("ModB");
+        fs::create_dir_all(&mod_b).unwrap();
+        fs::write(mod_b.join("b.ini"), "hash = 22222222").unwrap();
+
+        delete_mod(mods_dir, "Characters/ModA").unwrap();
+        assert!(!mod_a.exists());
+        assert!(!custom_cat.exists());
+
+        delete_mod(mods_dir, &format!("{}/ModB", crate::symlink::UNCATEGORIZED_DIR_NAME)).unwrap();
+        assert!(!mod_b.exists());
+        assert!(!uncat_dir.exists());
+    }
+
+    #[test]
+    fn test_toggle_mod_status_removes_veil_on_last_disable() {
+        let temp = tempdir().unwrap();
+        let mods_dir = temp.path();
+
+        let disabled_dir = get_disabled_dir(mods_dir);
+        let active_dir = crate::symlink::get_active_dir(mods_dir);
+        let mod_dir = disabled_dir.join("Weapons").join("Sword");
+        fs::create_dir_all(&mod_dir).unwrap();
+        fs::write(mod_dir.join("sword.ini"), "hash = 33333333").unwrap();
+
+        let enabled = toggle_mod_status(mods_dir, "Weapons/Sword", true).unwrap();
+        assert!(enabled);
+        assert!(active_dir.exists());
+        assert!(active_dir.join("Weapons").join("Sword").exists());
+
+        let disabled = toggle_mod_status(mods_dir, "Weapons/Sword", false).unwrap();
+        assert!(!disabled);
+        assert!(!active_dir.exists());
+    }
+
+    #[test]
+    fn test_cleanup_empty_categories_and_active_dir() {
+        let temp = tempdir().unwrap();
+        let mods_dir = temp.path();
+
+        let disabled_dir = get_disabled_dir(mods_dir);
+        let active_dir = crate::symlink::get_active_dir(mods_dir);
+
+        let empty_cat = disabled_dir.join("EmptyCategory");
+        let empty_uncat = disabled_dir.join(crate::symlink::UNCATEGORIZED_DIR_NAME);
+        fs::create_dir_all(&empty_cat).unwrap();
+        fs::create_dir_all(&empty_uncat).unwrap();
+
+        let empty_active_cat = active_dir.join("EmptyCategory");
+        fs::create_dir_all(&empty_active_cat).unwrap();
+
+        cleanup_empty_categories(mods_dir).unwrap();
+        crate::symlink::cleanup_empty_active_dir(mods_dir).unwrap();
+
+        assert!(!empty_cat.exists());
+        assert!(!empty_uncat.exists());
+        assert!(!active_dir.exists());
+    }
 }
+
