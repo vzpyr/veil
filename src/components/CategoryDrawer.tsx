@@ -142,7 +142,6 @@ export default function CategoryDrawer({
         {(mode === "create" || mode === "rename") && (
           <TextInput
             label={mode === "create" ? "Category Name" : "New Category Name"}
-            placeholder="e.g. Characters or Weapons"
             value={nameInput}
             onChange={(e) => setNameInput(e.currentTarget.value)}
             onKeyDown={(e) => {
