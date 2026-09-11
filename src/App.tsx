@@ -81,9 +81,9 @@ export default function App() {
   const [categoryModal, setCategoryModal] = useState<{
     open: boolean;
     mode: "create" | "move" | "rename" | "delete";
-    modToMove?: ModItem | null;
+    modsToMove?: ModItem[];
     categoryName?: string | null;
-  }>({ open: false, mode: "create", modToMove: null, categoryName: null });
+  }>({ open: false, mode: "create", modsToMove: [], categoryName: null });
 
   const [statusFilter, setStatusFilter] = useState<
     "all" | "enabled" | "disabled"
@@ -478,18 +478,59 @@ export default function App() {
     }
   };
 
-  const handleToggleMod = async (modId: string, enable: boolean) => {
-    if (!modsDir) return;
+  const handleBatchToggleMods = async (modIds: string[], enable: boolean) => {
+    if (!modsDir || modIds.length === 0) return;
     try {
-      await invoke("toggle_mod", {
+      await invoke("batch_toggle_mods", {
         modsDir,
-        modId,
+        modIds,
         enable,
       });
       await refreshData();
+      notifications.show({
+        title: enable ? "Mods Enabled" : "Mods Disabled",
+        message:
+          modIds.length === 1
+            ? `Mod ${enable ? "enabled" : "disabled"}.`
+            : `${modIds.length} mods ${enable ? "enabled" : "disabled"}.`,
+        color: "green",
+      });
     } catch (err) {
       notifications.show({
         title: "Toggle Error",
+        message: String(err),
+        color: "red",
+      });
+    }
+  };
+
+  const handleToggleMod = async (modId: string, enable: boolean) => {
+    await handleBatchToggleMods([modId], enable);
+  };
+
+  const handleBatchMoveMods = async (
+    modIds: string[],
+    targetCategory: string | null,
+  ) => {
+    if (!modsDir || modIds.length === 0) return;
+    try {
+      await invoke("batch_move_mods", {
+        modsDir,
+        modIds,
+        targetCategory,
+      });
+      await refreshData();
+      notifications.show({
+        title: "Mods Moved",
+        message:
+          modIds.length === 1
+            ? "Mod moved successfully."
+            : `${modIds.length} mods moved successfully.`,
+        color: "green",
+      });
+    } catch (err) {
+      notifications.show({
+        title: "Move Error",
         message: String(err),
         color: "red",
       });
@@ -500,26 +541,7 @@ export default function App() {
     modId: string,
     targetCategory: string | null,
   ) => {
-    if (!modsDir) return;
-    try {
-      await invoke("move_mod", {
-        modsDir,
-        modId,
-        targetCategory,
-      });
-      await refreshData();
-      notifications.show({
-        title: "Mod Moved",
-        message: "Mod moved successfully.",
-        color: "green",
-      });
-    } catch (err) {
-      notifications.show({
-        title: "Move Error",
-        message: String(err),
-        color: "red",
-      });
-    }
+    await handleBatchMoveMods([modId], targetCategory);
   };
 
   const handleCreateCategory = async (name: string) => {
@@ -678,17 +700,20 @@ export default function App() {
     }
   };
 
-  const handleDeleteMod = async (mod: ModItem) => {
-    if (!modsDir) return;
+  const handleBatchDeleteMods = async (modsToDelete: ModItem[]) => {
+    if (!modsDir || modsToDelete.length === 0) return;
     try {
-      await invoke("delete_installed_mod", {
+      await invoke("batch_delete_mods", {
         modsDir,
-        modId: mod.id,
+        modIds: modsToDelete.map((m) => m.id),
       });
       await refreshData();
       notifications.show({
-        title: "Mod Deleted",
-        message: `${mod.name} removed from disk.`,
+        title: "Mods Deleted",
+        message:
+          modsToDelete.length === 1
+            ? `${modsToDelete[0].name} removed from disk.`
+            : `${modsToDelete.length} mods removed from disk.`,
         color: "orange",
       });
     } catch (err) {
@@ -698,6 +723,10 @@ export default function App() {
         color: "red",
       });
     }
+  };
+
+  const handleDeleteMod = async (mod: ModItem) => {
+    await handleBatchDeleteMods([mod]);
   };
 
   const handleOpenFolder = async (folderPath: string) => {
@@ -988,7 +1017,7 @@ export default function App() {
                     setCategoryModal({
                       open: true,
                       mode: "create",
-                      modToMove: null,
+                      modsToMove: [],
                       categoryName: null,
                     })
                   }
@@ -996,7 +1025,7 @@ export default function App() {
                     setCategoryModal({
                       open: true,
                       mode: "rename",
-                      modToMove: null,
+                      modsToMove: [],
                       categoryName: catName,
                     })
                   }
@@ -1004,7 +1033,7 @@ export default function App() {
                     setCategoryModal({
                       open: true,
                       mode: "delete",
-                      modToMove: null,
+                      modsToMove: [],
                       categoryName: catName,
                     })
                   }
@@ -1047,7 +1076,7 @@ export default function App() {
                       setCategoryModal({
                         open: true,
                         mode: "move",
-                        modToMove: mod,
+                        modsToMove: [mod],
                         categoryName: null,
                       })
                     }
@@ -1059,6 +1088,16 @@ export default function App() {
                     onOpenGameBanana={handleOpenGameBanana}
                     onOpenLinkGameBanana={setLinkingMod}
                     onSetPreview={handleSetModPreview}
+                    onBatchToggle={handleBatchToggleMods}
+                    onBatchMoveCategory={(mods) =>
+                      setCategoryModal({
+                        open: true,
+                        mode: "move",
+                        modsToMove: mods,
+                        categoryName: null,
+                      })
+                    }
+                    onBatchDelete={handleBatchDeleteMods}
                   />
                 </Box>
               </>
@@ -1162,15 +1201,15 @@ export default function App() {
           setCategoryModal({
             open: false,
             mode: "create",
-            modToMove: null,
+            modsToMove: [],
             categoryName: null,
           })
         }
         mode={categoryModal.mode}
         categories={categories}
-        modToMove={categoryModal.modToMove}
+        modsToMove={categoryModal.modsToMove}
         categoryName={categoryModal.categoryName}
-        onMoveMod={handleMoveMod}
+        onMoveMods={handleBatchMoveMods}
         onCreateCategory={handleCreateCategory}
         onRenameCategory={handleRenameCategory}
         onDeleteCategory={handleDeleteCategory}

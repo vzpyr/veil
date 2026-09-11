@@ -2,6 +2,7 @@ import {
   ActionIcon,
   Badge,
   Card,
+  Checkbox,
   Group,
   Image,
   Menu,
@@ -29,6 +30,9 @@ interface ModCardProps {
   mod: ModItem;
   inConflict: boolean;
   updateInfo?: ModUpdateInfo;
+  isSelectMode?: boolean;
+  isSelected?: boolean;
+  onToggleSelect?: (modId: string) => void;
   onToggle: (modId: string, enabled: boolean) => void;
   onMoveCategory: (mod: ModItem) => void;
   onOpenFolder: (folderPath: string) => void;
@@ -44,6 +48,9 @@ export default function ModCard({
   mod,
   inConflict,
   updateInfo,
+  isSelectMode,
+  isSelected,
+  onToggleSelect,
   onToggle,
   onMoveCategory,
   onOpenFolder,
@@ -61,13 +68,22 @@ export default function ModCard({
       p="xs"
       h="100%"
       className="card-interactive"
-      onClick={mod.gamebanana_id ? () => onOpenGameBanana(mod) : undefined}
+      onClick={
+        isSelectMode
+          ? () => onToggleSelect?.(mod.id)
+          : mod.gamebanana_id
+            ? () => onOpenGameBanana(mod)
+            : undefined
+      }
       style={{
-        borderColor: inConflict
-          ? "var(--color-status-warning)"
-          : mod.enabled
-            ? "var(--color-border-strong)"
-            : "var(--color-border-subtle)",
+        borderColor: isSelected
+          ? "var(--color-accent-primary)"
+          : inConflict
+            ? "var(--color-status-warning)"
+            : mod.enabled
+              ? "var(--color-border-strong)"
+              : "var(--color-border-subtle)",
+        backgroundColor: isSelected ? "var(--color-bg-card-active)" : undefined,
       }}
     >
       <Card.Section
@@ -108,6 +124,15 @@ export default function ModCard({
           }}
         >
           <Group gap="2xs">
+            {isSelectMode && (
+              <Checkbox
+                checked={isSelected}
+                onChange={() => onToggleSelect?.(mod.id)}
+                onClick={(e) => e.stopPropagation()}
+                color="gray"
+                size="xs"
+              />
+            )}
             {mod.category && (
               <Badge size="xs" variant="filled" color="dark">
                 {mod.category}

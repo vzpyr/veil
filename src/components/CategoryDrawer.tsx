@@ -20,8 +20,10 @@ interface CategoryDrawerProps {
   mode: CategoryDrawerMode;
   categories: CategoryItem[];
   modToMove?: ModItem | null;
+  modsToMove?: ModItem[] | null;
   categoryName?: string | null;
-  onMoveMod: (modId: string, targetCategory: string | null) => void;
+  onMoveMod?: (modId: string, targetCategory: string | null) => void;
+  onMoveMods?: (modIds: string[], targetCategory: string | null) => void;
   onCreateCategory: (categoryName: string) => void;
   onRenameCategory: (oldName: string, newName: string) => void;
   onDeleteCategory: (categoryName: string, deleteMods: boolean) => void;
@@ -33,15 +35,23 @@ export default function CategoryDrawer({
   mode,
   categories,
   modToMove,
+  modsToMove,
   categoryName,
   onMoveMod,
+  onMoveMods,
   onCreateCategory,
   onRenameCategory,
   onDeleteCategory,
 }: CategoryDrawerProps) {
+  const activeModsToMove =
+    modsToMove && modsToMove.length > 0
+      ? modsToMove
+      : modToMove
+        ? [modToMove]
+        : [];
   const [nameInput, setNameInput] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(
-    modToMove?.category || "__root__",
+    activeModsToMove[0]?.category || "__root__",
   );
   const [deleteMods, setDeleteMods] = useState(false);
 
@@ -51,11 +61,11 @@ export default function CategoryDrawer({
     } else if (mode === "create") {
       setNameInput("");
     } else if (mode === "move") {
-      setSelectedCategory(modToMove?.category || "__root__");
+      setSelectedCategory(activeModsToMove[0]?.category || "__root__");
     } else if (mode === "delete") {
       setDeleteMods(false);
     }
-  }, [mode, categoryName, modToMove, opened]);
+  }, [mode, categoryName, modToMove, modsToMove, opened]);
 
   const categoryOptions = [
     { value: "__root__", label: "Uncategorized" },
@@ -72,9 +82,16 @@ export default function CategoryDrawer({
         nameInput.trim().toLowerCase() === "uncategorized"));
 
   const handleConfirm = () => {
-    if (mode === "move" && modToMove) {
+    if (mode === "move") {
       const target = selectedCategory === "__root__" ? null : selectedCategory;
-      onMoveMod(modToMove.id, target);
+      if (onMoveMods && activeModsToMove.length > 0) {
+        onMoveMods(
+          activeModsToMove.map((m) => m.id),
+          target,
+        );
+      } else if (onMoveMod && activeModsToMove.length > 0) {
+        onMoveMod(activeModsToMove[0].id, target);
+      }
       onClose();
     } else if (mode === "create") {
       const trimmed = nameInput.trim();
@@ -102,7 +119,13 @@ export default function CategoryDrawer({
   const getTitle = () => {
     switch (mode) {
       case "move":
-        return `Move ${modToMove?.name || "Mod"}`;
+        if (activeModsToMove.length === 1) {
+          return `Move ${activeModsToMove[0].name}`;
+        }
+        if (activeModsToMove.length > 1) {
+          return `Move ${activeModsToMove.length} Mods`;
+        }
+        return "Move Mods";
       case "rename":
         return `Rename ${categoryName || "Category"}`;
       case "delete":

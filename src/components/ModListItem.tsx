@@ -4,6 +4,7 @@ import {
   Box,
   Card,
   Center,
+  Checkbox,
   Group,
   Image,
   Menu,
@@ -31,6 +32,9 @@ interface ModListItemProps {
   mod: ModItem;
   inConflict: boolean;
   updateInfo?: ModUpdateInfo;
+  isSelectMode?: boolean;
+  isSelected?: boolean;
+  onToggleSelect?: (modId: string) => void;
   onToggle: (modId: string, enabled: boolean) => void;
   onMoveCategory: (mod: ModItem) => void;
   onOpenFolder: (folderPath: string) => void;
@@ -46,6 +50,9 @@ export default function ModListItem({
   mod,
   inConflict,
   updateInfo,
+  isSelectMode,
+  isSelected,
+  onToggleSelect,
   onToggle,
   onMoveCategory,
   onOpenFolder,
@@ -62,13 +69,22 @@ export default function ModListItem({
     <Card
       p="xs"
       className="card-interactive"
-      onClick={mod.gamebanana_id ? () => onOpenGameBanana(mod) : undefined}
+      onClick={
+        isSelectMode
+          ? () => onToggleSelect?.(mod.id)
+          : mod.gamebanana_id
+            ? () => onOpenGameBanana(mod)
+            : undefined
+      }
       style={{
-        borderColor: inConflict
-          ? "var(--color-status-warning)"
-          : mod.enabled
-            ? "var(--color-border-strong)"
-            : "var(--color-border-subtle)",
+        borderColor: isSelected
+          ? "var(--color-accent-primary)"
+          : inConflict
+            ? "var(--color-status-warning)"
+            : mod.enabled
+              ? "var(--color-border-strong)"
+              : "var(--color-border-subtle)",
+        backgroundColor: isSelected ? "var(--color-bg-card-active)" : undefined,
       }}
     >
       <Group justify="space-between" align="center" gap="sm" wrap="nowrap">
@@ -78,6 +94,15 @@ export default function ModListItem({
           wrap="nowrap"
           style={{ flex: 1, minWidth: 0 }}
         >
+          {isSelectMode && (
+            <Checkbox
+              checked={isSelected}
+              onChange={() => onToggleSelect?.(mod.id)}
+              onClick={(e) => e.stopPropagation()}
+              color="gray"
+              size="xs"
+            />
+          )}
           <Box
             className="card-media"
             style={{

@@ -151,7 +151,9 @@
   --max-width-text-lg: 400px;
   --max-width-author: 100px;
   --max-width-settings: 680px;
+  --max-width-floating-bar: 680px;
   --min-width-search: 300px;
+  --z-index-floating-bar: 200;
 
   --height-modal-scroll: 320px;
   --height-carousel: 260px;

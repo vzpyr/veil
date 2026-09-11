@@ -121,11 +121,7 @@ fn set_auto_check_updates(app: AppHandle, auto_check_updates: bool) -> Result<Ap
 
 #[tauri::command]
 fn set_view_mode(app: AppHandle, view_mode: String) -> Result<AppConfig, String> {
-    let mode = if view_mode == "list" {
-        "list"
-    } else {
-        "grid"
-    };
+    let mode = if view_mode == "list" { "list" } else { "grid" };
     let path = get_config_path(&app)?;
     let mut config = read_config(&path);
     config.view_mode = mode.to_string();
@@ -195,6 +191,28 @@ fn create_new_category(mods_dir: String, category_name: String) -> Result<(), St
 fn delete_installed_mod(mods_dir: String, mod_id: String) -> Result<(), String> {
     let path = Path::new(&mods_dir);
     delete_mod(path, &mod_id)
+}
+
+#[tauri::command]
+fn batch_toggle_mods(mods_dir: String, mod_ids: Vec<String>, enable: bool) -> Result<(), String> {
+    let path = Path::new(&mods_dir);
+    scanner::batch_toggle_mods(path, &mod_ids, enable)
+}
+
+#[tauri::command]
+fn batch_move_mods(
+    mods_dir: String,
+    mod_ids: Vec<String>,
+    target_category: Option<String>,
+) -> Result<(), String> {
+    let path = Path::new(&mods_dir);
+    scanner::batch_move_mods(path, &mod_ids, target_category)
+}
+
+#[tauri::command]
+fn batch_delete_mods(mods_dir: String, mod_ids: Vec<String>) -> Result<(), String> {
+    let path = Path::new(&mods_dir);
+    scanner::batch_delete_mods(path, &mod_ids)
 }
 
 #[tauri::command]
@@ -396,6 +414,9 @@ pub fn run() {
             rename_existing_category,
             delete_existing_category,
             delete_installed_mod,
+            batch_toggle_mods,
+            batch_move_mods,
+            batch_delete_mods,
             extract_archive_file,
             download_mod,
             cancel_download,

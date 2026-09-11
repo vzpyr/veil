@@ -582,6 +582,53 @@ pub fn delete_mod(mods_dir: &Path, mod_rel_path: &str) -> Result<(), String> {
     Ok(())
 }
 
+pub fn batch_delete_mods(mods_dir: &Path, mod_rel_paths: &[String]) -> Result<(), String> {
+    let mut errors = Vec::new();
+    for rel_path in mod_rel_paths {
+        if let Err(err) = delete_mod(mods_dir, rel_path) {
+            errors.push(format!("{}: {}", rel_path, err));
+        }
+    }
+    if !errors.is_empty() {
+        return Err(errors.join(", "));
+    }
+    Ok(())
+}
+
+pub fn batch_toggle_mods(
+    mods_dir: &Path,
+    mod_rel_paths: &[String],
+    enable: bool,
+) -> Result<(), String> {
+    let mut errors = Vec::new();
+    for rel_path in mod_rel_paths {
+        if let Err(err) = toggle_mod_status(mods_dir, rel_path, enable) {
+            errors.push(format!("{}: {}", rel_path, err));
+        }
+    }
+    if !errors.is_empty() {
+        return Err(errors.join(", "));
+    }
+    Ok(())
+}
+
+pub fn batch_move_mods(
+    mods_dir: &Path,
+    mod_rel_paths: &[String],
+    target_category: Option<String>,
+) -> Result<(), String> {
+    let mut errors = Vec::new();
+    for rel_path in mod_rel_paths {
+        if let Err(err) = move_mod_category(mods_dir, rel_path, target_category.clone()) {
+            errors.push(format!("{}: {}", rel_path, err));
+        }
+    }
+    if !errors.is_empty() {
+        return Err(errors.join(", "));
+    }
+    Ok(())
+}
+
 pub fn toggle_mod_status(
     mods_dir: &Path,
     mod_rel_path: &str,
@@ -901,7 +948,11 @@ mod tests {
         assert!(!mod_a.exists());
         assert!(!custom_cat.exists());
 
-        delete_mod(mods_dir, &format!("{}/ModB", crate::symlink::UNCATEGORIZED_DIR_NAME)).unwrap();
+        delete_mod(
+            mods_dir,
+            &format!("{}/ModB", crate::symlink::UNCATEGORIZED_DIR_NAME),
+        )
+        .unwrap();
         assert!(!mod_b.exists());
         assert!(!uncat_dir.exists());
     }
@@ -950,5 +1001,43 @@ mod tests {
         assert!(!empty_uncat.exists());
         assert!(!active_dir.exists());
     }
-}
 
+    #[test]
+    fn test_batch_operations() {
+        let temp = tempdir().unwrap();
+        let mods_dir = temp.path();
+
+        crate::symlink::ensure_veil_dirs(mods_dir).unwrap();
+        let disabled_dir = get_disabled_dir(mods_dir);
+
+        let mod1_dir = disabled_dir.join("CatA").join("Mod1");
+        let mod2_dir = disabled_dir.join("CatA").join("Mod2");
+        fs::create_dir_all(&mod1_dir).unwrap();
+        fs::create_dir_all(&mod2_dir).unwrap();
+        fs::write(mod1_dir.join("mod1.ini"), "hash = 1111").unwrap();
+        fs::write(mod2_dir.join("mod2.ini"), "hash = 2222").unwrap();
+
+        let paths = vec!["CatA/Mod1".to_string(), "CatA/Mod2".to_string()];
+        batch_toggle_mods(mods_dir, &paths, true).unwrap();
+
+        let scanned = scan_mods(mods_dir).unwrap();
+        assert_eq!(scanned.len(), 2);
+        assert!(scanned.iter().all(|m| m.enabled));
+
+        batch_move_mods(mods_dir, &paths, Some("CatB".to_string())).unwrap();
+
+        let scanned_moved = scan_mods(mods_dir).unwrap();
+        assert_eq!(scanned_moved.len(), 2);
+        assert!(
+            scanned_moved
+                .iter()
+                .all(|m| m.category.as_deref() == Some("CatB"))
+        );
+
+        let new_paths = vec!["CatB/Mod1".to_string(), "CatB/Mod2".to_string()];
+        batch_delete_mods(mods_dir, &new_paths).unwrap();
+
+        let scanned_after_delete = scan_mods(mods_dir).unwrap();
+        assert_eq!(scanned_after_delete.len(), 0);
+    }
+}
