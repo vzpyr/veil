@@ -9,11 +9,12 @@ import {
   Stack,
   Text,
 } from "@mantine/core";
-import { FolderX, Settings } from "lucide-react";
+import { FolderX, LayoutGrid, List, Settings } from "lucide-react";
 import { motion } from "motion/react";
 import { ConflictGroup, ModItem, ModUpdateInfo } from "../types";
 import { staggerItem } from "../motion";
 import ModCard from "./ModCard";
+import ModListItem from "./ModListItem";
 
 interface ModGridProps {
   mods: ModItem[];
@@ -24,6 +25,8 @@ interface ModGridProps {
   onStatusFilterChange: (filter: "all" | "enabled" | "disabled") => void;
   sortBy: string;
   onSortByChange: (sort: string) => void;
+  viewMode: "grid" | "list";
+  onViewModeChange: (mode: "grid" | "list") => void;
   totalCount: number;
   enabledCount: number;
   disabledCount: number;
@@ -48,6 +51,8 @@ export default function ModGrid({
   onStatusFilterChange,
   sortBy,
   onSortByChange,
+  viewMode,
+  onViewModeChange,
   totalCount,
   enabledCount,
   disabledCount,
@@ -158,6 +163,29 @@ export default function ModGrid({
               { value: "last-updated", label: "Last Updated" },
             ]}
           />
+          <SegmentedControl
+            size="xs"
+            value={viewMode}
+            onChange={(val) => onViewModeChange(val as "grid" | "list")}
+            data={[
+              {
+                value: "grid",
+                label: (
+                  <Center style={{ padding: "0 var(--space-3xs)" }}>
+                    <LayoutGrid size={14} />
+                  </Center>
+                ),
+              },
+              {
+                value: "list",
+                label: (
+                  <Center style={{ padding: "0 var(--space-3xs)" }}>
+                    <List size={14} />
+                  </Center>
+                ),
+              },
+            ]}
+          />
         </Group>
       </Group>
 
@@ -178,6 +206,33 @@ export default function ModGrid({
             </Text>
           </Stack>
         </Center>
+      ) : viewMode === "list" ? (
+        <Stack gap="xs">
+          {mods.map((mod, index) => (
+            <motion.div
+              key={mod.id}
+              variants={staggerItem()}
+              initial="hidden"
+              animate="visible"
+              custom={index}
+            >
+              <ModListItem
+                mod={mod}
+                inConflict={conflictingModIds.has(mod.id)}
+                updateInfo={updatesMap[mod.id]}
+                onToggle={onToggle}
+                onMoveCategory={onMoveCategory}
+                onReveal={onReveal}
+                onDelete={onDelete}
+                onOpenConflicts={onOpenConflicts}
+                onOpenKeybinds={onOpenKeybinds}
+                onOpenGameBanana={onOpenGameBanana}
+                onOpenLinkGameBanana={onOpenLinkGameBanana}
+                onSetPreview={onSetPreview}
+              />
+            </motion.div>
+          ))}
+        </Stack>
       ) : (
         <SimpleGrid cols={{ base: 1, sm: 2, md: 3, lg: 4, xl: 5 }} spacing="sm">
           {mods.map((mod, index) => (

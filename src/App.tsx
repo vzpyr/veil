@@ -463,6 +463,21 @@ export default function App() {
     }
   };
 
+  const handleViewModeChange = async (mode: "grid" | "list") => {
+    try {
+      const updatedConfig = await invoke<AppConfig>("set_view_mode", {
+        viewMode: mode,
+      });
+      setConfig(updatedConfig);
+    } catch (err) {
+      notifications.show({
+        title: "Settings Error",
+        message: String(err),
+        color: "red",
+      });
+    }
+  };
+
   const handleToggleMod = async (modId: string, enable: boolean) => {
     if (!modsDir) return;
     try {
@@ -1022,6 +1037,8 @@ export default function App() {
                     onStatusFilterChange={setStatusFilter}
                     sortBy={sortBy}
                     onSortByChange={setSortBy}
+                    viewMode={config?.view_mode || "grid"}
+                    onViewModeChange={handleViewModeChange}
                     totalCount={totalInScope}
                     enabledCount={enabledInScope}
                     disabledCount={disabledInScope}

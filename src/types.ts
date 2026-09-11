@@ -14,6 +14,7 @@ export interface AppConfig {
   show_nsfw: boolean;
   color_scheme: string;
   auto_check_updates: boolean;
+  view_mode: "grid" | "list";
   games: Record<string, GameSettings>;
 }
 

@@ -120,6 +120,20 @@ fn set_auto_check_updates(app: AppHandle, auto_check_updates: bool) -> Result<Ap
 }
 
 #[tauri::command]
+fn set_view_mode(app: AppHandle, view_mode: String) -> Result<AppConfig, String> {
+    let mode = if view_mode == "list" {
+        "list"
+    } else {
+        "grid"
+    };
+    let path = get_config_path(&app)?;
+    let mut config = read_config(&path);
+    config.view_mode = mode.to_string();
+    write_config(&path, &config)?;
+    Ok(config)
+}
+
+#[tauri::command]
 fn cleanup_on_boot(mods_dir: String) -> Result<(), String> {
     let path = Path::new(&mods_dir);
     if !path.exists() {
@@ -371,6 +385,7 @@ pub fn run() {
             set_show_nsfw,
             set_color_scheme,
             set_auto_check_updates,
+            set_view_mode,
             cleanup_on_boot,
             scan_installed_mods,
             get_mod_conflicts,

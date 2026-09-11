@@ -26,6 +26,8 @@ pub struct AppConfig {
     pub color_scheme: String,
     #[serde(default)]
     pub auto_check_updates: bool,
+    #[serde(default = "default_view_mode")]
+    pub view_mode: String,
     pub games: HashMap<String, GameSettings>,
 }
 
@@ -35,6 +37,10 @@ fn default_auto_categorize() -> bool {
 
 fn default_color_scheme() -> String {
     "dark".to_string()
+}
+
+fn default_view_mode() -> String {
+    "grid".to_string()
 }
 
 impl Default for AppConfig {
@@ -48,6 +54,7 @@ impl Default for AppConfig {
             show_nsfw: false,
             color_scheme: "dark".to_string(),
             auto_check_updates: false,
+            view_mode: "grid".to_string(),
             games,
         }
     }
@@ -90,6 +97,7 @@ mod tests {
         assert!(config.auto_categorize);
         assert!(!config.show_nsfw);
         assert_eq!(config.color_scheme, "dark");
+        assert_eq!(config.view_mode, "grid");
     }
 
     #[test]
@@ -107,6 +115,7 @@ mod tests {
 
         let loaded = read_config(&path);
         assert!(!loaded.auto_check_updates);
+        assert_eq!(loaded.view_mode, "grid");
     }
 
     #[test]
@@ -115,10 +124,12 @@ mod tests {
         let path = temp.path().join("config.json");
         let mut config = AppConfig::default();
         config.auto_check_updates = true;
+        config.view_mode = "list".to_string();
 
         write_config(&path, &config).unwrap();
         let loaded = read_config(&path);
         assert!(loaded.auto_check_updates);
+        assert_eq!(loaded.view_mode, "list");
     }
 }
 

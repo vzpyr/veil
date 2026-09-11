@@ -155,6 +155,8 @@
   --height-carousel: 260px;
   --height-empty-state: 280px;
   --size-thumb-sm: 44px;
+  --size-thumb-list-w: 64px;
+  --size-thumb-list-h: 36px;
   --size-badge-dot: 16px;
   --size-badge-count-min: 24px;
   --font-size-badge-dot: 10px;
