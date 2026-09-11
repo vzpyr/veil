@@ -1,4 +1,9 @@
-import { Box, Flex, LoadingOverlay } from "@mantine/core";
+import {
+  Box,
+  Flex,
+  LoadingOverlay,
+  useMantineColorScheme,
+} from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
@@ -37,6 +42,7 @@ import {
 } from "./types";
 
 export default function App() {
+  const { setColorScheme } = useMantineColorScheme();
   const [games, setGames] = useState<GameDefinition[]>([]);
   const [config, setConfig] = useState<AppConfig | null>(null);
   const [mods, setMods] = useState<ModItem[]>([]);
@@ -318,6 +324,9 @@ export default function App() {
         ]);
         setGames(loadedGames);
         setConfig(loadedConfig);
+        setColorScheme(
+          loadedConfig.color_scheme === "light" ? "light" : "dark",
+        );
 
         const currentActiveId =
           loadedConfig.active_game_id || loadedGames[0]?.id;
@@ -386,6 +395,22 @@ export default function App() {
         autoCategorize: auto,
       });
       setConfig(updatedConfig);
+    } catch (err) {
+      notifications.show({
+        title: "Settings Error",
+        message: String(err),
+        color: "red",
+      });
+    }
+  };
+
+  const handleUpdateColorScheme = async (scheme: string) => {
+    try {
+      const updatedConfig = await invoke<AppConfig>("set_color_scheme", {
+        colorScheme: scheme,
+      });
+      setConfig(updatedConfig);
+      setColorScheme(scheme === "light" ? "light" : "dark");
     } catch (err) {
       notifications.show({
         title: "Settings Error",
@@ -1026,9 +1051,11 @@ export default function App() {
                   settings={activeSettings}
                   autoCategorize={autoCategorize}
                   showNsfw={showNsfw}
+                  colorScheme={config?.color_scheme ?? "dark"}
                   onUpdateModsDir={handleUpdateModsDir}
                   onUpdateAutoCategorize={handleUpdateAutoCategorize}
                   onShowNsfwChange={handleUpdateShowNsfw}
+                  onColorSchemeChange={handleUpdateColorScheme}
                 />
               </Box>
             )}

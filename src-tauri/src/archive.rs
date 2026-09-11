@@ -364,23 +364,17 @@ pub fn extract_rar(
             return Err("Download cancelled".to_string());
         }
 
-        let result = archive
-            .read_header()
-            .map_err(|e| {
-                let _ = fs::remove_dir_all(temp_extract_dir);
-                e.to_string()
-            });
+        let result = archive.read_header().map_err(|e| {
+            let _ = fs::remove_dir_all(temp_extract_dir);
+            e.to_string()
+        });
 
         match result {
             Ok(Some(header)) => {
-                let entry_name = header
-                    .entry()
-                    .filename
-                    .to_string_lossy()
-                    .replace('\\', "/");
+                let entry_name = header.entry().filename.to_string_lossy().replace('\\', "/");
                 let is_dir = header.entry().is_directory();
-                let skipped_entry = entry_name.starts_with("__MACOSX/")
-                    || entry_name.ends_with(".DS_Store");
+                let skipped_entry =
+                    entry_name.starts_with("__MACOSX/") || entry_name.ends_with(".DS_Store");
 
                 if !is_dir && !skipped_entry && !is_safe_path(Path::new(&entry_name)) {
                     let _ = fs::remove_dir_all(temp_extract_dir);

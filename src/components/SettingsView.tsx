@@ -3,6 +3,7 @@ import {
   Button,
   Card,
   Group,
+  SegmentedControl,
   Stack,
   Switch,
   Text,
@@ -18,9 +19,11 @@ interface SettingsViewProps {
   settings: GameSettings;
   autoCategorize: boolean;
   showNsfw: boolean;
+  colorScheme: string;
   onUpdateModsDir: (dir: string) => void;
   onUpdateAutoCategorize: (enabled: boolean) => void;
   onShowNsfwChange: (value: boolean) => void;
+  onColorSchemeChange: (scheme: string) => void;
 }
 
 export default function SettingsView({
@@ -28,9 +31,11 @@ export default function SettingsView({
   settings,
   autoCategorize,
   showNsfw,
+  colorScheme,
   onUpdateModsDir,
   onUpdateAutoCategorize,
   onShowNsfwChange,
+  onColorSchemeChange,
 }: SettingsViewProps) {
   const handleBrowseFolder = async () => {
     const selected = await open({
@@ -125,6 +130,23 @@ export default function SettingsView({
               size="md"
               checked={showNsfw}
               onChange={(e) => onShowNsfwChange(e.currentTarget.checked)}
+            />
+          </Group>
+        </Card>
+
+        <Card p="sm">
+          <Group justify="space-between" align="center" gap="xs" wrap="nowrap">
+            <Text fw={600} size="sm">
+              Color Scheme
+            </Text>
+            <SegmentedControl
+              size="xs"
+              value={colorScheme === "light" ? "light" : "dark"}
+              onChange={onColorSchemeChange}
+              data={[
+                { value: "dark", label: "Dark" },
+                { value: "light", label: "Light" },
+              ]}
             />
           </Group>
         </Card>

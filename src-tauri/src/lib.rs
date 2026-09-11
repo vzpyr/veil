@@ -93,6 +93,20 @@ fn set_show_nsfw(app: AppHandle, show_nsfw: bool) -> Result<AppConfig, String> {
 }
 
 #[tauri::command]
+fn set_color_scheme(app: AppHandle, color_scheme: String) -> Result<AppConfig, String> {
+    let scheme = if color_scheme == "light" {
+        "light"
+    } else {
+        "dark"
+    };
+    let path = get_config_path(&app)?;
+    let mut config = read_config(&path);
+    config.color_scheme = scheme.to_string();
+    write_config(&path, &config)?;
+    Ok(config)
+}
+
+#[tauri::command]
 fn scan_installed_mods(mods_dir: String) -> Result<Vec<ModItem>, String> {
     let path = Path::new(&mods_dir);
     ensure_veil_dirs(path)?;
@@ -329,6 +343,7 @@ pub fn run() {
             set_game_mods_dir,
             set_auto_categorize,
             set_show_nsfw,
+            set_color_scheme,
             scan_installed_mods,
             get_mod_conflicts,
             get_categories,

@@ -213,7 +213,6 @@ export default function Sidebar({
                           </Menu.Item>
                           <Menu.Item
                             color="red"
-                            className="menu-item-danger"
                             leftSection={<Trash2 size={14} />}
                             onClick={(e) => {
                               e.stopPropagation();

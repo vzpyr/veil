@@ -22,11 +22,17 @@ pub struct AppConfig {
     pub auto_categorize: bool,
     #[serde(default)]
     pub show_nsfw: bool,
+    #[serde(default = "default_color_scheme")]
+    pub color_scheme: String,
     pub games: HashMap<String, GameSettings>,
 }
 
 fn default_auto_categorize() -> bool {
     true
+}
+
+fn default_color_scheme() -> String {
+    "dark".to_string()
 }
 
 impl Default for AppConfig {
@@ -38,6 +44,7 @@ impl Default for AppConfig {
             active_game_id: "zzz".to_string(),
             auto_categorize: true,
             show_nsfw: false,
+            color_scheme: "dark".to_string(),
             games,
         }
     }

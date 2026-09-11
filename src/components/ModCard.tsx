@@ -111,13 +111,7 @@ export default function ModCard({
         >
           <Group gap="2xs">
             {mod.category && (
-              <Badge
-                size="xs"
-                radius="xl"
-                variant="filled"
-                color="dark"
-                className="badge-overlay"
-              >
+              <Badge size="xs" radius="xl" variant="filled" color="dark">
                 {mod.category}
               </Badge>
             )}
@@ -203,7 +197,6 @@ export default function ModCard({
               <Menu.Dropdown>
                 {updateInfo?.available && (
                   <Menu.Item
-                    className="menu-item-success"
                     leftSection={<CircleArrowUp size={14} />}
                     color="green"
                     onClick={() => onOpenGameBanana(mod)}
@@ -240,7 +233,6 @@ export default function ModCard({
                 <Menu.Divider />
                 <Menu.Item
                   color="red"
-                  className="menu-item-danger"
                   leftSection={<Trash2 size={14} />}
                   onClick={() => onDelete(mod)}
                 >

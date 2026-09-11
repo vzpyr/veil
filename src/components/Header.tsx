@@ -102,7 +102,7 @@ export default function Header({
           }}
         >
           <Folder size={16} />
-          <Text size="xs" fw={600}>
+          <Text c="inherit" size="xs" fw={600}>
             Mods
           </Text>
         </Center>
@@ -120,7 +120,7 @@ export default function Header({
           }}
         >
           <Globe size={16} />
-          <Text size="xs" fw={600}>
+          <Text c="inherit" size="xs" fw={600}>
             GameBanana
           </Text>
         </Center>
@@ -138,7 +138,7 @@ export default function Header({
           }}
         >
           <Settings size={16} />
-          <Text size="xs" fw={600}>
+          <Text c="inherit" size="xs" fw={600}>
             Settings
           </Text>
         </Center>
