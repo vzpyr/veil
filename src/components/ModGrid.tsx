@@ -5,8 +5,9 @@ import {
   Button,
   Card,
   Center,
+  Drawer,
   Group,
-  Modal,
+  Paper,
   ScrollArea,
   SegmentedControl,
   Select,
@@ -92,7 +93,7 @@ export default function ModGrid({
 }: ModGridProps) {
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedModIds, setSelectedModIds] = useState<Set<string>>(new Set());
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteDrawerOpen, setDeleteDrawerOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isTogglingBatch, setIsTogglingBatch] = useState(false);
 
@@ -186,7 +187,7 @@ export default function ModGrid({
       await onBatchDelete(selectedModsList);
       setSelectedModIds(new Set());
       setIsSelectMode(false);
-      setDeleteModalOpen(false);
+      setDeleteDrawerOpen(false);
     } finally {
       setIsDeleting(false);
     }
@@ -499,7 +500,7 @@ export default function ModGrid({
                   size="xs"
                   leftSection={<Trash2 size={14} />}
                   disabled={selectedModIds.size === 0}
-                  onClick={() => setDeleteModalOpen(true)}
+                  onClick={() => setDeleteDrawerOpen(true)}
                 >
                   Delete
                 </Button>
@@ -520,40 +521,48 @@ export default function ModGrid({
         </Box>
       )}
 
-      <Modal
-        opened={deleteModalOpen}
-        onClose={() => !isDeleting && setDeleteModalOpen(false)}
+      <Drawer
+        opened={deleteDrawerOpen}
+        onClose={() => !isDeleting && setDeleteDrawerOpen(false)}
+        size="md"
         title={
           <Group gap="xs">
-            <Trash2 size={18} color="var(--color-status-error)" />
+            <Trash2 size={20} color="var(--color-status-error)" />
             <Text fw={700} size="md">
               Delete Selected Mods
             </Text>
           </Group>
         }
       >
-        <Stack gap="md">
+        <Stack gap="md" h="100%">
           <Text size="sm">
             Are you sure you want to permanently delete{" "}
             {selectedModsList.length}{" "}
             {selectedModsList.length === 1 ? "mod" : "mods"} from disk? This
             action cannot be undone.
           </Text>
-          <ScrollArea mah="var(--height-modal-scroll)">
+          <ScrollArea style={{ flex: 1 }}>
             <Stack gap="2xs">
               {selectedModsList.map((m) => (
-                <Text key={m.id} size="xs" c="dimmed" truncate>
-                  {m.name}
-                </Text>
+                <Paper key={m.id} p="xs">
+                  <Text size="xs" fw={600} truncate>
+                    {m.name}
+                  </Text>
+                  {m.category && (
+                    <Text size="2xs" c="dimmed">
+                      Category: {m.category}
+                    </Text>
+                  )}
+                </Paper>
               ))}
             </Stack>
           </ScrollArea>
-          <Group justify="flex-end" gap="xs">
+          <Group justify="flex-end" gap="xs" mt="auto">
             <Button
               variant="default"
               size="xs"
               disabled={isDeleting}
-              onClick={() => setDeleteModalOpen(false)}
+              onClick={() => setDeleteDrawerOpen(false)}
             >
               Cancel
             </Button>
@@ -568,7 +577,7 @@ export default function ModGrid({
             </Button>
           </Group>
         </Stack>
-      </Modal>
+      </Drawer>
     </Box>
   );
 }
