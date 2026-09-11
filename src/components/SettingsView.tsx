@@ -11,7 +11,7 @@ import {
 } from "@mantine/core";
 import { Folder, FolderOpen } from "lucide-react";
 import { open } from "@tauri-apps/plugin-dialog";
-import { revealItemInDir } from "@tauri-apps/plugin-opener";
+import { openPath } from "@tauri-apps/plugin-opener";
 import { GameDefinition, GameSettings } from "../types";
 
 interface SettingsViewProps {
@@ -55,7 +55,7 @@ export default function SettingsView({
 
   const handleOpenFolder = async () => {
     if (settings.mods_dir) {
-      await revealItemInDir(settings.mods_dir);
+      await openPath(settings.mods_dir);
     }
   };
 
@@ -95,7 +95,7 @@ export default function SettingsView({
                   leftSection={<FolderOpen size={14} />}
                   onClick={handleOpenFolder}
                 >
-                  Reveal
+                  Open
                 </Button>
               )}
               <Button size="xs" variant="default" onClick={handleBrowseFolder}>

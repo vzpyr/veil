@@ -32,7 +32,7 @@ interface ModGridProps {
   disabledCount: number;
   onToggle: (modId: string, enabled: boolean) => void;
   onMoveCategory: (mod: ModItem) => void;
-  onReveal: (folderPath: string) => void;
+  onOpenFolder: (folderPath: string) => void;
   onDelete: (mod: ModItem) => void;
   onOpenConflicts: () => void;
   onOpenSettings: () => void;
@@ -58,7 +58,7 @@ export default function ModGrid({
   disabledCount,
   onToggle,
   onMoveCategory,
-  onReveal,
+  onOpenFolder,
   onDelete,
   onOpenConflicts,
   onOpenSettings,
@@ -222,7 +222,7 @@ export default function ModGrid({
                 updateInfo={updatesMap[mod.id]}
                 onToggle={onToggle}
                 onMoveCategory={onMoveCategory}
-                onReveal={onReveal}
+                onOpenFolder={onOpenFolder}
                 onDelete={onDelete}
                 onOpenConflicts={onOpenConflicts}
                 onOpenKeybinds={onOpenKeybinds}
@@ -250,7 +250,7 @@ export default function ModGrid({
                 updateInfo={updatesMap[mod.id]}
                 onToggle={onToggle}
                 onMoveCategory={onMoveCategory}
-                onReveal={onReveal}
+                onOpenFolder={onOpenFolder}
                 onDelete={onDelete}
                 onOpenConflicts={onOpenConflicts}
                 onOpenKeybinds={onOpenKeybinds}

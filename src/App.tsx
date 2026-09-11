@@ -8,7 +8,7 @@ import { notifications } from "@mantine/notifications";
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { open } from "@tauri-apps/plugin-dialog";
-import { revealItemInDir } from "@tauri-apps/plugin-opener";
+import { openPath } from "@tauri-apps/plugin-opener";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { tabContent } from "./motion";
@@ -700,9 +700,9 @@ export default function App() {
     }
   };
 
-  const handleReveal = async (folderPath: string) => {
+  const handleOpenFolder = async (folderPath: string) => {
     try {
-      await revealItemInDir(folderPath);
+      await openPath(folderPath);
     } catch (err) {
       notifications.show({
         title: "Error",
@@ -1011,7 +1011,7 @@ export default function App() {
                   onOpenManualInstall={handleOpenManualInstall}
                   onOpenModsFolder={() => {
                     if (modsDir) {
-                      handleReveal(modsDir);
+                      handleOpenFolder(modsDir);
                     }
                   }}
                   onCheckUpdates={handleCheckUpdates}
@@ -1051,7 +1051,7 @@ export default function App() {
                         categoryName: null,
                       })
                     }
-                    onReveal={handleReveal}
+                    onOpenFolder={handleOpenFolder}
                     onDelete={handleDeleteMod}
                     onOpenConflicts={() => setConflictDrawerOpen(true)}
                     onOpenSettings={() => setActiveTab("settings")}

@@ -13,7 +13,7 @@ import {
 import {
   CircleArrowUp,
   EllipsisVertical,
-  ExternalLink,
+  FolderOpen,
   FolderSymlink,
   ImageIcon,
   Keyboard,
@@ -31,7 +31,7 @@ interface ModCardProps {
   updateInfo?: ModUpdateInfo;
   onToggle: (modId: string, enabled: boolean) => void;
   onMoveCategory: (mod: ModItem) => void;
-  onReveal: (folderPath: string) => void;
+  onOpenFolder: (folderPath: string) => void;
   onDelete: (mod: ModItem) => void;
   onOpenConflicts: () => void;
   onOpenKeybinds: (mod: ModItem) => void;
@@ -46,7 +46,7 @@ export default function ModCard({
   updateInfo,
   onToggle,
   onMoveCategory,
-  onReveal,
+  onOpenFolder,
   onDelete,
   onOpenConflicts,
   onOpenKeybinds,
@@ -215,10 +215,10 @@ export default function ModCard({
                   Set Preview Image
                 </Menu.Item>
                 <Menu.Item
-                  leftSection={<ExternalLink size={14} />}
-                  onClick={() => onReveal(mod.folder_path)}
+                  leftSection={<FolderOpen size={14} />}
+                  onClick={() => onOpenFolder(mod.folder_path)}
                 >
-                  Reveal in Files
+                  Open Folder
                 </Menu.Item>
                 <Menu.Divider />
                 <Menu.Item
