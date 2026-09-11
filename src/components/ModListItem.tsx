@@ -124,25 +124,29 @@ export default function ModListItem({
                     size="xs"
                     color="green"
                     variant="filled"
-                    leftSection={<CircleArrowUp size={10} />}
+                    className="animate-scale-in"
+                    leftSection={<CircleArrowUp size={12} />}
                     style={{ cursor: "pointer" }}
                     onClick={(e) => {
                       e.stopPropagation();
                       onOpenGameBanana(mod);
                     }}
                   >
-                    Update
+                    {updateInfo.latestVersion
+                      ? `Update v${formatVersion(updateInfo.latestVersion)}`
+                      : "Update"}
                   </Badge>
                 </Tooltip>
               )}
 
               {inConflict && (
-                <Tooltip label="Has hash conflicts with other active mods. Click to resolve.">
+                <Tooltip label="Active hash conflict detected. Click to resolve.">
                   <Badge
                     size="xs"
-                    color="yellow"
+                    color="orange"
                     variant="filled"
-                    leftSection={<TriangleAlert size={10} />}
+                    className="animate-scale-in"
+                    leftSection={<TriangleAlert size={12} />}
                     style={{ cursor: "pointer" }}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -175,6 +179,12 @@ export default function ModListItem({
           wrap="nowrap"
           onClick={(e) => e.stopPropagation()}
         >
+          <Switch
+            size="sm"
+            checked={mod.enabled}
+            onChange={(e) => onToggle(mod.id, e.currentTarget.checked)}
+          />
+
           <Tooltip label="Keybinds and toggles">
             <ActionIcon
               variant="subtle"
@@ -185,12 +195,6 @@ export default function ModListItem({
               <Keyboard size={16} />
             </ActionIcon>
           </Tooltip>
-
-          <Switch
-            size="sm"
-            checked={mod.enabled}
-            onChange={(e) => onToggle(mod.id, e.currentTarget.checked)}
-          />
 
           <Menu position="bottom-end" shadow="md" width={190}>
             <Menu.Target>
