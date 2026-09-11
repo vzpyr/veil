@@ -34,7 +34,6 @@ import {
   GameDefinition,
   ModItem,
   ModUpdateInfo,
-  NsfwVisibility,
 } from "./types";
 
 export default function App() {
@@ -94,7 +93,7 @@ export default function App() {
     activeGame && config ? config.games[activeGame.id] : undefined;
   const modsDir = activeSettings?.mods_dir;
   const autoCategorize = config?.auto_categorize ?? true;
-  const showNsfw = config?.show_nsfw ?? "hide";
+  const showNsfw = config?.show_nsfw ?? false;
 
   const refreshData = useCallback(
     async (dir?: string) => {
@@ -378,7 +377,7 @@ export default function App() {
     }
   };
 
-  const handleUpdateShowNsfw = async (value: NsfwVisibility) => {
+  const handleUpdateShowNsfw = async (value: boolean) => {
     try {
       const updatedConfig = await invoke<AppConfig>("set_show_nsfw", {
         showNsfw: value,

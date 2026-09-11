@@ -9,7 +9,7 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { Eye, Heart, ImageIcon, TriangleAlert } from "lucide-react";
-import { GbSubfeedItem, gbModNsfwLevel } from "../../api/gamebanana";
+import { GbSubfeedItem, isGbModNsfw } from "../../api/gamebanana";
 
 interface GbModCardProps {
   item: GbSubfeedItem;
@@ -21,7 +21,7 @@ export default function GbModCard({ item, onSelect }: GbModCardProps) {
   const imageUrl = firstImage
     ? `${firstImage._sBaseUrl}/${firstImage._sFile530 || firstImage._sFile220 || firstImage._sFile}`
     : null;
-  const nsfwLevel = gbModNsfwLevel(item);
+  const nsfw = isGbModNsfw(item);
 
   return (
     <Card
@@ -76,12 +76,8 @@ export default function GbModCard({ item, onSelect }: GbModCardProps) {
           </Badge>
         )}
 
-        {nsfwLevel !== "none" && (
-          <Tooltip
-            label={
-              nsfwLevel === "strict" ? "Explicit content" : "Mature content"
-            }
-          >
+        {nsfw && (
+          <Tooltip label="Contains adult content">
             <Badge
               size="xs"
               radius="xl"

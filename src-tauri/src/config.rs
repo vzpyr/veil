@@ -20,17 +20,13 @@ pub struct AppConfig {
     pub active_game_id: String,
     #[serde(default = "default_auto_categorize")]
     pub auto_categorize: bool,
-    #[serde(default = "default_show_nsfw")]
-    pub show_nsfw: String,
+    #[serde(default)]
+    pub show_nsfw: bool,
     pub games: HashMap<String, GameSettings>,
 }
 
 fn default_auto_categorize() -> bool {
     true
-}
-
-fn default_show_nsfw() -> String {
-    "hide".to_string()
 }
 
 impl Default for AppConfig {
@@ -41,7 +37,7 @@ impl Default for AppConfig {
         Self {
             active_game_id: "zzz".to_string(),
             auto_categorize: true,
-            show_nsfw: "hide".to_string(),
+            show_nsfw: false,
             games,
         }
     }
@@ -58,13 +54,7 @@ pub fn read_config(path: &Path) -> AppConfig {
         return AppConfig::default();
     }
     match fs::read_to_string(path) {
-        Ok(content) => {
-            let mut config: AppConfig = serde_json::from_str(&content).unwrap_or_default();
-            if !matches!(config.show_nsfw.as_str(), "hide" | "warn" | "show") {
-                config.show_nsfw = "hide".to_string();
-            }
-            config
-        }
+        Ok(content) => serde_json::from_str(&content).unwrap_or_default(),
         Err(_) => AppConfig::default(),
     }
 }

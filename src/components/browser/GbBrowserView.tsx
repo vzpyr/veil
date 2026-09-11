@@ -25,8 +25,8 @@ import {
   GbSubfeedItem,
   searchGameBananaMods,
 } from "../../api/gamebanana";
-import { DownloadQueueItem, GameDefinition, NsfwVisibility } from "../../types";
-import { gbModNsfwLevel, isGbModNsfw } from "../../api/gamebanana";
+import { DownloadQueueItem, GameDefinition } from "../../types";
+import { isGbModNsfw } from "../../api/gamebanana";
 import { staggerItem } from "../../motion";
 import GbModCard from "./GbModCard";
 import GbModDrawer from "./GbModDrawer";
@@ -35,7 +35,7 @@ interface GbBrowserViewProps {
   activeGame: GameDefinition;
   modsDir?: string;
   autoCategorize: boolean;
-  showNsfw: NsfwVisibility;
+  showNsfw: boolean;
   downloadQueue: DownloadQueueItem[];
   onEnqueueDownload: (
     file: GbModFile,
@@ -287,9 +287,7 @@ export default function GbBrowserView({
             spacing="sm"
           >
             {items
-              .filter((item) =>
-                showNsfw === "hide" ? gbModNsfwLevel(item) === "none" : true,
-              )
+              .filter((item) => showNsfw || !isGbModNsfw(item))
               .map((item, index) => (
                 <motion.div
                   key={item._idRow}

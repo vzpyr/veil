@@ -3,7 +3,6 @@ import {
   Button,
   Card,
   Group,
-  Select,
   Stack,
   Switch,
   Text,
@@ -12,22 +11,16 @@ import {
 import { Folder, FolderOpen } from "lucide-react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { revealItemInDir } from "@tauri-apps/plugin-opener";
-import { GameDefinition, GameSettings, NsfwVisibility } from "../types";
-
-const nsfwOptions = [
-  { value: "hide", label: "Completely Hidden" },
-  { value: "warn", label: "Show with Badge" },
-  { value: "show", label: "Show Normally" },
-];
+import { GameDefinition, GameSettings } from "../types";
 
 interface SettingsViewProps {
   activeGame: GameDefinition;
   settings: GameSettings;
   autoCategorize: boolean;
-  showNsfw: NsfwVisibility;
+  showNsfw: boolean;
   onUpdateModsDir: (dir: string) => void;
   onUpdateAutoCategorize: (enabled: boolean) => void;
-  onShowNsfwChange: (value: NsfwVisibility) => void;
+  onShowNsfwChange: (value: boolean) => void;
 }
 
 export default function SettingsView({
@@ -125,25 +118,13 @@ export default function SettingsView({
 
         <Card p="sm">
           <Group justify="space-between" align="center" gap="xs" wrap="nowrap">
-            <Box style={{ flex: 1, minWidth: 0 }}>
-              <Text fw={600} size="sm">
-                NSFW Mods
-              </Text>
-              <Text c="dimmed" size="xs">
-                Controls how age-gated GameBanana mods appear in the browser.
-              </Text>
-            </Box>
-            <Select
-              size="xs"
-              w="var(--control-width-md)"
-              data={nsfwOptions}
-              value={showNsfw}
-              onChange={(val) => {
-                if (val === "hide" || val === "warn" || val === "show") {
-                  onShowNsfwChange(val);
-                }
-              }}
-              allowDeselect={false}
+            <Text fw={600} size="sm">
+              Show NSFW Mods
+            </Text>
+            <Switch
+              size="md"
+              checked={showNsfw}
+              onChange={(e) => onShowNsfwChange(e.currentTarget.checked)}
             />
           </Group>
         </Card>

@@ -8,12 +8,10 @@ export interface GameSettings {
   mods_dir?: string;
 }
 
-export type NsfwVisibility = "hide" | "warn" | "show";
-
 export interface AppConfig {
   active_game_id: string;
   auto_categorize: boolean;
-  show_nsfw: NsfwVisibility;
+  show_nsfw: boolean;
   games: Record<string, GameSettings>;
 }
 

@@ -84,10 +84,7 @@ fn set_auto_categorize(app: AppHandle, auto_categorize: bool) -> Result<AppConfi
 }
 
 #[tauri::command]
-fn set_show_nsfw(app: AppHandle, show_nsfw: String) -> Result<AppConfig, String> {
-    if !matches!(show_nsfw.as_str(), "hide" | "warn" | "show") {
-        return Err(format!("Invalid NSFW visibility: {}", show_nsfw));
-    }
+fn set_show_nsfw(app: AppHandle, show_nsfw: bool) -> Result<AppConfig, String> {
     let path = get_config_path(&app)?;
     let mut config = read_config(&path);
     config.show_nsfw = show_nsfw;
