@@ -412,7 +412,7 @@ export default function ModGrid({
         </SimpleGrid>
       )}
 
-      {isSelectMode && selectedModIds.size > 0 && (
+      {isSelectMode && (
         <Box
           style={{
             position: "fixed",
