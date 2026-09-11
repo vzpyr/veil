@@ -11,6 +11,7 @@ import {
   ScrollArea,
   Stack,
   Text,
+  Tooltip,
 } from "@mantine/core";
 import {
   Check,
@@ -222,17 +223,26 @@ export function DownloadQueueDrawer({
                               </Badge>
                             )}
 
-                            {isFailed ? (
-                              <ActionIcon
-                                size="xs"
-                                radius="xl"
-                                variant="subtle"
-                                color="gray"
-                                onClick={() => onRetryItem(item.id)}
-                              >
-                                <RefreshCw size={14} />
-                              </ActionIcon>
-                            ) : (
+                            {isFailed && (
+                              <Tooltip label="Retry download">
+                                <ActionIcon
+                                  size="xs"
+                                  radius="xl"
+                                  variant="subtle"
+                                  color="gray"
+                                  onClick={() => onRetryItem(item.id)}
+                                >
+                                  <RefreshCw size={14} />
+                                </ActionIcon>
+                              </Tooltip>
+                            )}
+                            <Tooltip
+                              label={
+                                isFailed
+                                  ? "Remove from queue"
+                                  : "Cancel download"
+                              }
+                            >
                               <ActionIcon
                                 size="xs"
                                 radius="xl"
@@ -242,7 +252,7 @@ export function DownloadQueueDrawer({
                               >
                                 <X size={14} />
                               </ActionIcon>
-                            )}
+                            </Tooltip>
                           </Group>
                         </Group>
 
