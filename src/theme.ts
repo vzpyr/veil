@@ -362,9 +362,6 @@ export const theme = createTheme({
           color: "var(--color-text-primary)",
           fontFamily: "var(--font-family-sans)",
         },
-        label: {
-          marginBottom: "var(--space-3xs)",
-        },
       },
       vars: createVarsResolver(() => ({
         input: {
@@ -372,6 +369,21 @@ export const theme = createTheme({
           "--input-bd-focus": "var(--color-border-focus)",
         },
       })),
+    },
+    InputWrapper: {
+      styles: {
+        label: {
+          marginBottom: "var(--space-xs)",
+          color: "var(--color-text-secondary)",
+          fontSize: "var(--font-size-xs)",
+          fontWeight: 600,
+        },
+        description: {
+          marginBottom: "var(--space-xs)",
+          color: "var(--color-text-muted)",
+          fontSize: "var(--font-size-2xs)",
+        },
+      },
     },
     TextInput: {
       defaultProps: {

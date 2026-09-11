@@ -455,3 +455,7 @@ body {
 .mantine-Tabs-tab[data-active] {
   border-color: var(--color-accent-primary);
 }
+
+.mantine-InputWrapper-label {
+  margin-bottom: var(--space-xs);
+}
