@@ -29,9 +29,7 @@ export function DuplicateDrawer({
     <Drawer
       opened={opened}
       onClose={onClose}
-      position="right"
       size="md"
-      radius="lg"
       title={
         <Group gap="xs">
           <TriangleAlert size={20} color="var(--color-status-warning)" />
@@ -51,12 +49,12 @@ export function DuplicateDrawer({
         </Text>
 
         {existingMod && (
-          <Paper p="xs" radius="md">
+          <Paper p="xs">
             <Group justify="space-between">
               <Text size="xs" c="dimmed">
                 Existing Location
               </Text>
-              <Badge size="xs" radius="xl" variant="outline" color="gray">
+              <Badge size="xs" variant="outline" color="gray">
                 {existingMod.category || "Uncategorized"}
               </Badge>
             </Group>
@@ -74,7 +72,6 @@ export function DuplicateDrawer({
           <Button
             justify="flex-start"
             variant="default"
-            radius="xl"
             h="auto"
             py="xs"
             leftSection={<RefreshCw size={18} />}
@@ -97,7 +94,6 @@ export function DuplicateDrawer({
           <Button
             justify="flex-start"
             variant="default"
-            radius="xl"
             h="auto"
             py="xs"
             leftSection={<Copy size={18} />}
@@ -118,7 +114,7 @@ export function DuplicateDrawer({
         </Stack>
 
         <Group justify="flex-end" mt="auto">
-          <Button variant="default" size="xs" radius="xl" onClick={onClose}>
+          <Button variant="default" size="xs" onClick={onClose}>
             Cancel
           </Button>
         </Group>

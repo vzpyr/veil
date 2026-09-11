@@ -285,7 +285,7 @@ export const theme = createTheme({
   components: {
     Button: {
       defaultProps: {
-        radius: "xl",
+        radius: "pill",
       },
       styles: {
         root: {
@@ -296,7 +296,7 @@ export const theme = createTheme({
     },
     ActionIcon: {
       defaultProps: {
-        radius: "xl",
+        radius: "pill",
       },
       styles: {
         root: {
@@ -311,7 +311,7 @@ export const theme = createTheme({
     },
     Badge: {
       defaultProps: {
-        radius: "xl",
+        radius: "pill",
       },
       styles: {
         root: {
@@ -324,9 +324,14 @@ export const theme = createTheme({
         },
       },
     },
+    Avatar: {
+      defaultProps: {
+        radius: "pill",
+      },
+    },
     NavLink: {
       defaultProps: {
-        radius: "xl",
+        radius: "pill",
       },
       styles: (_theme, props) => ({
         root: {
@@ -370,12 +375,12 @@ export const theme = createTheme({
     },
     TextInput: {
       defaultProps: {
-        radius: "xl",
+        radius: "pill",
       },
     },
     Select: {
       defaultProps: {
-        radius: "xl",
+        radius: "pill",
         comboboxProps: {
           shadow: "md",
           transitionProps: { transition: "pop-top-left", duration: 150 },
@@ -418,7 +423,7 @@ export const theme = createTheme({
     },
     Paper: {
       defaultProps: {
-        radius: "md",
+        radius: "lg",
         withBorder: true,
       },
       styles: {
@@ -459,7 +464,7 @@ export const theme = createTheme({
     },
     Tabs: {
       defaultProps: {
-        radius: "xl",
+        radius: "pill",
       },
       vars: createVarsResolver(() => ({
         root: {
@@ -487,7 +492,7 @@ export const theme = createTheme({
     },
     SegmentedControl: {
       defaultProps: {
-        radius: "xl",
+        radius: "pill",
         withItemsBorders: false,
       },
       styles: {
@@ -512,7 +517,7 @@ export const theme = createTheme({
     },
     Switch: {
       defaultProps: {
-        radius: "xl",
+        radius: "pill",
       },
       styles: {
         track: {
@@ -560,7 +565,7 @@ export const theme = createTheme({
     },
     Progress: {
       defaultProps: {
-        radius: "xl",
+        radius: "pill",
       },
       styles: {
         root: {
@@ -605,11 +610,11 @@ export const theme = createTheme({
     },
     Alert: {
       defaultProps: {
-        radius: "md",
+        radius: "lg",
       },
       styles: {
         root: {
-          borderRadius: "var(--radius-md)",
+          borderRadius: "var(--radius-lg)",
           fontFamily: "var(--font-family-sans)",
         },
         title: {
@@ -652,7 +657,7 @@ export const theme = createTheme({
         },
         closeButton: {
           color: "var(--color-text-muted)",
-          borderRadius: "var(--radius-xl)",
+          borderRadius: "var(--radius-pill)",
         },
       },
     },
@@ -677,7 +682,7 @@ export const theme = createTheme({
         },
         close: {
           color: "var(--color-text-muted)",
-          borderRadius: "var(--radius-xl)",
+          borderRadius: "var(--radius-pill)",
         },
       },
     },
@@ -701,7 +706,7 @@ export const theme = createTheme({
         },
         close: {
           color: "var(--color-text-muted)",
-          borderRadius: "var(--radius-xl)",
+          borderRadius: "var(--radius-pill)",
         },
       },
     },

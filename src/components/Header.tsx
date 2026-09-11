@@ -180,8 +180,6 @@ export default function Header({
 
       <SegmentedControl
         size="sm"
-        radius="xl"
-        withItemsBorders={false}
         value={activeTab}
         onChange={onSelectTab}
         data={tabData}
@@ -192,7 +190,6 @@ export default function Header({
           <Tooltip label={`${conflicts.length} mod conflicts detected`}>
             <Button
               size="xs"
-              radius="xl"
               color="orange"
               variant="light"
               className="animate-scale-in"
@@ -200,13 +197,7 @@ export default function Header({
               onClick={onOpenConflicts}
             >
               Conflicts
-              <Badge
-                size="xs"
-                radius="xl"
-                color="orange"
-                ml="xs"
-                variant="filled"
-              >
+              <Badge size="xs" color="orange" ml="xs" variant="filled">
                 {conflicts.length}
               </Badge>
             </Button>
@@ -218,7 +209,6 @@ export default function Header({
             variant={activeDownloadCount > 0 ? "light" : "default"}
             color={activeDownloadCount > 0 ? "gray" : undefined}
             size="md"
-            radius="xl"
             onClick={onOpenDownloadQueue}
             style={{ position: "relative" }}
           >
@@ -243,34 +233,19 @@ export default function Header({
         />
 
         <Tooltip label="Minimize">
-          <ActionIcon
-            variant="subtle"
-            size="md"
-            radius="xl"
-            onClick={handleMinimize}
-          >
+          <ActionIcon variant="subtle" size="md" onClick={handleMinimize}>
             <Minus size={16} />
           </ActionIcon>
         </Tooltip>
 
         <Tooltip label={isMaximized ? "Restore" : "Maximize"}>
-          <ActionIcon
-            variant="subtle"
-            size="md"
-            radius="xl"
-            onClick={handleToggleMaximize}
-          >
+          <ActionIcon variant="subtle" size="md" onClick={handleToggleMaximize}>
             {isMaximized ? <Copy size={16} /> : <Square size={16} />}
           </ActionIcon>
         </Tooltip>
 
         <Tooltip label="Close">
-          <ActionIcon
-            variant="subtle"
-            size="md"
-            radius="xl"
-            onClick={handleClose}
-          >
+          <ActionIcon variant="subtle" size="md" onClick={handleClose}>
             <X size={16} />
           </ActionIcon>
         </Tooltip>

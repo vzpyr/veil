@@ -37,9 +37,7 @@ export default function ConflictDrawer({
     <Drawer
       opened={opened}
       onClose={onClose}
-      position="right"
       size="md"
-      radius="lg"
       title={
         <Group gap="xs">
           <TriangleAlert size={20} color="var(--color-status-warning)" />
@@ -53,7 +51,6 @@ export default function ConflictDrawer({
         <Alert
           color="orange"
           variant="light"
-          radius="md"
           icon={<TriangleAlert size={16} />}
         >
           Active mods listed below share identical shader or texture hashes.
@@ -81,8 +78,6 @@ export default function ConflictDrawer({
                 <Card
                   key={c.hash}
                   p="xs"
-                  radius="md"
-                  withBorder
                   style={{
                     backgroundColor: "var(--color-bg-surface-2)",
                     borderColor: "var(--color-status-warning)",
@@ -92,12 +87,7 @@ export default function ConflictDrawer({
                     <Text size="xs" fw={700} c="dimmed">
                       Colliding Hash
                     </Text>
-                    <Badge
-                      size="xs"
-                      radius="xl"
-                      color="orange"
-                      variant="outline"
-                    >
+                    <Badge size="xs" color="orange" variant="outline">
                       {c.hash}
                     </Badge>
                   </Group>
@@ -110,7 +100,7 @@ export default function ConflictDrawer({
                       }
 
                       return (
-                        <Card key={modId} p="xs" radius="md" withBorder>
+                        <Card key={modId} p="xs">
                           <Group justify="space-between">
                             <Stack gap="3xs">
                               <Text fw={600} size="sm">

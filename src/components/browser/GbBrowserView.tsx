@@ -195,7 +195,6 @@ export default function GbBrowserView({
       <Group justify="space-between" mb="sm" wrap="wrap" gap="xs">
         <TextInput
           size="xs"
-          radius="xl"
           placeholder="Search mods..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.currentTarget.value)}
@@ -210,7 +209,6 @@ export default function GbBrowserView({
               <Tooltip label="Clear search">
                 <ActionIcon
                   size="xs"
-                  radius="xl"
                   variant="subtle"
                   onClick={handleClearSearch}
                 >
@@ -225,7 +223,6 @@ export default function GbBrowserView({
         <Group gap="xs">
           <Select
             size="xs"
-            radius="xl"
             w="var(--control-width-lg)"
             data={categorySelectData}
             value={selectedCategory || ""}
@@ -242,7 +239,6 @@ export default function GbBrowserView({
 
           <Select
             size="xs"
-            radius="xl"
             w="var(--control-width-sm)"
             data={sortSelectData}
             value={sortOption}
@@ -255,12 +251,7 @@ export default function GbBrowserView({
             allowDeselect={false}
           />
 
-          <Button
-            size="xs"
-            radius="xl"
-            variant="default"
-            onClick={handleSearchSubmit}
-          >
+          <Button size="xs" variant="default" onClick={handleSearchSubmit}>
             Search
           </Button>
         </Group>
@@ -307,7 +298,6 @@ export default function GbBrowserView({
       <Group justify="center" gap="sm" mt="md" py="xs">
         <Button
           size="xs"
-          radius="xl"
           variant="default"
           leftSection={<ArrowLeft size={14} />}
           disabled={page <= 1 || isLoading}
@@ -320,7 +310,6 @@ export default function GbBrowserView({
         </Text>
         <Button
           size="xs"
-          radius="xl"
           variant="default"
           rightSection={<ArrowRight size={14} />}
           disabled={isLastPage || isLoading}

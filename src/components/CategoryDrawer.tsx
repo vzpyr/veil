@@ -117,9 +117,7 @@ export default function CategoryDrawer({
     <Drawer
       opened={opened}
       onClose={onClose}
-      position="right"
       size="md"
-      radius="lg"
       title={
         <Group gap="xs">
           <Folder size={20} color="var(--color-accent-primary)" />
@@ -134,7 +132,6 @@ export default function CategoryDrawer({
           <Select
             label="Destination Category"
             placeholder="Select a category"
-            radius="xl"
             data={categoryOptions}
             value={selectedCategory}
             onChange={setSelectedCategory}
@@ -146,7 +143,6 @@ export default function CategoryDrawer({
           <TextInput
             label={mode === "create" ? "Category Name" : "New Category Name"}
             placeholder="e.g. Characters or Weapons"
-            radius="xl"
             value={nameInput}
             onChange={(e) => setNameInput(e.currentTarget.value)}
             onKeyDown={(e) => {
@@ -177,13 +173,12 @@ export default function CategoryDrawer({
         )}
 
         <Group justify="flex-end" gap="xs" mt="auto">
-          <Button variant="default" size="xs" radius="xl" onClick={onClose}>
+          <Button variant="default" size="xs" onClick={onClose}>
             Cancel
           </Button>
           <Button
             variant="filled"
             size="xs"
-            radius="xl"
             color={mode === "delete" ? "red" : undefined}
             onClick={handleConfirm}
             disabled={isConfirmDisabled}

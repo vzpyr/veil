@@ -72,9 +72,7 @@ export default function ManualInstallDrawer({
     <Drawer
       opened={opened}
       onClose={onClose}
-      position="right"
       size="md"
-      radius="lg"
       title={
         <Group gap="xs">
           <PackagePlus size={20} color="var(--color-accent-primary)" />
@@ -87,7 +85,6 @@ export default function ManualInstallDrawer({
       <Stack gap="md" h="100%">
         <TextInput
           label="Mod Name"
-          radius="xl"
           value={modName}
           onChange={(e) => setModName(e.currentTarget.value)}
           required
@@ -95,7 +92,6 @@ export default function ManualInstallDrawer({
 
         <Select
           label="Category"
-          radius="xl"
           data={categoryOptions}
           value={selectedCategory}
           onChange={setSelectedCategory}
@@ -104,7 +100,6 @@ export default function ManualInstallDrawer({
 
         <Select
           label="Duplicate Handling"
-          radius="xl"
           data={duplicateOptions}
           value={duplicateAction}
           onChange={(val) => setDuplicateAction(val || "replace")}
@@ -115,7 +110,6 @@ export default function ManualInstallDrawer({
           <Button
             variant="default"
             size="xs"
-            radius="xl"
             onClick={onClose}
             disabled={isInstalling}
           >
@@ -124,7 +118,6 @@ export default function ManualInstallDrawer({
           <Button
             variant="filled"
             size="xs"
-            radius="xl"
             onClick={handleConfirm}
             loading={isInstalling}
             disabled={!modName.trim()}

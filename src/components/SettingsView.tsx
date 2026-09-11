@@ -78,7 +78,6 @@ export default function SettingsView({
             <Group gap="xs" align="center" wrap="nowrap">
               <TextInput
                 size="xs"
-                radius="xl"
                 value={settings.mods_dir || ""}
                 placeholder="No directory selected"
                 readOnly
@@ -88,7 +87,6 @@ export default function SettingsView({
               {settings.mods_dir && (
                 <Button
                   size="xs"
-                  radius="xl"
                   variant="default"
                   leftSection={<FolderOpen size={14} />}
                   onClick={handleOpenFolder}
@@ -96,12 +94,7 @@ export default function SettingsView({
                   Reveal
                 </Button>
               )}
-              <Button
-                size="xs"
-                radius="xl"
-                variant="default"
-                onClick={handleBrowseFolder}
-              >
+              <Button size="xs" variant="default" onClick={handleBrowseFolder}>
                 Browse
               </Button>
             </Group>

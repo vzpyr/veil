@@ -58,9 +58,7 @@ export function DownloadQueueDrawer({
     <Drawer
       opened={opened}
       onClose={onClose}
-      position="right"
       size="md"
-      radius="lg"
       title={
         <Group justify="space-between" style={{ width: "100%" }} pr="xs">
           <Group gap="xs">
@@ -69,7 +67,7 @@ export function DownloadQueueDrawer({
               Download Queue
             </Text>
             {activeCount > 0 && (
-              <Badge size="xs" radius="xl" variant="filled" color="dark">
+              <Badge size="xs" variant="filled" color="dark">
                 {activeCount}
               </Badge>
             )}
@@ -78,7 +76,6 @@ export function DownloadQueueDrawer({
             <Button
               variant="default"
               size="xs"
-              radius="xl"
               leftSection={<Trash2 size={12} />}
               onClick={onClearCompleted}
             >
@@ -121,7 +118,7 @@ export function DownloadQueueDrawer({
                       animate="visible"
                       exit="exit"
                     >
-                      <Paper p="xs" radius="md">
+                      <Paper p="xs">
                         <Group
                           justify="space-between"
                           align="flex-start"
@@ -171,39 +168,23 @@ export function DownloadQueueDrawer({
 
                           <Group gap="xs" align="center">
                             {isQueued && (
-                              <Badge
-                                size="xs"
-                                radius="xl"
-                                variant="light"
-                                color="yellow"
-                              >
+                              <Badge size="xs" variant="light" color="yellow">
                                 Queued
                               </Badge>
                             )}
                             {isDownloading && (
-                              <Badge
-                                size="xs"
-                                radius="xl"
-                                variant="light"
-                                color="gray"
-                              >
+                              <Badge size="xs" variant="light" color="gray">
                                 Downloading
                               </Badge>
                             )}
                             {isExtracting && (
-                              <Badge
-                                size="xs"
-                                radius="xl"
-                                variant="light"
-                                color="gray"
-                              >
+                              <Badge size="xs" variant="light" color="gray">
                                 Extracting
                               </Badge>
                             )}
                             {isCompleted && (
                               <Badge
                                 size="xs"
-                                radius="xl"
                                 variant="light"
                                 color="green"
                                 leftSection={<Check size={10} />}
@@ -214,7 +195,6 @@ export function DownloadQueueDrawer({
                             {isFailed && (
                               <Badge
                                 size="xs"
-                                radius="xl"
                                 variant="light"
                                 color="red"
                                 leftSection={<CircleAlert size={10} />}
@@ -227,7 +207,6 @@ export function DownloadQueueDrawer({
                               <Tooltip label="Retry download">
                                 <ActionIcon
                                   size="xs"
-                                  radius="xl"
                                   variant="subtle"
                                   color="gray"
                                   onClick={() => onRetryItem(item.id)}
@@ -245,7 +224,6 @@ export function DownloadQueueDrawer({
                             >
                               <ActionIcon
                                 size="xs"
-                                radius="xl"
                                 variant="subtle"
                                 color="gray"
                                 onClick={() => onCancelItem(item.id)}
@@ -263,7 +241,6 @@ export function DownloadQueueDrawer({
                               size="xs"
                               animated
                               color="gray"
-                              radius="xl"
                             />
                             <Group justify="space-between">
                               <Text size="2xs" c="dimmed">
@@ -284,7 +261,6 @@ export function DownloadQueueDrawer({
                               size="xs"
                               animated
                               color="gray"
-                              radius="xl"
                             />
                             <Text size="2xs" c="dimmed" ta="right">
                               Extracting and installing archive...

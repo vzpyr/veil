@@ -26,8 +26,6 @@ export default function GbModCard({ item, onSelect }: GbModCardProps) {
   return (
     <Card
       p="xs"
-      radius="lg"
-      withBorder
       h="100%"
       className="card-interactive"
       onClick={() => onSelect(item._idRow)}
@@ -63,7 +61,6 @@ export default function GbModCard({ item, onSelect }: GbModCardProps) {
         {item._aCategory && (
           <Badge
             size="xs"
-            radius="xl"
             variant="filled"
             color="dark"
             style={{
@@ -80,7 +77,6 @@ export default function GbModCard({ item, onSelect }: GbModCardProps) {
           <Tooltip label="Contains adult content">
             <Badge
               size="xs"
-              radius="xl"
               variant="filled"
               color="red"
               className="animate-scale-in"
@@ -106,7 +102,7 @@ export default function GbModCard({ item, onSelect }: GbModCardProps) {
 
         <Group justify="space-between" align="center">
           <Group gap="xs">
-            <Avatar src={item._aSubmitter?._sAvatarUrl} size="xs" radius="xl" />
+            <Avatar src={item._aSubmitter?._sAvatarUrl} size="xs" />
             <Text size="xs" c="dimmed" truncate maw="var(--max-width-author)">
               {item._aSubmitter?._sName || "Unknown Author"}
             </Text>

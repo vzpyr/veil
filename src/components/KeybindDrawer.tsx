@@ -343,9 +343,7 @@ export default function KeybindDrawer({
         onClose();
       }}
       closeOnEscape={recordingIndex === null}
-      position="right"
       size="lg"
-      radius="lg"
       title={
         <Group gap="xs">
           <Keyboard size={20} color="var(--color-accent-primary)" />
@@ -359,7 +357,6 @@ export default function KeybindDrawer({
         {mod && (
           <Card
             p="xs"
-            radius="md"
             style={{
               backgroundColor: "var(--color-bg-surface-2)",
             }}
@@ -373,7 +370,6 @@ export default function KeybindDrawer({
               <Tooltip label="Refresh keybinds and toggle states">
                 <ActionIcon
                   variant="subtle"
-                  radius="xl"
                   color="gray"
                   onClick={loadData}
                   loading={loading}
@@ -427,7 +423,7 @@ export default function KeybindDrawer({
                       v.possible_values.every((val) => val === 0 || val === 1);
 
                     return (
-                      <Card key={v.variable} p="xs" radius="md">
+                      <Card key={v.variable} p="xs">
                         <Group justify="space-between" align="center">
                           <Stack gap="3xs">
                             <Text fw={600} size="sm">
@@ -452,7 +448,6 @@ export default function KeybindDrawer({
                           ) : (
                             <SegmentedControl
                               size="xs"
-                              radius="xl"
                               value={String(v.current_value)}
                               onChange={(val) =>
                                 handleToggleVariable(v.variable, Number(val))
@@ -488,7 +483,6 @@ export default function KeybindDrawer({
                       <Card
                         key={`${k.ini_path}-${k.section}`}
                         p="xs"
-                        radius="md"
                         style={{
                           backgroundColor: isRecording
                             ? "var(--color-bg-card-active)"
@@ -511,12 +505,7 @@ export default function KeybindDrawer({
                           <Group gap="xs" align="center">
                             {isRecording ? (
                               <Group gap="xs">
-                                <Badge
-                                  color="dark"
-                                  radius="xl"
-                                  variant="filled"
-                                  size="sm"
-                                >
+                                <Badge color="dark" variant="filled" size="sm">
                                   {currentModifiers.ctrl && "Ctrl + "}
                                   {currentModifiers.alt && "Alt + "}
                                   {currentModifiers.shift && "Shift + "}
@@ -525,7 +514,6 @@ export default function KeybindDrawer({
                                 <Tooltip label="Cancel rebind">
                                   <ActionIcon
                                     size="sm"
-                                    radius="xl"
                                     variant="light"
                                     color="red"
                                     onClick={() => setRecordingIndex(null)}
@@ -540,7 +528,6 @@ export default function KeybindDrawer({
                                 <Button
                                   variant="default"
                                   size="xs"
-                                  radius="xl"
                                   onClick={() => {
                                     setRecordingIndex(index);
                                     setCurrentModifiers({

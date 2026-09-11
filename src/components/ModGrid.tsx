@@ -99,7 +99,6 @@ export default function ModGrid({
       <Group justify="space-between" mb="sm" wrap="wrap" gap="xs">
         <SegmentedControl
           size="xs"
-          radius="xl"
           value={statusFilter}
           onChange={(val) =>
             onStatusFilterChange(val as "all" | "enabled" | "disabled")
@@ -149,7 +148,6 @@ export default function ModGrid({
         <Group gap="xs">
           <Select
             size="xs"
-            radius="xl"
             w="var(--control-width-sm)"
             value={sortBy}
             onChange={(val) => onSortByChange(val || "name-asc")}

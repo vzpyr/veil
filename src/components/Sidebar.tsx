@@ -82,7 +82,6 @@ export default function Sidebar({
     >
       <TextInput
         size="xs"
-        radius="xl"
         placeholder="Filter mods..."
         value={searchQuery}
         onChange={(e) => onSearchChange(e.currentTarget.value)}
@@ -92,7 +91,6 @@ export default function Sidebar({
             <Tooltip label="Clear search">
               <ActionIcon
                 size="xs"
-                radius="xl"
                 variant="subtle"
                 onClick={() => onSearchChange("")}
               >
@@ -137,7 +135,6 @@ export default function Sidebar({
                 rightSection={
                   <Badge
                     size="xs"
-                    radius="xl"
                     variant="light"
                     color="gray"
                     className="badge-count"
@@ -163,7 +160,6 @@ export default function Sidebar({
                 rightSection={
                   <Badge
                     size="xs"
-                    radius="xl"
                     variant="light"
                     color="gray"
                     className="badge-count"
@@ -189,11 +185,10 @@ export default function Sidebar({
                   }
                   rightSection={
                     <Group gap="2xs" wrap="nowrap">
-                      <Menu position="bottom-end" withinPortal radius="lg">
+                      <Menu position="bottom-end" withinPortal>
                         <Menu.Target>
                           <ActionIcon
                             size="sm"
-                            radius="xl"
                             variant="subtle"
                             color="gray"
                             onClick={(e) => e.stopPropagation()}
@@ -225,7 +220,6 @@ export default function Sidebar({
                       </Menu>
                       <Badge
                         size="xs"
-                        radius="xl"
                         variant="light"
                         color="gray"
                         className="badge-count"
@@ -250,7 +244,6 @@ export default function Sidebar({
             fullWidth
             variant="default"
             size="xs"
-            radius="xl"
             leftSection={<FolderPlus size={14} />}
             onClick={onOpenCreateCategory}
             disabled={!hasModsDir}
@@ -261,7 +254,6 @@ export default function Sidebar({
             fullWidth
             variant="default"
             size="xs"
-            radius="xl"
             leftSection={<FolderOpen size={14} />}
             onClick={onOpenModsFolder}
             disabled={!hasModsDir}
@@ -272,7 +264,6 @@ export default function Sidebar({
             fullWidth
             variant="default"
             size="xs"
-            radius="xl"
             leftSection={<PackagePlus size={14} />}
             onClick={onOpenManualInstall}
             disabled={!hasModsDir}
@@ -283,7 +274,6 @@ export default function Sidebar({
             fullWidth
             variant="default"
             size="xs"
-            radius="xl"
             leftSection={<Sparkles size={14} />}
             onClick={onCheckUpdates}
             disabled={!hasModsDir || isCheckingUpdates}
@@ -294,7 +284,6 @@ export default function Sidebar({
             fullWidth
             variant="default"
             size="xs"
-            radius="xl"
             leftSection={<RefreshCw size={14} />}
             onClick={onRescanMods}
             disabled={!hasModsDir || isRefreshing}

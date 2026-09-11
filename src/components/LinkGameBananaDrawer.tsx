@@ -166,9 +166,7 @@ export default function LinkGameBananaDrawer({
     <Drawer
       opened={opened}
       onClose={onClose}
-      position="right"
       size="md"
-      radius="lg"
       title={
         <Group gap="xs">
           <Link size={20} color="var(--color-accent-primary)" />
@@ -193,7 +191,6 @@ export default function LinkGameBananaDrawer({
           <TextInput
             label="GameBanana Mod URL or ID"
             placeholder="e.g. 523812 or https://gamebanana.com/mods/523812"
-            radius="xl"
             value={inputVal}
             onChange={(e) => setInputVal(e.currentTarget.value)}
             style={{ flex: 1 }}
@@ -206,7 +203,6 @@ export default function LinkGameBananaDrawer({
           <Button
             variant="default"
             size="xs"
-            radius="xl"
             onClick={handleLookup}
             loading={fetching}
             disabled={!inputVal.trim()}
@@ -216,12 +212,7 @@ export default function LinkGameBananaDrawer({
         </Group>
 
         {error && (
-          <Alert
-            color="red"
-            variant="light"
-            radius="md"
-            icon={<CircleAlert size={16} />}
-          >
+          <Alert color="red" variant="light" icon={<CircleAlert size={16} />}>
             {error}
           </Alert>
         )}
@@ -233,14 +224,14 @@ export default function LinkGameBananaDrawer({
         )}
 
         {profile && (
-          <Paper p="sm" radius="md">
+          <Paper p="sm">
             <Stack gap="xs">
               <Group justify="space-between" align="flex-start">
                 <Text fw={600} size="sm">
                   {profile._sName}
                 </Text>
                 {profile._sVersion && (
-                  <Badge size="xs" radius="xl" variant="filled" color="dark">
+                  <Badge size="xs" variant="filled" color="dark">
                     v{profile._sVersion}
                   </Badge>
                 )}
@@ -270,7 +261,6 @@ export default function LinkGameBananaDrawer({
               color="red"
               variant="default"
               size="xs"
-              radius="xl"
               leftSection={<Trash2 size={14} />}
               onClick={handleUnlink}
               loading={submitting}
@@ -280,13 +270,12 @@ export default function LinkGameBananaDrawer({
           )}
 
           <Group gap="xs">
-            <Button variant="default" size="xs" radius="xl" onClick={onClose}>
+            <Button variant="default" size="xs" onClick={onClose}>
               Cancel
             </Button>
             <Button
               variant="filled"
               size="xs"
-              radius="xl"
               leftSection={<Link size={14} />}
               onClick={handleLink}
               loading={submitting}

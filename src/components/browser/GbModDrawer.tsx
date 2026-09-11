@@ -155,9 +155,7 @@ export default function GbModDrawer({
     <Drawer
       opened={opened}
       onClose={onClose}
-      position="right"
       size="xl"
-      radius="lg"
       title={
         <Group gap="xs">
           <Globe size={20} color="var(--color-accent-primary)" />
@@ -167,17 +165,17 @@ export default function GbModDrawer({
                 {profile._sName}
               </Text>
               {profile._aCategory && (
-                <Badge size="xs" radius="xl" variant="light" color="gray">
+                <Badge size="xs" variant="light" color="gray">
                   {profile._aCategory._sName}
                 </Badge>
               )}
               {profile._sVersion && (
-                <Badge size="xs" radius="xl" variant="outline" color="gray">
+                <Badge size="xs" variant="outline" color="gray">
                   v{formatVersion(profile._sVersion)}
                 </Badge>
               )}
               {typeof profile._nDownloadCount === "number" && (
-                <Badge size="xs" radius="xl" variant="light" color="gray">
+                <Badge size="xs" variant="light" color="gray">
                   <Group gap="3xs" wrap="nowrap">
                     <Download size={12} />
                     <Text size="2xs">{profile._nDownloadCount}</Text>
@@ -185,7 +183,7 @@ export default function GbModDrawer({
                 </Badge>
               )}
               {typeof profile._nLikeCount === "number" && (
-                <Badge size="xs" radius="xl" variant="light" color="gray">
+                <Badge size="xs" variant="light" color="gray">
                   <Group gap="3xs" wrap="nowrap">
                     <Heart size={12} />
                     <Text size="2xs">{profile._nLikeCount}</Text>
@@ -193,7 +191,7 @@ export default function GbModDrawer({
                 </Badge>
               )}
               {typeof profile._nViewCount === "number" && (
-                <Badge size="xs" radius="xl" variant="light" color="gray">
+                <Badge size="xs" variant="light" color="gray">
                   <Group gap="3xs" wrap="nowrap">
                     <Eye size={12} />
                     <Text size="2xs">{profile._nViewCount}</Text>
@@ -231,7 +229,7 @@ export default function GbModDrawer({
                         fit="contain"
                         style={{
                           backgroundColor: "var(--color-bg-surface-1)",
-                          borderRadius: "var(--radius-md)",
+                          borderRadius: "var(--radius-lg)",
                         }}
                       />
                     </Carousel.Slide>
@@ -241,19 +239,13 @@ export default function GbModDrawer({
 
               <Card
                 p="xs"
-                radius="md"
-                withBorder
                 style={{
                   backgroundColor: "var(--color-bg-surface-2)",
                 }}
               >
                 <Group justify="space-between" align="center">
                   <Group gap="sm">
-                    <Avatar
-                      src={profile._aSubmitter?._sAvatarUrl}
-                      size="sm"
-                      radius="xl"
-                    />
+                    <Avatar src={profile._aSubmitter?._sAvatarUrl} size="sm" />
                     <div>
                       <Text fw={600} size="xs">
                         {profile._aSubmitter?._sName || "Unknown Author"}
@@ -276,12 +268,7 @@ export default function GbModDrawer({
                 </Group>
               </Card>
 
-              <Tabs
-                value={activeTab}
-                onChange={setActiveTab}
-                variant="pills"
-                radius="xl"
-              >
+              <Tabs value={activeTab} onChange={setActiveTab} variant="pills">
                 <Tabs.List>
                   <Tabs.Tab value="files" leftSection={<Download size={14} />}>
                     Files ({files.length})
@@ -319,7 +306,7 @@ export default function GbModDrawer({
                         const isFailed = queueItem?.status === "failed";
 
                         return (
-                          <Card key={f._idRow} p="xs" radius="md" withBorder>
+                          <Card key={f._idRow} p="xs">
                             <Group
                               justify="space-between"
                               align="flex-start"
@@ -332,7 +319,6 @@ export default function GbModDrawer({
                                 <Group gap="xs">
                                   <Badge
                                     size="xs"
-                                    radius="xl"
                                     variant="outline"
                                     color="gray"
                                   >
@@ -351,7 +337,6 @@ export default function GbModDrawer({
 
                               <Button
                                 size="xs"
-                                radius="xl"
                                 variant={
                                   isCompleted || isFailed || isQueued
                                     ? "light"
@@ -416,7 +401,6 @@ export default function GbModDrawer({
                                   size="xs"
                                   animated
                                   color="gray"
-                                  radius="xl"
                                 />
                               </Box>
                             )}
@@ -428,7 +412,6 @@ export default function GbModDrawer({
                                   size="xs"
                                   animated
                                   color="gray"
-                                  radius="xl"
                                 />
                                 <Text size="2xs" c="dimmed" ta="right" mt="2xs">
                                   Extracting and installing archive...
@@ -470,14 +453,14 @@ export default function GbModDrawer({
                     {updates.length > 0 ? (
                       <Stack gap="xs">
                         {updates.map((u) => (
-                          <Card key={u._idRow} p="xs" radius="md" withBorder>
+                          <Card key={u._idRow} p="xs">
                             <Group justify="space-between" mb="xs">
                               <Group gap="xs">
                                 <Text fw={600} size="sm">
                                   {u._sName || "Update"}
                                 </Text>
                                 {formatVersion(u._sVersion) && (
-                                  <Badge size="xs" radius="xl" color="gray">
+                                  <Badge size="xs" color="gray">
                                     v{formatVersion(u._sVersion)}
                                   </Badge>
                                 )}
@@ -499,12 +482,7 @@ export default function GbModDrawer({
                               <Stack gap="3xs">
                                 {u._aChangeLog.map((log, lIdx) => (
                                   <Group key={lIdx} gap="xs">
-                                    <Badge
-                                      size="xs"
-                                      radius="xl"
-                                      variant="dot"
-                                      color="gray"
-                                    >
+                                    <Badge size="xs" variant="dot" color="gray">
                                       {log.cat}
                                     </Badge>
                                     <Text size="xs">{log.text}</Text>
@@ -532,13 +510,12 @@ export default function GbModDrawer({
                     {posts.length > 0 ? (
                       <Stack gap="xs">
                         {posts.map((p) => (
-                          <Card key={p._idRow} p="xs" radius="md" withBorder>
+                          <Card key={p._idRow} p="xs">
                             <Group justify="space-between" mb="xs">
                               <Group gap="xs">
                                 <Avatar
                                   src={p._aSubmitter?._sAvatarUrl}
                                   size="xs"
-                                  radius="xl"
                                 />
                                 <Text fw={600} size="xs">
                                   {p._aSubmitter?._sName || "User"}
@@ -559,7 +536,6 @@ export default function GbModDrawer({
                                 <Box mt="xs">
                                   <Button
                                     size="compact-xs"
-                                    radius="xl"
                                     variant="subtle"
                                     onClick={() =>
                                       handleToggleReplies(p._idRow)
@@ -590,7 +566,6 @@ export default function GbModDrawer({
                                               <Avatar
                                                 src={r._aSubmitter?._sAvatarUrl}
                                                 size="xs"
-                                                radius="xl"
                                               />
                                               <Text fw={600} size="2xs">
                                                 {r._aSubmitter?._sName ||
