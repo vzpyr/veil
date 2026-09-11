@@ -1,4 +1,4 @@
-use crate::archive::extract_any_archive;
+use crate::archive::{extract_any_archive, sanitize_folder_name};
 use crate::symlink::{UNCATEGORIZED_DIR_NAME, ensure_veil_dirs, get_disabled_dir};
 use futures_util::StreamExt;
 use reqwest::Client;
@@ -73,29 +73,13 @@ impl CancelRegistry {
 }
 
 pub fn clear_temp_artifacts(mods_dir: &Path) {
-    let temp_dir = mods_dir.join(".veil_temp");
-    if temp_dir.exists() {
-        let _ = fs::remove_dir_all(&temp_dir);
-    }
+    let _ = fs::remove_dir_all(mods_dir.join(".veil_temp"));
+}
 
-    let disabled_dir = get_disabled_dir(mods_dir);
-    let Ok(categories) = fs::read_dir(&disabled_dir) else {
-        return;
-    };
-    for category in categories.flatten() {
-        if !category.path().is_dir() {
-            continue;
-        }
-        let Ok(sub_entries) = fs::read_dir(category.path()) else {
-            continue;
-        };
-        for entry in sub_entries.flatten() {
-            let name = entry.file_name().to_string_lossy().to_string();
-            if name.starts_with(".temp_extract_") {
-                let _ = fs::remove_dir_all(entry.path());
-            }
-        }
-    }
+fn clear_temp_item(temp_dir: &Path, archive_path: &Path, extract_dir: &Path) {
+    let _ = fs::remove_file(archive_path);
+    let _ = fs::remove_dir_all(extract_dir);
+    let _ = fs::remove_dir(temp_dir);
 }
 
 pub async fn download_and_install_mod(
@@ -142,7 +126,8 @@ pub async fn download_and_install_mod(
 
     let temp_download_dir = mods_path.join(".veil_temp");
     fs::create_dir_all(&temp_download_dir).map_err(|e| e.to_string())?;
-    let temp_extract_dir = temp_download_dir.join(format!("{}.extract", key));
+    let sanitized_mod_name = sanitize_folder_name(&mod_name);
+    let temp_extract_dir = temp_download_dir.join(&sanitized_mod_name);
 
     let client = Client::builder()
         .user_agent("VeilModManager/0.1.0")
@@ -181,7 +166,7 @@ pub async fn download_and_install_mod(
         .and_then(|ext| ext.to_str())
         .unwrap_or("zip");
 
-    let temp_archive_path = temp_download_dir.join(format!("{}.{}", key, ext));
+    let temp_archive_path = temp_download_dir.join(format!("{}.{}", sanitized_mod_name, ext));
     let total_size = response.content_length().unwrap_or(0);
 
     let file = File::create(&temp_archive_path).map_err(|e| e.to_string())?;
@@ -195,7 +180,7 @@ pub async fn download_and_install_mod(
     loop {
         if cancel.is_cancelled(&key) {
             drop(writer);
-            let _ = fs::remove_file(&temp_archive_path);
+            clear_temp_item(&temp_download_dir, &temp_archive_path, &temp_extract_dir);
             return Err("Download cancelled".to_string());
         }
 
@@ -213,6 +198,7 @@ pub async fn download_and_install_mod(
                         "error": err_msg.clone()
                     }),
                 );
+                clear_temp_item(&temp_download_dir, &temp_archive_path, &temp_extract_dir);
                 return Err(err_msg);
             }
         };
@@ -258,8 +244,7 @@ pub async fn download_and_install_mod(
     drop(writer);
 
     if cancel.is_cancelled(&key) {
-        let _ = fs::remove_file(&temp_archive_path);
-        let _ = fs::remove_dir_all(&temp_extract_dir);
+        clear_temp_item(&temp_download_dir, &temp_archive_path, &temp_extract_dir);
         return Err("Download cancelled".to_string());
     }
 
@@ -282,8 +267,7 @@ pub async fn download_and_install_mod(
     ) {
         Ok(dir) => dir,
         Err(err) => {
-            let _ = fs::remove_file(&temp_archive_path);
-            let _ = fs::remove_dir_all(&temp_extract_dir);
+            clear_temp_item(&temp_download_dir, &temp_archive_path, &temp_extract_dir);
             let _ = app.emit(
                 "download-error",
                 serde_json::json!({
@@ -294,7 +278,7 @@ pub async fn download_and_install_mod(
             return Err(err);
         }
     };
-    let _ = fs::remove_file(&temp_archive_path);
+    clear_temp_item(&temp_download_dir, &temp_archive_path, &temp_extract_dir);
 
     if let Some(img_url) = preview_url {
         if !img_url.is_empty() {

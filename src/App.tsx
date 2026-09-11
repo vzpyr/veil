@@ -694,9 +694,14 @@ export default function App() {
   };
 
   const handleCancelQueueItem = (id: string) => {
+    const item = downloadQueue.find((i) => i.id === id);
     setDownloadQueue((prev) => prev.filter((i) => i.id !== id));
     if (modsDir) {
-      invoke("cancel_download", { key: id, modsDir }).catch(() => {});
+      invoke("cancel_download", {
+        key: id,
+        modsDir,
+        modName: item?.modName ?? "",
+      }).catch(() => {});
     }
   };
 

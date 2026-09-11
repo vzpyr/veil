@@ -7,7 +7,7 @@ pub mod keybinds;
 pub mod scanner;
 pub mod symlink;
 
-use archive::extract_any_archive;
+use archive::{extract_any_archive, sanitize_folder_name};
 use config::{AppConfig, GameSettings, get_config_path, read_config, write_config};
 use conflict::{ConflictGroup, detect_conflicts};
 use gamebanana::{CancelRegistry, clear_temp_artifacts, download_and_install_mod};
@@ -140,22 +140,26 @@ fn cancel_download(
     state: State<'_, CancelRegistry>,
     mods_dir: String,
     key: String,
+    mod_name: String,
 ) -> Result<(), String> {
     state.cancel(&key);
 
-    let temp_dir = Path::new(&mods_dir).join(".veil_temp");
-    if let Ok(entries) = fs::read_dir(&temp_dir) {
-        for entry in entries.flatten() {
-            if let Some(name) = entry.file_name().to_str() {
-                if name.starts_with(&format!("{key}.")) {
-                    let path = entry.path();
-                    if path.is_dir() {
-                        let _ = fs::remove_dir_all(&path);
-                    } else {
-                        let _ = fs::remove_file(&path);
-                    }
+    let sanitized = sanitize_folder_name(&mod_name);
+    let temp_base = Path::new(&mods_dir).join(".veil_temp").join(&sanitized);
+    let _ = fs::remove_dir_all(&temp_base);
+    let archive_prefix = format!("{}.", sanitized);
+    if let Some(parent) = temp_base.parent() {
+        if let Ok(entries) = fs::read_dir(parent) {
+            for entry in entries.flatten() {
+                if entry
+                    .file_name()
+                    .to_string_lossy()
+                    .starts_with(&archive_prefix)
+                {
+                    let _ = fs::remove_file(entry.path());
                 }
             }
+            let _ = fs::remove_dir(parent);
         }
     }
 
@@ -200,13 +204,7 @@ fn extract_archive_file(
     let action = duplicate_action.unwrap_or_else(|| "replace".to_string());
     let temp_download_dir = path.join(".veil_temp");
     std::fs::create_dir_all(&temp_download_dir).map_err(|e| e.to_string())?;
-    let temp_extract_dir = temp_download_dir.join(format!(
-        "manual_{}.extract",
-        std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap_or_default()
-            .as_millis()
-    ));
+    let temp_extract_dir = temp_download_dir.join(sanitize_folder_name(&mod_name));
     let extracted = extract_any_archive(
         Path::new(&archive_path),
         &temp_extract_dir,

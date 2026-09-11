@@ -809,18 +809,18 @@ mod tests {
 
         crate::symlink::ensure_veil_dirs(mods_dir).unwrap();
 
-        let legacy_temp = get_disabled_dir(mods_dir)
-            .join(".temp_extract_SomeMod_1700000000000")
-            .join("partial.ini");
-        fs::create_dir_all(legacy_temp.parent().unwrap()).unwrap();
-        fs::write(legacy_temp, "hash = 11111111").unwrap();
+        let hidden_in_category = get_disabled_dir(mods_dir)
+            .join(".internal_cache")
+            .join("stale.ini");
+        fs::create_dir_all(hidden_in_category.parent().unwrap()).unwrap();
+        fs::write(hidden_in_category, "hash = 11111111").unwrap();
 
         let cat_dir = get_disabled_dir(mods_dir).join("Real Category");
         let mod_dir = cat_dir.join("Visible Mod");
         fs::create_dir_all(&mod_dir).unwrap();
         fs::write(mod_dir.join("mod.ini"), "hash = 22222222").unwrap();
 
-        let hidden_sibling = cat_dir.join(".temp_extract_Hidden_1700000000001");
+        let hidden_sibling = cat_dir.join(".partial_download");
         fs::create_dir_all(&hidden_sibling).unwrap();
         fs::write(hidden_sibling.join("x.ini"), "hash = 33333333").unwrap();
 
