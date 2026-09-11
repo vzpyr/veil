@@ -58,39 +58,36 @@ export default function GbModCard({ item, onSelect }: GbModCardProps) {
           </Stack>
         )}
 
-        {item._aCategory && (
-          <Badge
-            size="xs"
-            variant="filled"
-            color="dark"
-            style={{
-              position: "absolute",
-              top: "var(--space-xs)",
-              left: "var(--space-xs)",
-            }}
-          >
-            {item._aCategory._sName}
-          </Badge>
-        )}
-
-        {nsfw && (
-          <Tooltip label="Contains adult content">
-            <Badge
-              size="xs"
-              variant="filled"
-              color="red"
-              className="animate-scale-in"
-              leftSection={<TriangleAlert size={10} />}
-              style={{
-                position: "absolute",
-                top: "var(--space-xs)",
-                right: "var(--space-xs)",
-              }}
-            >
-              NSFW
-            </Badge>
-          </Tooltip>
-        )}
+        <Group
+          style={{
+            position: "absolute",
+            top: "var(--space-sm)",
+            left: "var(--space-sm)",
+            right: "var(--space-sm)",
+            justifyContent: "space-between",
+          }}
+        >
+          <Group gap="2xs">
+            {item._aCategory && (
+              <Badge size="xs" variant="filled" color="dark">
+                {item._aCategory._sName}
+              </Badge>
+            )}
+            {nsfw && (
+              <Tooltip label="Contains adult content">
+                <Badge
+                  size="xs"
+                  variant="filled"
+                  color="red"
+                  className="animate-scale-in"
+                  leftSection={<TriangleAlert size={10} />}
+                >
+                  NSFW
+                </Badge>
+              </Tooltip>
+            )}
+          </Group>
+        </Group>
       </Card.Section>
 
       <Stack gap="xs" mt="xs">
