@@ -7,7 +7,7 @@ import {
   Text,
   TextInput,
 } from "@mantine/core";
-import { IconPackageImport } from "@tabler/icons-react";
+import { PackagePlus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { CategoryItem } from "../types";
 
@@ -54,8 +54,8 @@ export default function ManualInstallDrawer({
   ];
 
   const duplicateOptions = [
-    { value: "replace", label: "Replace existing files if duplicate" },
-    { value: "keep_both", label: "Keep both with numerical suffix" },
+    { value: "replace", label: "Replace existing files" },
+    { value: "keep_both", label: "Keep both versions" },
   ];
 
   const handleConfirm = async () => {
@@ -77,7 +77,7 @@ export default function ManualInstallDrawer({
       radius="lg"
       title={
         <Group gap="xs">
-          <IconPackageImport size={20} color="var(--color-accent-primary)" />
+          <PackagePlus size={20} color="var(--color-accent-primary)" />
           <Text fw={700} size="md">
             Install Mod from Archive
           </Text>
@@ -87,7 +87,6 @@ export default function ManualInstallDrawer({
       <Stack gap="md" h="100%">
         <TextInput
           label="Mod Name"
-          description="Folder name where the mod files will be placed"
           radius="xl"
           value={modName}
           onChange={(e) => setModName(e.currentTarget.value)}
@@ -96,7 +95,6 @@ export default function ManualInstallDrawer({
 
         <Select
           label="Category"
-          description="Target category folder inside mods directory"
           radius="xl"
           data={categoryOptions}
           value={selectedCategory}
@@ -106,7 +104,6 @@ export default function ManualInstallDrawer({
 
         <Select
           label="Duplicate Handling"
-          description="Action to take if a folder with this name already exists"
           radius="xl"
           data={duplicateOptions}
           value={duplicateAction}

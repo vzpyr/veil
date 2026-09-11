@@ -8,7 +8,7 @@ import {
   Text,
   TextInput,
 } from "@mantine/core";
-import { IconFolder, IconFolderOpen } from "@tabler/icons-react";
+import { Folder, FolderOpen } from "lucide-react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { revealItemInDir } from "@tauri-apps/plugin-opener";
 import { GameDefinition, GameSettings } from "../types";
@@ -16,6 +16,7 @@ import { GameDefinition, GameSettings } from "../types";
 interface SettingsViewProps {
   activeGame: GameDefinition;
   settings: GameSettings;
+  autoCategorize: boolean;
   onUpdateModsDir: (dir: string) => void;
   onUpdateAutoCategorize: (enabled: boolean) => void;
 }
@@ -23,6 +24,7 @@ interface SettingsViewProps {
 export default function SettingsView({
   activeGame,
   settings,
+  autoCategorize,
   onUpdateModsDir,
   onUpdateAutoCategorize,
 }: SettingsViewProps) {
@@ -51,9 +53,6 @@ export default function SettingsView({
           <Text fw={700} size="md">
             {activeGame.name} Settings
           </Text>
-          <Text c="dimmed" size="xs">
-            Configure mod directories and behavior for this game profile.
-          </Text>
         </div>
 
         <Card p="sm">
@@ -63,8 +62,7 @@ export default function SettingsView({
                 Game Mods Directory
               </Text>
               <Text c="dimmed" size="xs">
-                Select your 3DMigoto or XXMI Mods directory. Veil will store
-                staging mods in DISABLED_veil and symlink active mods into veil.
+                Select your Model Importer's Mods directory.
               </Text>
             </div>
 
@@ -75,7 +73,7 @@ export default function SettingsView({
                 value={settings.mods_dir || ""}
                 placeholder="No directory selected"
                 readOnly
-                leftSection={<IconFolder size={16} />}
+                leftSection={<Folder size={16} />}
                 style={{ flex: 1 }}
               />
               {settings.mods_dir && (
@@ -83,7 +81,7 @@ export default function SettingsView({
                   size="xs"
                   radius="xl"
                   variant="default"
-                  leftSection={<IconFolderOpen size={14} />}
+                  leftSection={<FolderOpen size={14} />}
                   onClick={handleOpenFolder}
                 >
                   Reveal
@@ -102,20 +100,13 @@ export default function SettingsView({
         </Card>
 
         <Card p="sm">
-          <Group justify="space-between" align="center">
-            <div>
-              <Text fw={600} size="sm">
-                Auto-categorize GameBanana Downloads
-              </Text>
-              <Text c="dimmed" size="xs">
-                Automatically extract downloaded mods into subfolders matching
-                their GameBanana character or category.
-              </Text>
-            </div>
-
+          <Group justify="space-between" align="center" gap="xs" wrap="nowrap">
+            <Text fw={600} size="sm">
+              Auto-categorize GameBanana Downloads
+            </Text>
             <Switch
               size="md"
-              checked={settings.auto_categorize}
+              checked={autoCategorize}
               onChange={(e) => onUpdateAutoCategorize(e.currentTarget.checked)}
             />
           </Group>

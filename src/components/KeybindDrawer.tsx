@@ -18,14 +18,14 @@ import {
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import {
-  IconAdjustments,
-  IconAlertCircle,
-  IconCheck,
-  IconInfoCircle,
-  IconKeyboard,
-  IconRefresh,
-  IconX,
-} from "@tabler/icons-react";
+  Check,
+  CircleAlert,
+  Info,
+  Keyboard,
+  RefreshCw,
+  SlidersHorizontal,
+  X,
+} from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import { useCallback, useEffect, useState } from "react";
 import { ModItem, ModKeybind, ModKeybindData } from "../types";
@@ -236,7 +236,7 @@ export default function KeybindDrawer({
         title: "Toggle Updated",
         message: "Saved variable state to d3dx_user.ini.",
         color: "green",
-        icon: <IconCheck size={16} />,
+        icon: <Check size={16} />,
       });
     } catch (err) {
       setData(previousData);
@@ -244,7 +244,7 @@ export default function KeybindDrawer({
         title: "Update Failed",
         message: String(err),
         color: "red",
-        icon: <IconAlertCircle size={16} />,
+        icon: <CircleAlert size={16} />,
       });
     }
   };
@@ -277,7 +277,7 @@ export default function KeybindDrawer({
         title: "Keybind Updated",
         message: `Saved key combination ${newCombo} to ${keybind.label}.`,
         color: "green",
-        icon: <IconCheck size={16} />,
+        icon: <Check size={16} />,
       });
     } catch (err) {
       setData((prev) =>
@@ -287,7 +287,7 @@ export default function KeybindDrawer({
         title: "Update Failed",
         message: String(err),
         color: "red",
-        icon: <IconAlertCircle size={16} />,
+        icon: <CircleAlert size={16} />,
       });
     } finally {
       setRecordingIndex(null);
@@ -362,7 +362,7 @@ export default function KeybindDrawer({
       radius="lg"
       title={
         <Group gap="xs">
-          <IconKeyboard size={20} color="var(--color-accent-primary)" />
+          <Keyboard size={20} color="var(--color-accent-primary)" />
           <Text fw={700} size="md">
             Mod Keybinds and Toggles
           </Text>
@@ -397,7 +397,7 @@ export default function KeybindDrawer({
                   onClick={loadData}
                   loading={loading}
                 >
-                  <IconRefresh size={16} />
+                  <RefreshCw size={16} />
                 </ActionIcon>
               </Tooltip>
             </Group>
@@ -408,7 +408,7 @@ export default function KeybindDrawer({
           color="gray"
           variant="light"
           radius="md"
-          icon={<IconInfoCircle size={16} />}
+          icon={<Info size={16} />}
         >
           Toggle states are persisted to d3dx_user.ini in your loader root
           folder. Keybind remappings update the mod configuration directly.
@@ -421,7 +421,7 @@ export default function KeybindDrawer({
         ) : !hasContent ? (
           <Center py="2xl">
             <Stack align="center" gap="sm">
-              <IconAdjustments size={44} color="var(--color-text-muted)" />
+              <SlidersHorizontal size={44} color="var(--color-text-muted)" />
               <Text fw={600} size="md">
                 No Keybinds or Toggles Found
               </Text>
@@ -559,7 +559,7 @@ export default function KeybindDrawer({
                                     color="red"
                                     onClick={() => setRecordingIndex(null)}
                                   >
-                                    <IconX size={14} />
+                                    <X size={14} />
                                   </ActionIcon>
                                 </Tooltip>
                               </Group>

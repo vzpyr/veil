@@ -1,4 +1,5 @@
 import { fetchModProfile, GbModFile, GbModProfile } from "./gamebanana";
+import { formatVersion } from "../utils";
 import { ModItem, ModUpdateInfo } from "../types";
 
 function compareVersions(local: string, remote: string): number {
@@ -55,7 +56,7 @@ export async function checkModUpdate(
 
     return {
       available: isUpdate,
-      latestVersion: remoteVersion || undefined,
+      latestVersion: formatVersion(remoteVersion),
       latestFileId: latestFile?._idRow,
       latestFileName: latestFile?._sFile,
       gamebananaId: mod.gamebanana_id,

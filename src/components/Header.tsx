@@ -4,21 +4,23 @@ import {
   Button,
   Center,
   Group,
+  Image,
   SegmentedControl,
   Select,
   Text,
   Tooltip,
 } from "@mantine/core";
 import {
-  IconAlertTriangle,
-  IconDownload,
-  IconFolder,
-  IconRefresh,
-  IconSettings,
-  IconSparkles,
-  IconWorld,
-} from "@tabler/icons-react";
+  Download,
+  Folder,
+  Globe,
+  RefreshCw,
+  Settings,
+  Sparkles,
+  TriangleAlert,
+} from "lucide-react";
 import { ConflictGroup, GameDefinition } from "../types";
+import veilLogo from "../assets/veil.png";
 
 interface HeaderProps {
   games: GameDefinition[];
@@ -55,7 +57,7 @@ export default function Header({
 }: HeaderProps) {
   const gameSelectData = games.map((g) => ({
     value: g.id,
-    label: `${g.short_name} (${g.name})`,
+    label: g.name,
   }));
 
   const tabData = [
@@ -70,7 +72,7 @@ export default function Header({
             padding: "0 var(--space-xs)",
           }}
         >
-          <IconFolder size={16} />
+          <Folder size={16} />
           <Text size="xs" fw={600}>
             Installed
           </Text>
@@ -88,7 +90,7 @@ export default function Header({
             padding: "0 var(--space-xs)",
           }}
         >
-          <IconWorld size={16} />
+          <Globe size={16} />
           <Text size="xs" fw={600}>
             GameBanana
           </Text>
@@ -106,7 +108,7 @@ export default function Header({
             padding: "0 var(--space-xs)",
           }}
         >
-          <IconSettings size={16} />
+          <Settings size={16} />
           <Text size="xs" fw={600}>
             Settings
           </Text>
@@ -126,16 +128,13 @@ export default function Header({
       }}
     >
       <Group gap="sm">
-        <Text
-          fw={800}
-          size="md"
-          style={{
-            letterSpacing: "0.08em",
-            color: "var(--color-text-primary)",
-          }}
-        >
-          veil
-        </Text>
+        <Image
+          src={veilLogo}
+          h="var(--size-logo-height)"
+          w="auto"
+          fit="contain"
+          alt="veil"
+        />
 
         <Select
           size="xs"
@@ -164,7 +163,8 @@ export default function Header({
               radius="xl"
               color="orange"
               variant="light"
-              leftSection={<IconAlertTriangle size={14} />}
+              className="animate-scale-in"
+              leftSection={<TriangleAlert size={14} />}
               onClick={onOpenConflicts}
             >
               Conflicts
@@ -190,7 +190,7 @@ export default function Header({
             onClick={onOpenDownloadQueue}
             style={{ position: "relative" }}
           >
-            <IconDownload size={16} />
+            <Download size={16} />
             {activeDownloadCount > 0 && (
               <Badge
                 size="xs"
@@ -215,7 +215,7 @@ export default function Header({
               loading={isCheckingUpdates}
               style={{ position: "relative" }}
             >
-              <IconSparkles size={16} />
+              <Sparkles size={16} />
               {updatesCount > 0 && (
                 <Badge
                   size="xs"
@@ -238,7 +238,7 @@ export default function Header({
             onClick={onRefresh}
             loading={isRefreshing}
           >
-            <IconRefresh size={16} />
+            <RefreshCw size={16} />
           </ActionIcon>
         </Tooltip>
       </Group>

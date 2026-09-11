@@ -140,10 +140,9 @@ fn prune_dir_recursive(current: &Path, count: &mut usize) -> Result<(), String> 
             }
         } else if meta.is_dir() {
             prune_dir_recursive(&path, count)?;
-            if let Ok(mut sub_entries) = fs::read_dir(&path) {
-                if sub_entries.next().is_none() {
-                    let _ = fs::remove_dir(&path);
-                }
+            let is_empty = fs::read_dir(&path).is_ok_and(|mut entries| entries.next().is_none());
+            if is_empty {
+                let _ = fs::remove_dir(&path);
             }
         }
     }

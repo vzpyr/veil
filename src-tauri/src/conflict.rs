@@ -63,6 +63,7 @@ mod tests {
             gamebanana_id: None,
             version: None,
             file_id: None,
+            updated_at: None,
         };
 
         let mod_b = ModItem {
@@ -76,6 +77,7 @@ mod tests {
             gamebanana_id: None,
             version: None,
             file_id: None,
+            updated_at: None,
         };
 
         let mod_c_disabled = ModItem {
@@ -89,6 +91,7 @@ mod tests {
             gamebanana_id: None,
             version: None,
             file_id: None,
+            updated_at: None,
         };
 
         let conflicts = detect_conflicts(&[mod_a, mod_b, mod_c_disabled]);

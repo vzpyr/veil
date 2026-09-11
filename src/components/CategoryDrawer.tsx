@@ -8,7 +8,7 @@ import {
   Text,
   TextInput,
 } from "@mantine/core";
-import { IconFolder } from "@tabler/icons-react";
+import { Folder } from "lucide-react";
 import { useEffect, useState } from "react";
 import { CategoryItem, ModItem } from "../types";
 
@@ -122,7 +122,7 @@ export default function CategoryDrawer({
       radius="lg"
       title={
         <Group gap="xs">
-          <IconFolder size={20} color="var(--color-accent-primary)" />
+          <Folder size={20} color="var(--color-accent-primary)" />
           <Text fw={700} size="md">
             {getTitle()}
           </Text>
@@ -145,11 +145,6 @@ export default function CategoryDrawer({
         {(mode === "create" || mode === "rename") && (
           <TextInput
             label={mode === "create" ? "Category Name" : "New Category Name"}
-            description={
-              mode === "create"
-                ? "Subfolder inside DISABLED_veil for organizing mods"
-                : "Renames the category directory in DISABLED_veil and active symlinks"
-            }
             placeholder="e.g. Characters or Weapons"
             radius="xl"
             value={nameInput}
@@ -178,12 +173,6 @@ export default function CategoryDrawer({
               onChange={(e) => setDeleteMods(e.currentTarget.checked)}
               color="red"
             />
-            {!deleteMods && (
-              <Text size="xs" c="dimmed">
-                Mods inside this category will be preserved and moved to
-                Uncategorized.
-              </Text>
-            )}
           </Stack>
         )}
 

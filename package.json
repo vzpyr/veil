@@ -14,11 +14,11 @@
     "@mantine/core": "^7.17.1",
     "@mantine/hooks": "^7.17.1",
     "@mantine/notifications": "^7.17.1",
-    "@tabler/icons-react": "^3.31.0",
     "@tauri-apps/api": "^2.2.0",
     "@tauri-apps/plugin-dialog": "^2.2.0",
     "@tauri-apps/plugin-opener": "^2.2.5",
     "embla-carousel-react": "^8.5.2",
+    "lucide-react": "^1.44.0",
     "motion": "^12.4.7",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

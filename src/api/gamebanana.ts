@@ -69,7 +69,6 @@ export interface GbModProfile {
     _idRow: number;
     _sName: string;
     _sAvatarUrl?: string;
-    _sLocation?: string;
     _nPoints?: number;
   };
   _aFiles?: GbModFile[];
@@ -80,6 +79,9 @@ export interface GbModProfile {
   _sVersion?: string;
   _tsDateAdded?: number;
   _tsDateModified?: number;
+  _nLikeCount?: number;
+  _nViewCount?: number;
+  _nDownloadCount?: number;
 }
 
 export interface GbUpdate {

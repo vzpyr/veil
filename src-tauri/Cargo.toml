@@ -3,7 +3,7 @@ name = "veil"
 version = "0.1.0"
 description = "Yet another 3DMigoto mod manager"
 authors = ["vzpyr"]
-edition = "2021"
+edition = "2024"
 
 [lib]
 name = "veil_lib"

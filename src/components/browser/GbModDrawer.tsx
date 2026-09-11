@@ -16,13 +16,15 @@ import {
   Text,
 } from "@mantine/core";
 import {
-  IconCheck,
-  IconDownload,
-  IconHistory,
-  IconInfoCircle,
-  IconMessageCircle,
-  IconWorld,
-} from "@tabler/icons-react";
+  Check,
+  Download,
+  Eye,
+  Globe,
+  Heart,
+  History,
+  Info,
+  MessageCircle,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   fetchModPosts,
@@ -35,6 +37,7 @@ import {
   GbUpdate,
 } from "../../api/gamebanana";
 import { DownloadQueueItem } from "../../types";
+import { formatVersion } from "../../utils";
 
 interface GbModDrawerProps {
   modId: number | null;
@@ -157,7 +160,7 @@ export default function GbModDrawer({
       radius="lg"
       title={
         <Group gap="xs">
-          <IconWorld size={20} color="var(--color-accent-primary)" />
+          <Globe size={20} color="var(--color-accent-primary)" />
           {profile ? (
             <Group gap="xs">
               <Text fw={700} size="md">
@@ -170,7 +173,31 @@ export default function GbModDrawer({
               )}
               {profile._sVersion && (
                 <Badge size="xs" radius="xl" variant="outline" color="gray">
-                  v{profile._sVersion}
+                  v{formatVersion(profile._sVersion)}
+                </Badge>
+              )}
+              {typeof profile._nDownloadCount === "number" && (
+                <Badge size="xs" radius="xl" variant="light" color="gray">
+                  <Group gap="3xs" wrap="nowrap">
+                    <Download size={12} />
+                    <Text size="2xs">{profile._nDownloadCount}</Text>
+                  </Group>
+                </Badge>
+              )}
+              {typeof profile._nLikeCount === "number" && (
+                <Badge size="xs" radius="xl" variant="light" color="gray">
+                  <Group gap="3xs" wrap="nowrap">
+                    <Heart size={12} />
+                    <Text size="2xs">{profile._nLikeCount}</Text>
+                  </Group>
+                </Badge>
+              )}
+              {typeof profile._nViewCount === "number" && (
+                <Badge size="xs" radius="xl" variant="light" color="gray">
+                  <Group gap="3xs" wrap="nowrap">
+                    <Eye size={12} />
+                    <Text size="2xs">{profile._nViewCount}</Text>
+                  </Group>
                 </Badge>
               )}
             </Group>
@@ -229,13 +256,8 @@ export default function GbModDrawer({
                     />
                     <div>
                       <Text fw={600} size="xs">
-                        {profile._aSubmitter?._sName || "Unknown Submitter"}
+                        {profile._aSubmitter?._sName || "Unknown Author"}
                       </Text>
-                      {profile._aSubmitter?._sLocation && (
-                        <Text size="2xs" c="dimmed">
-                          {profile._aSubmitter._sLocation}
-                        </Text>
-                      )}
                     </div>
                   </Group>
 
@@ -261,33 +283,27 @@ export default function GbModDrawer({
                 radius="xl"
               >
                 <Tabs.List>
-                  <Tabs.Tab
-                    value="files"
-                    leftSection={<IconDownload size={14} />}
-                  >
+                  <Tabs.Tab value="files" leftSection={<Download size={14} />}>
                     Files ({files.length})
                   </Tabs.Tab>
                   <Tabs.Tab
                     value="description"
-                    leftSection={<IconInfoCircle size={14} />}
+                    leftSection={<Info size={14} />}
                   >
                     Description
                   </Tabs.Tab>
-                  <Tabs.Tab
-                    value="updates"
-                    leftSection={<IconHistory size={14} />}
-                  >
+                  <Tabs.Tab value="updates" leftSection={<History size={14} />}>
                     Updates ({updates.length})
                   </Tabs.Tab>
                   <Tabs.Tab
                     value="comments"
-                    leftSection={<IconMessageCircle size={14} />}
+                    leftSection={<MessageCircle size={14} />}
                   >
                     Comments ({posts.length})
                   </Tabs.Tab>
                 </Tabs.List>
 
-                <Tabs.Panel value="files" pt="sm">
+                <Tabs.Panel value="files" pt="sm" className="animate-fade-in">
                   <Stack gap="xs">
                     {files.length > 0 ? (
                       files.map((f) => {
@@ -352,9 +368,9 @@ export default function GbModDrawer({
                                 }
                                 leftSection={
                                   isCompleted ? (
-                                    <IconCheck size={14} />
+                                    <Check size={14} />
                                   ) : (
-                                    <IconDownload size={14} />
+                                    <Download size={14} />
                                   )
                                 }
                                 loading={isDownloading || isExtracting}
@@ -364,7 +380,7 @@ export default function GbModDrawer({
                                     f,
                                     profile._sName,
                                     profile._idRow,
-                                    profile._sVersion,
+                                    formatVersion(profile._sVersion),
                                     profile._aCategory?._sName,
                                     primaryPreviewUrl,
                                   )
@@ -430,7 +446,11 @@ export default function GbModDrawer({
                   </Stack>
                 </Tabs.Panel>
 
-                <Tabs.Panel value="description" pt="sm">
+                <Tabs.Panel
+                  value="description"
+                  pt="sm"
+                  className="animate-fade-in"
+                >
                   <Box p="xs">
                     {profile._sText ? (
                       <div
@@ -445,7 +465,7 @@ export default function GbModDrawer({
                   </Box>
                 </Tabs.Panel>
 
-                <Tabs.Panel value="updates" pt="sm">
+                <Tabs.Panel value="updates" pt="sm" className="animate-fade-in">
                   <Box p="xs">
                     {updates.length > 0 ? (
                       <Stack gap="xs">
@@ -456,9 +476,9 @@ export default function GbModDrawer({
                                 <Text fw={600} size="sm">
                                   {u._sName || "Update"}
                                 </Text>
-                                {u._sVersion && (
+                                {formatVersion(u._sVersion) && (
                                   <Badge size="xs" radius="xl" color="gray">
-                                    v{u._sVersion}
+                                    v{formatVersion(u._sVersion)}
                                   </Badge>
                                 )}
                               </Group>
@@ -503,7 +523,11 @@ export default function GbModDrawer({
                   </Box>
                 </Tabs.Panel>
 
-                <Tabs.Panel value="comments" pt="sm">
+                <Tabs.Panel
+                  value="comments"
+                  pt="sm"
+                  className="animate-fade-in"
+                >
                   <Box p="xs">
                     {posts.length > 0 ? (
                       <Stack gap="xs">

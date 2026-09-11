@@ -1,6 +1,6 @@
 use crate::symlink::{
-    create_mod_symlink, get_active_dir, get_disabled_dir, remove_mod_symlink,
-    UNCATEGORIZED_DIR_NAME,
+    UNCATEGORIZED_DIR_NAME, create_mod_symlink, get_active_dir, get_disabled_dir,
+    remove_mod_symlink,
 };
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
@@ -19,6 +19,7 @@ pub struct ModItem {
     pub gamebanana_id: Option<u64>,
     pub version: Option<String>,
     pub file_id: Option<u64>,
+    pub updated_at: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -194,6 +195,12 @@ pub fn scan_mods(mods_dir: &Path) -> Result<Vec<ModItem>, String> {
             let preview = find_preview_image(&sub_path);
             let hashes = collect_hashes_from_folder(&sub_path);
             let (gb_id, ver, fid) = read_veil_metadata(&sub_path);
+            let updated_at = sub_path
+                .symlink_metadata()
+                .ok()
+                .and_then(|m| m.modified().ok())
+                .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
+                .map(|d| d.as_secs() as i64);
 
             mods.push(ModItem {
                 id: rel_id,
@@ -206,6 +213,7 @@ pub fn scan_mods(mods_dir: &Path) -> Result<Vec<ModItem>, String> {
                 gamebanana_id: gb_id,
                 version: ver,
                 file_id: fid,
+                updated_at,
             });
         }
     }
@@ -804,9 +812,11 @@ mod tests {
         assert_eq!(categories_after_scan.len(), 1);
         assert_eq!(categories_after_scan[0].name, "Dialyn");
         assert!(get_disabled_dir(mods_dir).join("Dialyn").exists());
-        assert!(!get_disabled_dir(mods_dir)
-            .join(crate::symlink::UNCATEGORIZED_DIR_NAME)
-            .join("Dialyn")
-            .exists());
+        assert!(
+            !get_disabled_dir(mods_dir)
+                .join(crate::symlink::UNCATEGORIZED_DIR_NAME)
+                .join("Dialyn")
+                .exists()
+        );
     }
 }

@@ -1,19 +1,16 @@
 export interface GameDefinition {
   id: string;
   name: string;
-  short_name: string;
   gamebanana_game_id: number;
-  root_category_id?: number;
-  icon: string;
 }
 
 export interface GameSettings {
   mods_dir?: string;
-  auto_categorize: boolean;
 }
 
 export interface AppConfig {
   active_game_id: string;
+  auto_categorize: boolean;
   games: Record<string, GameSettings>;
 }
 
@@ -28,6 +25,7 @@ export interface ModItem {
   gamebanana_id?: number;
   version?: string;
   file_id?: number;
+  updated_at?: number;
 }
 
 export interface ModUpdateInfo {
@@ -108,11 +106,9 @@ export interface ModVariableState {
   label: string;
   current_value: number;
   possible_values: number[];
-  is_persisted: boolean;
 }
 
 export interface ModKeybindData {
   keybinds: ModKeybind[];
   variables: ModVariableState[];
-  has_d3dx_user: boolean;
 }

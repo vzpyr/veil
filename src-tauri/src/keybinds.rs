@@ -20,14 +20,12 @@ pub struct ModVariableState {
     pub label: String,
     pub current_value: i64,
     pub possible_values: Vec<i64>,
-    pub is_persisted: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ModKeybindData {
     pub keybinds: Vec<ModKeybind>,
     pub variables: Vec<ModVariableState>,
-    pub has_d3dx_user: bool,
 }
 
 pub fn format_section_label(section_name: &str) -> String {
@@ -189,7 +187,6 @@ pub fn parse_mod_keybinds_and_variables(
                                 label,
                                 current_value: possible.first().copied().unwrap_or(0),
                                 possible_values: Vec::new(),
-                                is_persisted: true,
                             }
                         });
                         for v in &possible {
@@ -326,7 +323,6 @@ pub fn parse_mod_keybinds_and_variables(
     Ok(ModKeybindData {
         keybinds,
         variables,
-        has_d3dx_user,
     })
 }
 

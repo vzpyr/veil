@@ -8,23 +8,23 @@ pub mod scanner;
 pub mod symlink;
 
 use archive::extract_any_archive;
-use config::{get_config_path, read_config, write_config, AppConfig, GameSettings};
-use conflict::{detect_conflicts, ConflictGroup};
-use gamebanana::download_and_install_mod;
-use games::{get_supported_games, GameDefinition};
+use config::{AppConfig, GameSettings, get_config_path, read_config, write_config};
+use conflict::{ConflictGroup, detect_conflicts};
+use gamebanana::{CancelRegistry, download_and_install_mod};
+use games::{GameDefinition, get_supported_games};
 use keybinds::{
-    parse_mod_keybinds_and_variables, set_d3dx_user_toggle, update_ini_keybind, ModKeybindData,
+    ModKeybindData, parse_mod_keybinds_and_variables, set_d3dx_user_toggle, update_ini_keybind,
 };
 use scanner::{
-    create_category, delete_category, delete_mod, link_mod, list_categories, move_mod_category,
-    rename_category, scan_mods, set_mod_preview, toggle_mod_status, unlink_mod, CategoryItem,
-    ModItem,
+    CategoryItem, ModItem, create_category, delete_category, delete_mod, link_mod, list_categories,
+    move_mod_category, rename_category, scan_mods, set_mod_preview, toggle_mod_status, unlink_mod,
 };
+use std::fs;
 use std::path::Path;
 use symlink::{
-    ensure_veil_dirs, get_disabled_dir, prune_orphaned_symlinks, UNCATEGORIZED_DIR_NAME,
+    UNCATEGORIZED_DIR_NAME, ensure_veil_dirs, get_disabled_dir, prune_orphaned_symlinks,
 };
-use tauri::AppHandle;
+use tauri::{AppHandle, State};
 
 #[tauri::command]
 fn get_games() -> Vec<GameDefinition> {
@@ -35,12 +35,6 @@ fn get_games() -> Vec<GameDefinition> {
 fn get_config(app: AppHandle) -> Result<AppConfig, String> {
     let path = get_config_path(&app)?;
     Ok(read_config(&path))
-}
-
-#[tauri::command]
-fn save_config(app: AppHandle, config: AppConfig) -> Result<(), String> {
-    let path = get_config_path(&app)?;
-    write_config(&path, &config)
 }
 
 #[tauri::command]
@@ -82,18 +76,10 @@ fn set_game_mods_dir(
 }
 
 #[tauri::command]
-fn set_game_auto_categorize(
-    app: AppHandle,
-    game_id: String,
-    auto_categorize: bool,
-) -> Result<AppConfig, String> {
+fn set_auto_categorize(app: AppHandle, auto_categorize: bool) -> Result<AppConfig, String> {
     let path = get_config_path(&app)?;
     let mut config = read_config(&path);
-    let entry = config
-        .games
-        .entry(game_id)
-        .or_insert_with(GameSettings::default);
-    entry.auto_categorize = auto_categorize;
+    config.auto_categorize = auto_categorize;
     write_config(&path, &config)?;
     Ok(config)
 }
@@ -150,9 +136,25 @@ fn delete_installed_mod(mods_dir: String, mod_id: String) -> Result<(), String> 
 }
 
 #[tauri::command]
-fn prune_symlinks(mods_dir: String) -> Result<usize, String> {
-    let path = Path::new(&mods_dir);
-    prune_orphaned_symlinks(path)
+fn cancel_download(
+    state: State<'_, CancelRegistry>,
+    mods_dir: String,
+    key: String,
+) -> Result<(), String> {
+    state.cancel(&key);
+
+    let temp_dir = Path::new(&mods_dir).join(".veil_temp");
+    if let Ok(entries) = fs::read_dir(&temp_dir) {
+        for entry in entries.flatten() {
+            if let Some(name) = entry.file_name().to_str() {
+                if name.starts_with(&format!("{key}.")) {
+                    let _ = fs::remove_file(entry.path());
+                }
+            }
+        }
+    }
+
+    Ok(())
 }
 
 #[tauri::command]
@@ -209,6 +211,7 @@ fn extract_archive_file(
 #[tauri::command]
 async fn download_mod(
     app: AppHandle,
+    cancel: State<'_, CancelRegistry>,
     download_url: String,
     mods_dir: String,
     mod_name: String,
@@ -222,6 +225,7 @@ async fn download_mod(
 ) -> Result<String, String> {
     download_and_install_mod(
         app,
+        &cancel,
         download_url,
         mods_dir,
         mod_name,
@@ -316,13 +320,13 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
+        .manage(CancelRegistry::default())
         .invoke_handler(tauri::generate_handler![
             get_games,
             get_config,
-            save_config,
             set_active_game,
             set_game_mods_dir,
-            set_game_auto_categorize,
+            set_auto_categorize,
             scan_installed_mods,
             get_mod_conflicts,
             get_categories,
@@ -332,9 +336,9 @@ pub fn run() {
             rename_existing_category,
             delete_existing_category,
             delete_installed_mod,
-            prune_symlinks,
             extract_archive_file,
             download_mod,
+            cancel_download,
             get_mod_keybinds,
             set_mod_keybind,
             set_mod_toggle_state,

@@ -9,8 +9,10 @@ import {
   Stack,
   Text,
 } from "@mantine/core";
-import { IconFolderOff, IconSettings } from "@tabler/icons-react";
+import { FolderX, Settings } from "lucide-react";
+import { motion } from "motion/react";
 import { ConflictGroup, ModItem, ModUpdateInfo } from "../types";
+import { staggerItem } from "../motion";
 import ModCard from "./ModCard";
 
 interface ModGridProps {
@@ -32,7 +34,7 @@ interface ModGridProps {
   onOpenConflicts: () => void;
   onOpenSettings: () => void;
   onOpenKeybinds: (mod: ModItem) => void;
-  onOpenUpdate: (mod: ModItem, updateInfo: ModUpdateInfo) => void;
+  onOpenGameBanana: (mod: ModItem) => void;
   onOpenLinkGameBanana: (mod: ModItem) => void;
   onSetPreview: (mod: ModItem) => void;
 }
@@ -56,26 +58,26 @@ export default function ModGrid({
   onOpenConflicts,
   onOpenSettings,
   onOpenKeybinds,
-  onOpenUpdate,
+  onOpenGameBanana,
   onOpenLinkGameBanana,
   onSetPreview,
 }: ModGridProps) {
   if (!hasModsDir) {
     return (
       <Center h="100%" p="xl">
-        <Stack align="center" gap="md">
-          <IconSettings size={48} color="var(--color-text-muted)" />
+        <Stack align="center" gap="md" className="animate-fade-in-up">
+          <Settings size={48} color="var(--color-text-muted)" />
           <Text fw={600} size="lg">
             No Mods Directory Configured
           </Text>
           <Text c="dimmed" size="sm" ta="center" maw="var(--max-width-text-lg)">
-            Configure your game mods directory in settings to begin managing
-            mods with Veil.
+            Configure your mods directory in Settings to begin managing mods
+            with Veil.
           </Text>
           <Button
             variant="filled"
             size="sm"
-            leftSection={<IconSettings size={16} />}
+            leftSection={<Settings size={16} />}
             onClick={onOpenSettings}
           >
             Configure Directory
@@ -155,8 +157,7 @@ export default function ModGrid({
             data={[
               { value: "name-asc", label: "Name (A to Z)" },
               { value: "name-desc", label: "Name (Z to A)" },
-              { value: "enabled-first", label: "Enabled First" },
-              { value: "disabled-first", label: "Disabled First" },
+              { value: "last-updated", label: "Last Updated" },
             ]}
           />
         </Group>
@@ -164,8 +165,8 @@ export default function ModGrid({
 
       {mods.length === 0 ? (
         <Center h="var(--height-empty-state)">
-          <Stack align="center" gap="sm">
-            <IconFolderOff size={44} color="var(--color-text-muted)" />
+          <Stack align="center" gap="sm" className="animate-fade-in-up">
+            <FolderX size={44} color="var(--color-text-muted)" />
             <Text fw={600} size="md">
               No Mods Found
             </Text>
@@ -175,30 +176,36 @@ export default function ModGrid({
               ta="center"
               maw="var(--max-width-text-md)"
             >
-              No mods match your current filter or category. Download mods from
-              GameBanana, import an archive, or place folders into your
-              DISABLED_veil directory.
+              No mods match your current filter or category.
             </Text>
           </Stack>
         </Center>
       ) : (
         <SimpleGrid cols={{ base: 1, sm: 2, md: 3, lg: 4, xl: 5 }} spacing="sm">
-          {mods.map((mod) => (
-            <ModCard
+          {mods.map((mod, index) => (
+            <motion.div
               key={mod.id}
-              mod={mod}
-              inConflict={conflictingModIds.has(mod.id)}
-              updateInfo={updatesMap[mod.id]}
-              onToggle={onToggle}
-              onMoveCategory={onMoveCategory}
-              onReveal={onReveal}
-              onDelete={onDelete}
-              onOpenConflicts={onOpenConflicts}
-              onOpenKeybinds={onOpenKeybinds}
-              onOpenUpdate={onOpenUpdate}
-              onOpenLinkGameBanana={onOpenLinkGameBanana}
-              onSetPreview={onSetPreview}
-            />
+              variants={staggerItem()}
+              initial="hidden"
+              animate="visible"
+              custom={index}
+              style={{ height: "100%" }}
+            >
+              <ModCard
+                mod={mod}
+                inConflict={conflictingModIds.has(mod.id)}
+                updateInfo={updatesMap[mod.id]}
+                onToggle={onToggle}
+                onMoveCategory={onMoveCategory}
+                onReveal={onReveal}
+                onDelete={onDelete}
+                onOpenConflicts={onOpenConflicts}
+                onOpenKeybinds={onOpenKeybinds}
+                onOpenGameBanana={onOpenGameBanana}
+                onOpenLinkGameBanana={onOpenLinkGameBanana}
+                onSetPreview={onSetPreview}
+              />
+            </motion.div>
           ))}
         </SimpleGrid>
       )}

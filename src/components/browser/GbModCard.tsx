@@ -8,7 +8,7 @@ import {
   Text,
   Tooltip,
 } from "@mantine/core";
-import { IconEye, IconHeart, IconPhoto } from "@tabler/icons-react";
+import { Eye, Heart, ImageIcon } from "lucide-react";
 import { GbSubfeedItem } from "../../api/gamebanana";
 
 interface GbModCardProps {
@@ -27,10 +27,12 @@ export default function GbModCard({ item, onSelect }: GbModCardProps) {
       p="xs"
       radius="lg"
       withBorder
+      h="100%"
       className="card-interactive"
       onClick={() => onSelect(item._idRow)}
     >
       <Card.Section
+        className="card-media"
         style={{
           position: "relative",
           aspectRatio: "16 / 9",
@@ -50,7 +52,7 @@ export default function GbModCard({ item, onSelect }: GbModCardProps) {
           />
         ) : (
           <Stack h="100%" align="center" justify="center" gap="xs">
-            <IconPhoto size={32} color="var(--color-text-muted)" />
+            <ImageIcon size={32} color="var(--color-text-muted)" />
             <Text size="2xs" c="dimmed">
               No preview image
             </Text>
@@ -85,14 +87,14 @@ export default function GbModCard({ item, onSelect }: GbModCardProps) {
           <Group gap="xs">
             <Avatar src={item._aSubmitter?._sAvatarUrl} size="xs" radius="xl" />
             <Text size="xs" c="dimmed" truncate maw="var(--max-width-author)">
-              {item._aSubmitter?._sName || "Unknown"}
+              {item._aSubmitter?._sName || "Unknown Author"}
             </Text>
           </Group>
 
           <Group gap="xs">
             {typeof item._nLikeCount === "number" && (
               <Group gap="2xs">
-                <IconHeart size={12} color="var(--color-text-muted)" />
+                <Heart size={12} color="var(--color-text-muted)" />
                 <Text size="xs" c="dimmed">
                   {item._nLikeCount}
                 </Text>
@@ -101,7 +103,7 @@ export default function GbModCard({ item, onSelect }: GbModCardProps) {
 
             {typeof item._nViewCount === "number" && (
               <Group gap="2xs">
-                <IconEye size={12} color="var(--color-text-muted)" />
+                <Eye size={12} color="var(--color-text-muted)" />
                 <Text size="xs" c="dimmed">
                   {item._nViewCount}
                 </Text>

@@ -10,22 +10,23 @@ import {
   Stack,
   Text,
   TextInput,
+  Tooltip,
 } from "@mantine/core";
 import {
-  IconArchive,
-  IconArchiveFilled,
-  IconDotsVertical,
-  IconEdit,
-  IconFolder,
-  IconFolderFilled,
-  IconFolderOpen,
-  IconFolderPlus,
-  IconPackageImport,
-  IconSearch,
-  IconTrash,
-  IconX,
-} from "@tabler/icons-react";
+  Archive,
+  EllipsisVertical,
+  Folder,
+  FolderOpen,
+  FolderPlus,
+  PackagePlus,
+  Pencil,
+  Search,
+  Trash2,
+  X,
+} from "lucide-react";
+import { motion } from "motion/react";
 import { CategoryItem } from "../types";
+import { fadeUp, staggerContainer } from "../motion";
 
 interface SidebarProps {
   categories: CategoryItem[];
@@ -75,17 +76,19 @@ export default function Sidebar({
         placeholder="Filter mods..."
         value={searchQuery}
         onChange={(e) => onSearchChange(e.currentTarget.value)}
-        leftSection={<IconSearch size={14} />}
+        leftSection={<Search size={14} />}
         rightSection={
           searchQuery ? (
-            <ActionIcon
-              size="xs"
-              radius="xl"
-              variant="subtle"
-              onClick={() => onSearchChange("")}
-            >
-              <IconX size={12} />
-            </ActionIcon>
+            <Tooltip label="Clear search">
+              <ActionIcon
+                size="xs"
+                radius="xl"
+                variant="subtle"
+                onClick={() => onSearchChange("")}
+              >
+                <X size={12} />
+              </ActionIcon>
+            </Tooltip>
           ) : null
         }
       />
@@ -103,105 +106,25 @@ export default function Sidebar({
       </Box>
 
       <ScrollArea style={{ flex: 1 }}>
-        <Stack gap="3xs">
-          <NavLink
-            label="All Mods"
-            active={selectedCategory === null}
-            onClick={() => onSelectCategory(null)}
-            leftSection={
-              selectedCategory === null ? (
-                <IconFolderFilled size={16} />
-              ) : (
-                <IconFolder size={16} />
-              )
-            }
-            rightSection={
-              <Badge
-                size="xs"
-                radius="xl"
-                variant="light"
-                color="gray"
-                className="badge-count"
-              >
-                {totalModsCount}
-              </Badge>
-            }
-          />
-
-          <NavLink
-            label="Uncategorized"
-            active={selectedCategory === "__root__"}
-            onClick={() => onSelectCategory("__root__")}
-            leftSection={
-              selectedCategory === "__root__" ? (
-                <IconArchiveFilled size={16} />
-              ) : (
-                <IconArchive size={16} />
-              )
-            }
-            rightSection={
-              <Badge
-                size="xs"
-                radius="xl"
-                variant="light"
-                color="gray"
-                className="badge-count"
-              >
-                {uncategorizedCount}
-              </Badge>
-            }
-          />
-
-          {categories.map((cat) => (
-            <NavLink
-              key={cat.name}
-              label={cat.name}
-              active={selectedCategory === cat.name}
-              onClick={() => onSelectCategory(cat.name)}
-              leftSection={
-                selectedCategory === cat.name ? (
-                  <IconFolderFilled size={16} />
-                ) : (
-                  <IconFolder size={16} />
-                )
-              }
-              rightSection={
-                <Group gap="2xs" wrap="nowrap">
-                  <Menu position="bottom-end" withinPortal radius="lg">
-                    <Menu.Target>
-                      <ActionIcon
-                        size="sm"
-                        radius="xl"
-                        variant="subtle"
-                        color="gray"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <IconDotsVertical size={16} />
-                      </ActionIcon>
-                    </Menu.Target>
-                    <Menu.Dropdown>
-                      <Menu.Item
-                        leftSection={<IconEdit size={14} />}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onRenameCategory(cat.name);
-                        }}
-                      >
-                        Rename Category
-                      </Menu.Item>
-                      <Menu.Item
-                        color="red"
-                        className="menu-item-danger"
-                        leftSection={<IconTrash size={14} />}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onDeleteCategory(cat.name);
-                        }}
-                      >
-                        Delete Category
-                      </Menu.Item>
-                    </Menu.Dropdown>
-                  </Menu>
+        <motion.div
+          variants={staggerContainer()}
+          initial="hidden"
+          animate="visible"
+        >
+          <Stack gap="3xs">
+            <motion.div variants={fadeUp}>
+              <NavLink
+                label="All Mods"
+                active={selectedCategory === null}
+                onClick={() => onSelectCategory(null)}
+                leftSection={
+                  selectedCategory === null ? (
+                    <Folder size={16} fill="currentColor" />
+                  ) : (
+                    <Folder size={16} />
+                  )
+                }
+                rightSection={
                   <Badge
                     size="xs"
                     radius="xl"
@@ -209,13 +132,104 @@ export default function Sidebar({
                     color="gray"
                     className="badge-count"
                   >
-                    {cat.mod_count}
+                    {totalModsCount}
                   </Badge>
-                </Group>
-              }
-            />
-          ))}
-        </Stack>
+                }
+              />
+            </motion.div>
+
+            <motion.div variants={fadeUp}>
+              <NavLink
+                label="Uncategorized"
+                active={selectedCategory === "__root__"}
+                onClick={() => onSelectCategory("__root__")}
+                leftSection={
+                  selectedCategory === "__root__" ? (
+                    <Archive size={16} fill="currentColor" />
+                  ) : (
+                    <Archive size={16} />
+                  )
+                }
+                rightSection={
+                  <Badge
+                    size="xs"
+                    radius="xl"
+                    variant="light"
+                    color="gray"
+                    className="badge-count"
+                  >
+                    {uncategorizedCount}
+                  </Badge>
+                }
+              />
+            </motion.div>
+
+            {categories.map((cat) => (
+              <motion.div key={cat.name} variants={fadeUp}>
+                <NavLink
+                  label={cat.name}
+                  active={selectedCategory === cat.name}
+                  onClick={() => onSelectCategory(cat.name)}
+                  leftSection={
+                    selectedCategory === cat.name ? (
+                      <Folder size={16} fill="currentColor" />
+                    ) : (
+                      <Folder size={16} />
+                    )
+                  }
+                  rightSection={
+                    <Group gap="2xs" wrap="nowrap">
+                      <Menu position="bottom-end" withinPortal radius="lg">
+                        <Menu.Target>
+                          <ActionIcon
+                            size="sm"
+                            radius="xl"
+                            variant="subtle"
+                            color="gray"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <EllipsisVertical size={16} />
+                          </ActionIcon>
+                        </Menu.Target>
+                        <Menu.Dropdown>
+                          <Menu.Item
+                            leftSection={<Pencil size={14} />}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onRenameCategory(cat.name);
+                            }}
+                          >
+                            Rename Category
+                          </Menu.Item>
+                          <Menu.Item
+                            color="red"
+                            className="menu-item-danger"
+                            leftSection={<Trash2 size={14} />}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onDeleteCategory(cat.name);
+                            }}
+                          >
+                            Delete Category
+                          </Menu.Item>
+                        </Menu.Dropdown>
+                      </Menu>
+                      <Badge
+                        size="xs"
+                        radius="xl"
+                        variant="light"
+                        color="gray"
+                        className="badge-count"
+                      >
+                        {cat.mod_count}
+                      </Badge>
+                    </Group>
+                  }
+                />
+              </motion.div>
+            ))}
+          </Stack>
+        </motion.div>
       </ScrollArea>
 
       <Box
@@ -228,7 +242,7 @@ export default function Sidebar({
             variant="default"
             size="xs"
             radius="xl"
-            leftSection={<IconFolderPlus size={14} />}
+            leftSection={<FolderPlus size={14} />}
             onClick={onOpenCreateCategory}
             disabled={!hasModsDir}
           >
@@ -239,7 +253,7 @@ export default function Sidebar({
             variant="default"
             size="xs"
             radius="xl"
-            leftSection={<IconFolderOpen size={14} />}
+            leftSection={<FolderOpen size={14} />}
             onClick={onOpenModsFolder}
             disabled={!hasModsDir}
           >
@@ -250,7 +264,7 @@ export default function Sidebar({
             variant="default"
             size="xs"
             radius="xl"
-            leftSection={<IconPackageImport size={14} />}
+            leftSection={<PackagePlus size={14} />}
             onClick={onOpenManualInstall}
             disabled={!hasModsDir}
           >

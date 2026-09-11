@@ -11,18 +11,19 @@ import {
   Tooltip,
 } from "@mantine/core";
 import {
-  IconAlertTriangle,
-  IconArrowBadgeUp,
-  IconDotsVertical,
-  IconExternalLink,
-  IconFolderSymlink,
-  IconKeyboard,
-  IconLink,
-  IconPhoto,
-  IconTrash,
-} from "@tabler/icons-react";
+  CircleArrowUp,
+  EllipsisVertical,
+  ExternalLink,
+  FolderSymlink,
+  ImageIcon,
+  Keyboard,
+  Link,
+  TriangleAlert,
+  Trash2,
+} from "lucide-react";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { ModItem, ModUpdateInfo } from "../types";
+import { formatVersion } from "../utils";
 
 interface ModCardProps {
   mod: ModItem;
@@ -34,7 +35,7 @@ interface ModCardProps {
   onDelete: (mod: ModItem) => void;
   onOpenConflicts: () => void;
   onOpenKeybinds: (mod: ModItem) => void;
-  onOpenUpdate: (mod: ModItem, updateInfo: ModUpdateInfo) => void;
+  onOpenGameBanana: (mod: ModItem) => void;
   onOpenLinkGameBanana: (mod: ModItem) => void;
   onSetPreview: (mod: ModItem) => void;
 }
@@ -49,7 +50,7 @@ export default function ModCard({
   onDelete,
   onOpenConflicts,
   onOpenKeybinds,
-  onOpenUpdate,
+  onOpenGameBanana,
   onOpenLinkGameBanana,
   onSetPreview,
 }: ModCardProps) {
@@ -60,7 +61,9 @@ export default function ModCard({
       p="xs"
       radius="lg"
       withBorder
+      h="100%"
       className="card-interactive"
+      onClick={mod.gamebanana_id ? () => onOpenGameBanana(mod) : undefined}
       style={{
         borderColor: inConflict
           ? "var(--color-status-warning)"
@@ -70,6 +73,7 @@ export default function ModCard({
       }}
     >
       <Card.Section
+        className="card-media"
         style={{
           position: "relative",
           aspectRatio: "16 / 9",
@@ -89,7 +93,7 @@ export default function ModCard({
           />
         ) : (
           <Stack h="100%" align="center" justify="center" gap="xs">
-            <IconPhoto size={32} color="var(--color-text-muted)" />
+            <ImageIcon size={32} color="var(--color-text-muted)" />
             <Text size="2xs" c="dimmed">
               No preview image
             </Text>
@@ -118,15 +122,16 @@ export default function ModCard({
                   radius="xl"
                   color="green"
                   variant="filled"
-                  leftSection={<IconArrowBadgeUp size={14} />}
+                  className="animate-scale-in"
+                  leftSection={<CircleArrowUp size={14} />}
                   style={{ cursor: "pointer" }}
                   onClick={(e) => {
                     e.stopPropagation();
-                    onOpenUpdate(mod, updateInfo);
+                    onOpenGameBanana(mod);
                   }}
                 >
                   {updateInfo.latestVersion
-                    ? `Update v${updateInfo.latestVersion}`
+                    ? `Update v${formatVersion(updateInfo.latestVersion)}`
                     : "Update"}
                 </Badge>
               </Tooltip>
@@ -140,7 +145,8 @@ export default function ModCard({
                 radius="xl"
                 color="orange"
                 variant="filled"
-                leftSection={<IconAlertTriangle size={12} />}
+                className="animate-scale-in"
+                leftSection={<TriangleAlert size={12} />}
                 style={{ cursor: "pointer" }}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -162,7 +168,7 @@ export default function ModCard({
             </Text>
           </Tooltip>
 
-          <Group gap="3xs" wrap="nowrap">
+          <Group gap="3xs" wrap="nowrap" onClick={(e) => e.stopPropagation()}>
             <Tooltip label="Keybinds and toggles">
               <ActionIcon
                 variant="subtle"
@@ -171,35 +177,42 @@ export default function ModCard({
                 color="gray"
                 onClick={() => onOpenKeybinds(mod)}
               >
-                <IconKeyboard size={16} />
+                <Keyboard size={16} />
               </ActionIcon>
             </Tooltip>
 
             <Menu position="bottom-end" shadow="md" width={190} radius="lg">
               <Menu.Target>
-                <ActionIcon variant="subtle" size="sm" radius="xl" color="gray">
-                  <IconDotsVertical size={16} />
-                </ActionIcon>
+                <Tooltip label="More options">
+                  <ActionIcon
+                    variant="subtle"
+                    size="sm"
+                    radius="xl"
+                    color="gray"
+                  >
+                    <EllipsisVertical size={16} />
+                  </ActionIcon>
+                </Tooltip>
               </Menu.Target>
               <Menu.Dropdown>
                 {updateInfo?.available && (
                   <Menu.Item
                     className="menu-item-success"
-                    leftSection={<IconArrowBadgeUp size={14} />}
+                    leftSection={<CircleArrowUp size={14} />}
                     color="green"
-                    onClick={() => onOpenUpdate(mod, updateInfo)}
+                    onClick={() => onOpenGameBanana(mod)}
                   >
                     View Update
                   </Menu.Item>
                 )}
                 <Menu.Item
-                  leftSection={<IconFolderSymlink size={14} />}
+                  leftSection={<FolderSymlink size={14} />}
                   onClick={() => onMoveCategory(mod)}
                 >
                   Move Category
                 </Menu.Item>
                 <Menu.Item
-                  leftSection={<IconLink size={14} />}
+                  leftSection={<Link size={14} />}
                   onClick={() => onOpenLinkGameBanana(mod)}
                 >
                   {mod.gamebanana_id
@@ -207,13 +220,13 @@ export default function ModCard({
                     : "Link to GameBanana"}
                 </Menu.Item>
                 <Menu.Item
-                  leftSection={<IconPhoto size={14} />}
+                  leftSection={<ImageIcon size={14} />}
                   onClick={() => onSetPreview(mod)}
                 >
                   Set Preview Image
                 </Menu.Item>
                 <Menu.Item
-                  leftSection={<IconExternalLink size={14} />}
+                  leftSection={<ExternalLink size={14} />}
                   onClick={() => onReveal(mod.folder_path)}
                 >
                   Reveal in Files
@@ -222,7 +235,7 @@ export default function ModCard({
                 <Menu.Item
                   color="red"
                   className="menu-item-danger"
-                  leftSection={<IconTrash size={14} />}
+                  leftSection={<Trash2 size={14} />}
                   onClick={() => onDelete(mod)}
                 >
                   Delete Mod
@@ -239,16 +252,18 @@ export default function ModCard({
             </Badge>
             {mod.version && (
               <Badge size="xs" radius="xl" variant="subtle" color="gray">
-                v{mod.version}
+                v{formatVersion(mod.version)}
               </Badge>
             )}
           </Group>
 
-          <Switch
-            size="sm"
-            checked={mod.enabled}
-            onChange={(e) => onToggle(mod.id, e.currentTarget.checked)}
-          />
+          <Group gap="2xs" wrap="nowrap" onClick={(e) => e.stopPropagation()}>
+            <Switch
+              size="sm"
+              checked={mod.enabled}
+              onChange={(e) => onToggle(mod.id, e.currentTarget.checked)}
+            />
+          </Group>
         </Group>
       </Stack>
     </Card>

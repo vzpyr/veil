@@ -7,22 +7,24 @@ use tauri::{AppHandle, Manager};
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GameSettings {
     pub mods_dir: Option<String>,
-    pub auto_categorize: bool,
 }
 
 impl Default for GameSettings {
     fn default() -> Self {
-        Self {
-            mods_dir: None,
-            auto_categorize: true,
-        }
+        Self { mods_dir: None }
     }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AppConfig {
     pub active_game_id: String,
+    #[serde(default = "default_auto_categorize")]
+    pub auto_categorize: bool,
     pub games: HashMap<String, GameSettings>,
+}
+
+fn default_auto_categorize() -> bool {
+    true
 }
 
 impl Default for AppConfig {
@@ -32,6 +34,7 @@ impl Default for AppConfig {
         games.insert("endfield".to_string(), GameSettings::default());
         Self {
             active_game_id: "zzz".to_string(),
+            auto_categorize: true,
             games,
         }
     }

@@ -10,7 +10,7 @@ import {
   Switch,
   Text,
 } from "@mantine/core";
-import { IconAlertTriangle } from "@tabler/icons-react";
+import { TriangleAlert } from "lucide-react";
 import { ConflictGroup, ModItem } from "../types";
 
 interface ConflictDrawerProps {
@@ -42,7 +42,7 @@ export default function ConflictDrawer({
       radius="lg"
       title={
         <Group gap="xs">
-          <IconAlertTriangle size={20} color="var(--color-status-warning)" />
+          <TriangleAlert size={20} color="var(--color-status-warning)" />
           <Text fw={700} size="md">
             Mod Conflict Resolution
           </Text>
@@ -54,7 +54,7 @@ export default function ConflictDrawer({
           color="orange"
           variant="light"
           radius="md"
-          icon={<IconAlertTriangle size={16} />}
+          icon={<TriangleAlert size={16} />}
         >
           Active mods listed below share identical shader or texture hashes.
           Only one mod sharing a given hash should remain enabled to prevent
@@ -64,7 +64,7 @@ export default function ConflictDrawer({
         {conflicts.length === 0 ? (
           <Center py="2xl">
             <Stack align="center" gap="sm">
-              <IconAlertTriangle size={44} color="var(--color-text-muted)" />
+              <TriangleAlert size={44} color="var(--color-text-muted)" />
               <Text fw={600} size="md">
                 No Active Conflicts
               </Text>

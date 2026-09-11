@@ -4,7 +4,9 @@ import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { open } from "@tauri-apps/plugin-dialog";
 import { revealItemInDir } from "@tauri-apps/plugin-opener";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { tabContent } from "./motion";
 import { GbModFile } from "./api/gamebanana";
 import { checkModsUpdates } from "./api/updater";
 import GbBrowserView from "./components/browser/GbBrowserView";
@@ -24,8 +26,11 @@ import {
   AppConfig,
   CategoryItem,
   ConflictGroup,
+  DownloadCompletePayload,
+  DownloadErrorPayload,
   DownloadProgressPayload,
   DownloadQueueItem,
+  DownloadStatusPayload,
   GameDefinition,
   ModItem,
   ModUpdateInfo,
@@ -87,7 +92,7 @@ export default function App() {
   const activeSettings =
     activeGame && config ? config.games[activeGame.id] : undefined;
   const modsDir = activeSettings?.mods_dir;
-  const autoCategorize = activeSettings?.auto_categorize ?? true;
+  const autoCategorize = config?.auto_categorize ?? true;
 
   const refreshData = useCallback(
     async (dir?: string) => {
@@ -158,20 +163,24 @@ export default function App() {
     }
   };
 
-  const handleOpenUpdate = (_mod: ModItem, updateInfo: ModUpdateInfo) => {
-    setSelectedGbModId(updateInfo.gamebananaId);
+  const handleOpenGameBanana = (mod: ModItem) => {
+    if (mod.gamebanana_id) {
+      setSelectedGbModId(mod.gamebanana_id);
+    }
   };
 
+  const refreshDataRef = useRef(refreshData);
   useEffect(() => {
-    let unlistenProgress: (() => void) | null = null;
-    let unlistenStatus: (() => void) | null = null;
-    let unlistenComplete: (() => void) | null = null;
-    let unlistenError: (() => void) | null = null;
+    refreshDataRef.current = refreshData;
+  }, [refreshData]);
 
-    async function setupListeners() {
-      unlistenProgress = await listen<DownloadProgressPayload>(
-        "download-progress",
-        (event) => {
+  useEffect(() => {
+    let disposed = false;
+    const unlisten: Array<() => void> = [];
+
+    void (async () => {
+      const handlers = await Promise.all([
+        listen<DownloadProgressPayload>("download-progress", (event) => {
           setDownloadQueue((prev) =>
             prev.map((item) =>
               item.id === event.payload.key
@@ -179,12 +188,8 @@ export default function App() {
                 : item,
             ),
           );
-        },
-      );
-
-      unlistenStatus = await listen<{ key: string; status: string }>(
-        "download-status",
-        (event) => {
+        }),
+        listen<DownloadStatusPayload>("download-status", (event) => {
           if (event.payload.status === "extracting") {
             setDownloadQueue((prev) =>
               prev.map((item) =>
@@ -194,36 +199,27 @@ export default function App() {
               ),
             );
           }
-        },
-      );
-
-      unlistenComplete = await listen<{
-        key: string;
-        rel_id: string;
-        mod_name: string;
-      }>("download-complete", (event) => {
-        setDownloadQueue((prev) =>
-          prev.map((item) =>
-            item.id === event.payload.key
-              ? {
-                  ...item,
-                  status: "completed",
-                  progress: { ...item.progress, percentage: 100 },
-                }
-              : item,
-          ),
-        );
-        notifications.show({
-          title: "Installation Complete",
-          message: `${event.payload.mod_name} installed successfully.`,
-          color: "green",
-        });
-        refreshData();
-      });
-
-      unlistenError = await listen<{ key: string; error: string }>(
-        "download-error",
-        (event) => {
+        }),
+        listen<DownloadCompletePayload>("download-complete", (event) => {
+          setDownloadQueue((prev) =>
+            prev.map((item) =>
+              item.id === event.payload.key
+                ? {
+                    ...item,
+                    status: "completed",
+                    progress: { ...item.progress, percentage: 100 },
+                  }
+                : item,
+            ),
+          );
+          notifications.show({
+            title: "Installation Complete",
+            message: `${event.payload.mod_name} installed successfully.`,
+            color: "green",
+          });
+          refreshDataRef.current();
+        }),
+        listen<DownloadErrorPayload>("download-error", (event) => {
           setDownloadQueue((prev) =>
             prev.map((item) =>
               item.id === event.payload.key
@@ -231,19 +227,21 @@ export default function App() {
                 : item,
             ),
           );
-        },
-      );
-    }
+        }),
+      ]);
 
-    setupListeners();
+      if (disposed) {
+        handlers.forEach((un) => un());
+        return;
+      }
+      unlisten.push(...handlers);
+    })();
 
     return () => {
-      if (unlistenProgress) unlistenProgress();
-      if (unlistenStatus) unlistenStatus();
-      if (unlistenComplete) unlistenComplete();
-      if (unlistenError) unlistenError();
+      disposed = true;
+      unlisten.forEach((un) => un());
     };
-  }, [refreshData]);
+  }, []);
 
   useEffect(() => {
     if (!modsDir) return;
@@ -282,6 +280,7 @@ export default function App() {
             : item,
         ),
       );
+      if (String(err).includes("cancelled")) return;
       notifications.show({
         title: "Download Failed",
         message: `${nextItem.modName}: ${String(err)}`,
@@ -355,7 +354,7 @@ export default function App() {
       });
     } catch (err) {
       notifications.show({
-        title: "Failed to Update Directory",
+        title: "Settings Error",
         message: String(err),
         color: "red",
       });
@@ -363,19 +362,14 @@ export default function App() {
   };
 
   const handleUpdateAutoCategorize = async (auto: boolean) => {
-    if (!activeGame) return;
     try {
-      const updatedConfig = await invoke<AppConfig>(
-        "set_game_auto_categorize",
-        {
-          gameId: activeGame.id,
-          autoCategorize: auto,
-        },
-      );
+      const updatedConfig = await invoke<AppConfig>("set_auto_categorize", {
+        autoCategorize: auto,
+      });
       setConfig(updatedConfig);
     } catch (err) {
       notifications.show({
-        title: "Error",
+        title: "Settings Error",
         message: String(err),
         color: "red",
       });
@@ -413,7 +407,7 @@ export default function App() {
       });
       await refreshData();
       notifications.show({
-        title: "Success",
+        title: "Mod Moved",
         message: "Mod moved successfully.",
         color: "green",
       });
@@ -591,7 +585,7 @@ export default function App() {
       });
       await refreshData();
       notifications.show({
-        title: "Deleted",
+        title: "Mod Deleted",
         message: `${mod.name} removed from disk.`,
         color: "orange",
       });
@@ -701,6 +695,9 @@ export default function App() {
 
   const handleCancelQueueItem = (id: string) => {
     setDownloadQueue((prev) => prev.filter((i) => i.id !== id));
+    if (modsDir) {
+      invoke("cancel_download", { key: id, modsDir }).catch(() => {});
+    }
   };
 
   const handleRetryQueueItem = (id: string) => {
@@ -715,7 +712,8 @@ export default function App() {
     if (!modsDir) {
       notifications.show({
         title: "No Mods Directory",
-        message: "Please configure a mods directory before installing mods.",
+        message:
+          "Please configure your mods directory in Settings before installing mods.",
         color: "yellow",
       });
       return;
@@ -810,17 +808,8 @@ export default function App() {
       if (sortBy === "name-desc") {
         return b.name.localeCompare(a.name);
       }
-      if (sortBy === "enabled-first") {
-        if (a.enabled === b.enabled) {
-          return a.name.localeCompare(b.name);
-        }
-        return a.enabled ? -1 : 1;
-      }
-      if (sortBy === "disabled-first") {
-        if (a.enabled === b.enabled) {
-          return a.name.localeCompare(b.name);
-        }
-        return a.enabled ? 1 : -1;
+      if (sortBy === "last-updated") {
+        return (b.updated_at ?? 0) - (a.updated_at ?? 0);
       }
       return 0;
     });
@@ -868,124 +857,141 @@ export default function App() {
       />
 
       <Flex style={{ flex: 1, overflow: "hidden" }}>
-        {activeTab === "installed" && (
-          <>
-            <Sidebar
-              categories={categories}
-              selectedCategory={selectedCategory}
-              onSelectCategory={setSelectedCategory}
-              totalModsCount={mods.length}
-              uncategorizedCount={uncategorizedCount}
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              onOpenCreateCategory={() =>
-                setCategoryModal({
-                  open: true,
-                  mode: "create",
-                  modToMove: null,
-                  categoryName: null,
-                })
-              }
-              onRenameCategory={(catName) =>
-                setCategoryModal({
-                  open: true,
-                  mode: "rename",
-                  modToMove: null,
-                  categoryName: catName,
-                })
-              }
-              onDeleteCategory={(catName) =>
-                setCategoryModal({
-                  open: true,
-                  mode: "delete",
-                  modToMove: null,
-                  categoryName: catName,
-                })
-              }
-              onOpenManualInstall={handleOpenManualInstall}
-              onOpenModsFolder={() => {
-                if (modsDir) {
-                  handleReveal(modsDir);
-                }
-              }}
-              hasModsDir={Boolean(modsDir)}
-            />
-
-            <Box
-              style={{
-                flex: 1,
-                overflowY: "auto",
-                backgroundColor: "var(--color-bg-base)",
-              }}
-            >
-              <ModGrid
-                mods={displayedMods}
-                hasModsDir={Boolean(modsDir)}
-                conflicts={conflicts}
-                updatesMap={updatesMap}
-                statusFilter={statusFilter}
-                onStatusFilterChange={setStatusFilter}
-                sortBy={sortBy}
-                onSortByChange={setSortBy}
-                totalCount={totalInScope}
-                enabledCount={enabledInScope}
-                disabledCount={disabledInScope}
-                onToggle={handleToggleMod}
-                onMoveCategory={(mod) =>
-                  setCategoryModal({
-                    open: true,
-                    mode: "move",
-                    modToMove: mod,
-                    categoryName: null,
-                  })
-                }
-                onReveal={handleReveal}
-                onDelete={handleDeleteMod}
-                onOpenConflicts={() => setConflictDrawerOpen(true)}
-                onOpenSettings={() => setActiveTab("settings")}
-                onOpenKeybinds={setKeybindDrawerMod}
-                onOpenUpdate={handleOpenUpdate}
-                onOpenLinkGameBanana={setLinkingMod}
-                onSetPreview={handleSetModPreview}
-              />
-            </Box>
-          </>
-        )}
-
-        {activeTab === "browser" && activeGame && (
-          <Box
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={activeTab}
+            variants={tabContent}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
             style={{
               flex: 1,
-              overflowY: "auto",
-              backgroundColor: "var(--color-bg-base)",
+              display: "flex",
+              minWidth: 0,
+              overflow: "hidden",
             }}
           >
-            <GbBrowserView
-              activeGame={activeGame}
-              modsDir={modsDir}
-              autoCategorize={autoCategorize}
-              downloadQueue={downloadQueue}
-              onEnqueueDownload={handleEnqueueDownload}
-            />
-          </Box>
-        )}
+            {activeTab === "installed" && (
+              <>
+                <Sidebar
+                  categories={categories}
+                  selectedCategory={selectedCategory}
+                  onSelectCategory={setSelectedCategory}
+                  totalModsCount={mods.length}
+                  uncategorizedCount={uncategorizedCount}
+                  searchQuery={searchQuery}
+                  onSearchChange={setSearchQuery}
+                  onOpenCreateCategory={() =>
+                    setCategoryModal({
+                      open: true,
+                      mode: "create",
+                      modToMove: null,
+                      categoryName: null,
+                    })
+                  }
+                  onRenameCategory={(catName) =>
+                    setCategoryModal({
+                      open: true,
+                      mode: "rename",
+                      modToMove: null,
+                      categoryName: catName,
+                    })
+                  }
+                  onDeleteCategory={(catName) =>
+                    setCategoryModal({
+                      open: true,
+                      mode: "delete",
+                      modToMove: null,
+                      categoryName: catName,
+                    })
+                  }
+                  onOpenManualInstall={handleOpenManualInstall}
+                  onOpenModsFolder={() => {
+                    if (modsDir) {
+                      handleReveal(modsDir);
+                    }
+                  }}
+                  hasModsDir={Boolean(modsDir)}
+                />
 
-        {activeTab === "settings" && activeGame && activeSettings && (
-          <Box
-            style={{
-              flex: 1,
-              overflowY: "auto",
-              backgroundColor: "var(--color-bg-base)",
-            }}
-          >
-            <SettingsView
-              activeGame={activeGame}
-              settings={activeSettings}
-              onUpdateModsDir={handleUpdateModsDir}
-              onUpdateAutoCategorize={handleUpdateAutoCategorize}
-            />
-          </Box>
-        )}
+                <Box
+                  style={{
+                    flex: 1,
+                    overflowY: "auto",
+                    backgroundColor: "var(--color-bg-base)",
+                  }}
+                >
+                  <ModGrid
+                    mods={displayedMods}
+                    hasModsDir={Boolean(modsDir)}
+                    conflicts={conflicts}
+                    updatesMap={updatesMap}
+                    statusFilter={statusFilter}
+                    onStatusFilterChange={setStatusFilter}
+                    sortBy={sortBy}
+                    onSortByChange={setSortBy}
+                    totalCount={totalInScope}
+                    enabledCount={enabledInScope}
+                    disabledCount={disabledInScope}
+                    onToggle={handleToggleMod}
+                    onMoveCategory={(mod) =>
+                      setCategoryModal({
+                        open: true,
+                        mode: "move",
+                        modToMove: mod,
+                        categoryName: null,
+                      })
+                    }
+                    onReveal={handleReveal}
+                    onDelete={handleDeleteMod}
+                    onOpenConflicts={() => setConflictDrawerOpen(true)}
+                    onOpenSettings={() => setActiveTab("settings")}
+                    onOpenKeybinds={setKeybindDrawerMod}
+                    onOpenGameBanana={handleOpenGameBanana}
+                    onOpenLinkGameBanana={setLinkingMod}
+                    onSetPreview={handleSetModPreview}
+                  />
+                </Box>
+              </>
+            )}
+
+            {activeTab === "browser" && activeGame && (
+              <Box
+                style={{
+                  flex: 1,
+                  overflowY: "auto",
+                  backgroundColor: "var(--color-bg-base)",
+                }}
+              >
+                <GbBrowserView
+                  activeGame={activeGame}
+                  modsDir={modsDir}
+                  autoCategorize={autoCategorize}
+                  downloadQueue={downloadQueue}
+                  onEnqueueDownload={handleEnqueueDownload}
+                />
+              </Box>
+            )}
+
+            {activeTab === "settings" && activeGame && activeSettings && (
+              <Box
+                style={{
+                  flex: 1,
+                  overflowY: "auto",
+                  backgroundColor: "var(--color-bg-base)",
+                }}
+              >
+                <SettingsView
+                  activeGame={activeGame}
+                  settings={activeSettings}
+                  autoCategorize={autoCategorize}
+                  onUpdateModsDir={handleUpdateModsDir}
+                  onUpdateAutoCategorize={handleUpdateAutoCategorize}
+                />
+              </Box>
+            )}
+          </motion.div>
+        </AnimatePresence>
       </Flex>
 
       <ConflictDrawer

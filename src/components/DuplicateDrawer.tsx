@@ -7,7 +7,7 @@ import {
   Stack,
   Text,
 } from "@mantine/core";
-import { IconAlertTriangle, IconCopy, IconRefresh } from "@tabler/icons-react";
+import { Copy, RefreshCw, TriangleAlert } from "lucide-react";
 import { ModItem } from "../types";
 
 interface DuplicateDrawerProps {
@@ -34,7 +34,7 @@ export function DuplicateDrawer({
       radius="lg"
       title={
         <Group gap="xs">
-          <IconAlertTriangle size={20} color="var(--color-status-warning)" />
+          <TriangleAlert size={20} color="var(--color-status-warning)" />
           <Text fw={700} size="md">
             Mod Already Installed
           </Text>
@@ -77,7 +77,7 @@ export function DuplicateDrawer({
             radius="xl"
             h="auto"
             py="xs"
-            leftSection={<IconRefresh size={18} />}
+            leftSection={<RefreshCw size={18} />}
             onClick={() => {
               onConfirm("replace");
               onClose();
@@ -85,7 +85,7 @@ export function DuplicateDrawer({
           >
             <Stack gap="3xs" align="flex-start">
               <Text size="sm" fw={600}>
-                Clean Update (Replace)
+                Replace Existing Files
               </Text>
               <Text size="2xs" c="dimmed">
                 Removes obsolete files from previous version, keeps previews and
@@ -100,7 +100,7 @@ export function DuplicateDrawer({
             radius="xl"
             h="auto"
             py="xs"
-            leftSection={<IconCopy size={18} />}
+            leftSection={<Copy size={18} />}
             onClick={() => {
               onConfirm("keep_both");
               onClose();

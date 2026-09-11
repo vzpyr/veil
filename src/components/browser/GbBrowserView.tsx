@@ -10,15 +10,11 @@ import {
   Stack,
   Text,
   TextInput,
+  Tooltip,
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import {
-  IconArrowLeft,
-  IconArrowRight,
-  IconFolderOff,
-  IconSearch,
-  IconX,
-} from "@tabler/icons-react";
+import { ArrowLeft, ArrowRight, FolderX, Search, X } from "lucide-react";
+import { motion } from "motion/react";
 import { useCallback, useEffect, useState } from "react";
 import {
   fetchByCategory,
@@ -30,6 +26,7 @@ import {
   searchGameBananaMods,
 } from "../../api/gamebanana";
 import { DownloadQueueItem, GameDefinition } from "../../types";
+import { staggerItem } from "../../motion";
 import GbModCard from "./GbModCard";
 import GbModDrawer from "./GbModDrawer";
 
@@ -150,9 +147,9 @@ export default function GbBrowserView({
   ) => {
     if (!modsDir) {
       notifications.show({
-        title: "Configuration Required",
+        title: "No Mods Directory",
         message:
-          "Please configure your game mods directory in Settings before downloading mods.",
+          "Please configure your mods directory in Settings before downloading mods.",
         color: "orange",
       });
       return;
@@ -193,45 +190,34 @@ export default function GbBrowserView({
       }}
     >
       <Group justify="space-between" mb="sm" wrap="wrap" gap="xs">
-        <Group
-          gap="xs"
-          style={{ flex: 1, minWidth: "var(--min-width-search)" }}
-        >
-          <TextInput
-            size="xs"
-            radius="xl"
-            placeholder="Search mods..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.currentTarget.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                handleSearchSubmit();
-              }
-            }}
-            leftSection={<IconSearch size={14} />}
-            rightSection={
-              searchQuery ? (
+        <TextInput
+          size="xs"
+          radius="xl"
+          placeholder="Search mods..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.currentTarget.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              handleSearchSubmit();
+            }
+          }}
+          leftSection={<Search size={14} />}
+          rightSection={
+            searchQuery ? (
+              <Tooltip label="Clear search">
                 <ActionIcon
                   size="xs"
                   radius="xl"
                   variant="subtle"
                   onClick={handleClearSearch}
                 >
-                  <IconX size={12} />
+                  <X size={12} />
                 </ActionIcon>
-              ) : null
-            }
-            style={{ flex: 1 }}
-          />
-          <Button
-            size="xs"
-            radius="xl"
-            variant="default"
-            onClick={handleSearchSubmit}
-          >
-            Search
-          </Button>
-        </Group>
+              </Tooltip>
+            ) : null
+          }
+          style={{ flex: 1, minWidth: "var(--min-width-search)" }}
+        />
 
         <Group gap="xs">
           <Select
@@ -265,6 +251,15 @@ export default function GbBrowserView({
             }}
             allowDeselect={false}
           />
+
+          <Button
+            size="xs"
+            radius="xl"
+            variant="default"
+            onClick={handleSearchSubmit}
+          >
+            Search
+          </Button>
         </Group>
       </Group>
 
@@ -273,8 +268,8 @@ export default function GbBrowserView({
 
         {items.length === 0 && !isLoading ? (
           <Center h="var(--height-empty-state)">
-            <Stack align="center" gap="sm">
-              <IconFolderOff size={44} color="var(--color-text-muted)" />
+            <Stack align="center" gap="sm" className="animate-fade-in-up">
+              <FolderX size={44} color="var(--color-text-muted)" />
               <Text fw={600} size="md">
                 No Mods Found
               </Text>
@@ -288,12 +283,17 @@ export default function GbBrowserView({
             cols={{ base: 1, sm: 2, md: 3, lg: 4, xl: 5, xxl: 6 }}
             spacing="sm"
           >
-            {items.map((item) => (
-              <GbModCard
+            {items.map((item, index) => (
+              <motion.div
                 key={item._idRow}
-                item={item}
-                onSelect={setSelectedModId}
-              />
+                variants={staggerItem()}
+                initial="hidden"
+                animate="visible"
+                custom={index}
+                style={{ height: "100%" }}
+              >
+                <GbModCard item={item} onSelect={setSelectedModId} />
+              </motion.div>
             ))}
           </SimpleGrid>
         )}
@@ -304,7 +304,7 @@ export default function GbBrowserView({
           size="xs"
           radius="xl"
           variant="default"
-          leftSection={<IconArrowLeft size={14} />}
+          leftSection={<ArrowLeft size={14} />}
           disabled={page <= 1 || isLoading}
           onClick={() => setPage((p) => Math.max(1, p - 1))}
         >
@@ -317,7 +317,7 @@ export default function GbBrowserView({
           size="xs"
           radius="xl"
           variant="default"
-          rightSection={<IconArrowRight size={14} />}
+          rightSection={<ArrowRight size={14} />}
           disabled={isLastPage || isLoading}
           onClick={() => setPage((p) => p + 1)}
         >

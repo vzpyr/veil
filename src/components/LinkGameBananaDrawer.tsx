@@ -11,16 +11,12 @@ import {
   TextInput,
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import {
-  IconAlertCircle,
-  IconCheck,
-  IconLink,
-  IconTrash,
-} from "@tabler/icons-react";
+import { Check, CircleAlert, Link, Trash2 } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import { useEffect, useState } from "react";
 import { fetchModProfile, GbModProfile } from "../api/gamebanana";
 import { ModItem } from "../types";
+import { formatVersion } from "../utils";
 
 interface LinkGameBananaDrawerProps {
   opened: boolean;
@@ -110,7 +106,7 @@ export default function LinkGameBananaDrawer({
         modsDir,
         modId: mod.id,
         gamebananaId: profile._idRow,
-        version: profile._sVersion || null,
+        version: formatVersion(profile._sVersion) || null,
         fileId: latestFileId || null,
       });
 
@@ -118,7 +114,7 @@ export default function LinkGameBananaDrawer({
         title: "Mod Linked",
         message: `Linked ${mod.name} to GameBanana submission ${profile._sName}.`,
         color: "green",
-        icon: <IconCheck size={16} />,
+        icon: <Check size={16} />,
       });
 
       onSuccess();
@@ -128,7 +124,7 @@ export default function LinkGameBananaDrawer({
         title: "Link Failed",
         message: String(err),
         color: "red",
-        icon: <IconAlertCircle size={16} />,
+        icon: <CircleAlert size={16} />,
       });
     } finally {
       setSubmitting(false);
@@ -149,7 +145,7 @@ export default function LinkGameBananaDrawer({
         title: "Mod Unlinked",
         message: `Removed GameBanana mapping for ${mod.name}.`,
         color: "gray",
-        icon: <IconCheck size={16} />,
+        icon: <Check size={16} />,
       });
 
       onSuccess();
@@ -159,7 +155,7 @@ export default function LinkGameBananaDrawer({
         title: "Unlink Failed",
         message: String(err),
         color: "red",
-        icon: <IconAlertCircle size={16} />,
+        icon: <CircleAlert size={16} />,
       });
     } finally {
       setSubmitting(false);
@@ -175,9 +171,9 @@ export default function LinkGameBananaDrawer({
       radius="lg"
       title={
         <Group gap="xs">
-          <IconLink size={20} color="var(--color-accent-primary)" />
+          <Link size={20} color="var(--color-accent-primary)" />
           <Text fw={700} size="md">
-            Map Mod to GameBanana
+            Link Mod to GameBanana
           </Text>
         </Group>
       }
@@ -224,7 +220,7 @@ export default function LinkGameBananaDrawer({
             color="red"
             variant="light"
             radius="md"
-            icon={<IconAlertCircle size={16} />}
+            icon={<CircleAlert size={16} />}
           >
             {error}
           </Alert>
@@ -275,7 +271,7 @@ export default function LinkGameBananaDrawer({
               variant="default"
               size="xs"
               radius="xl"
-              leftSection={<IconTrash size={14} />}
+              leftSection={<Trash2 size={14} />}
               onClick={handleUnlink}
               loading={submitting}
             >
@@ -291,12 +287,12 @@ export default function LinkGameBananaDrawer({
               variant="filled"
               size="xs"
               radius="xl"
-              leftSection={<IconLink size={14} />}
+              leftSection={<Link size={14} />}
               onClick={handleLink}
               loading={submitting}
               disabled={!profile}
             >
-              Save Mapping
+              Save Link
             </Button>
           </Group>
         </Group>

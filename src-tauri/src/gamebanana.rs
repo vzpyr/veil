@@ -1,11 +1,13 @@
 use crate::archive::extract_any_archive;
-use crate::symlink::{ensure_veil_dirs, get_disabled_dir, UNCATEGORIZED_DIR_NAME};
+use crate::symlink::{UNCATEGORIZED_DIR_NAME, ensure_veil_dirs, get_disabled_dir};
 use futures_util::StreamExt;
 use reqwest::Client;
 use serde::Serialize;
+use std::collections::HashSet;
 use std::fs::{self, File};
 use std::io::{BufWriter, Write};
 use std::path::Path;
+use std::sync::Mutex;
 use std::time::Instant;
 use tauri::{AppHandle, Emitter};
 
@@ -53,8 +55,26 @@ fn format_duration(seconds: u64) -> String {
     }
 }
 
+#[derive(Default)]
+pub struct CancelRegistry(Mutex<HashSet<String>>);
+
+impl CancelRegistry {
+    pub fn cancel(&self, key: &str) {
+        self.0.lock().unwrap().insert(key.to_string());
+    }
+
+    pub fn is_cancelled(&self, key: &str) -> bool {
+        self.0.lock().unwrap().contains(key)
+    }
+
+    pub fn clear(&self, key: &str) {
+        self.0.lock().unwrap().remove(key);
+    }
+}
+
 pub async fn download_and_install_mod(
     app: AppHandle,
+    cancel: &CancelRegistry,
     download_url: String,
     mods_dir: String,
     mod_name: String,
@@ -68,6 +88,7 @@ pub async fn download_and_install_mod(
 ) -> Result<String, String> {
     let mods_path = Path::new(&mods_dir);
     ensure_veil_dirs(mods_path)?;
+    cancel.clear(&key);
 
     let disabled_dir = get_disabled_dir(mods_path);
     let target_parent_dir = match &category {
@@ -144,18 +165,30 @@ pub async fn download_and_install_mod(
     let mut last_emit = Instant::now();
     let start_time = Instant::now();
 
-    while let Some(chunk_result) = stream.next().await {
-        let chunk = chunk_result.map_err(|e| {
-            let err_msg = e.to_string();
-            let _ = app.emit(
-                "download-error",
-                serde_json::json!({
-                    "key": key.clone(),
-                    "error": err_msg.clone()
-                }),
-            );
-            err_msg
-        })?;
+    loop {
+        if cancel.is_cancelled(&key) {
+            drop(writer);
+            let _ = fs::remove_file(&temp_archive_path);
+            return Err("Download cancelled".to_string());
+        }
+
+        let Some(chunk_result) = stream.next().await else {
+            break;
+        };
+        let chunk = match chunk_result {
+            Ok(chunk) => chunk,
+            Err(e) => {
+                let err_msg = e.to_string();
+                let _ = app.emit(
+                    "download-error",
+                    serde_json::json!({
+                        "key": key.clone(),
+                        "error": err_msg.clone()
+                    }),
+                );
+                return Err(err_msg);
+            }
+        };
         writer.write_all(&chunk).map_err(|e| e.to_string())?;
         downloaded += chunk.len() as u64;
 
@@ -196,6 +229,11 @@ pub async fn download_and_install_mod(
 
     writer.flush().map_err(|e| e.to_string())?;
     drop(writer);
+
+    if cancel.is_cancelled(&key) {
+        let _ = fs::remove_file(&temp_archive_path);
+        return Err("Download cancelled".to_string());
+    }
 
     let _ = app.emit(
         "download-status",

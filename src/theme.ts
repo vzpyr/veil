@@ -188,7 +188,8 @@ export const theme = createTheme({
         root: {
           backgroundColor: "var(--color-bg-card)",
           borderColor: "var(--color-border-subtle)",
-          transition: "var(--transition-fast)",
+          transition:
+            "background-color var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast)",
         },
       },
     },
@@ -252,6 +253,7 @@ export const theme = createTheme({
       defaultProps: {
         radius: "lg",
         shadow: "md",
+        transitionProps: { transition: "pop-top-right", duration: 150 },
       },
     },
     Alert: {
@@ -262,6 +264,7 @@ export const theme = createTheme({
     Tooltip: {
       defaultProps: {
         radius: "md",
+        transitionProps: { transition: "fade", duration: 100 },
       },
     },
     Notification: {
