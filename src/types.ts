@@ -13,6 +13,7 @@ export interface AppConfig {
   auto_categorize: boolean;
   show_nsfw: boolean;
   color_scheme: string;
+  auto_check_updates: boolean;
   games: Record<string, GameSettings>;
 }
 

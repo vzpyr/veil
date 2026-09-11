@@ -45,6 +45,8 @@ export default function App() {
   const { setColorScheme } = useMantineColorScheme();
   const [games, setGames] = useState<GameDefinition[]>([]);
   const [config, setConfig] = useState<AppConfig | null>(null);
+  const configRef = useRef<AppConfig | null>(null);
+  configRef.current = config;
   const [mods, setMods] = useState<ModItem[]>([]);
   const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [conflicts, setConflicts] = useState<ConflictGroup[]>([]);
@@ -102,8 +104,8 @@ export default function App() {
   const showNsfw = config?.show_nsfw ?? false;
 
   const refreshData = useCallback(
-    async (dir?: string) => {
-      const targetDir = dir ?? modsDir;
+    async (targetModsDir?: string, activeConfig?: AppConfig | null) => {
+      const targetDir = targetModsDir || modsDir;
       if (!targetDir) {
         setMods([]);
         setCategories([]);
@@ -121,9 +123,15 @@ export default function App() {
         setMods(scannedMods);
         setCategories(catList);
         setConflicts(conflictList);
-        checkModsUpdates(scannedMods).then((updates) => {
-          setUpdatesMap(updates);
-        });
+
+        const shouldAutoCheck = Boolean(
+          (activeConfig ?? configRef.current)?.auto_check_updates,
+        );
+        if (shouldAutoCheck) {
+          checkModsUpdates(scannedMods).then((updates) => {
+            setUpdatesMap(updates);
+          });
+        }
       } catch (err) {
         notifications.show({
           title: "Scanning Error",
@@ -334,7 +342,7 @@ export default function App() {
         const currentModsDir = loadedConfig.games[currentActiveId]?.mods_dir;
         if (currentModsDir) {
           await invoke("cleanup_on_boot", { modsDir: currentModsDir });
-          await refreshData(currentModsDir);
+          await refreshData(currentModsDir, loadedConfig);
         }
       } catch (err) {
         notifications.show({
@@ -361,7 +369,7 @@ export default function App() {
       if (nextModsDir) {
         await invoke("cleanup_on_boot", { modsDir: nextModsDir });
       }
-      await refreshData(nextModsDir);
+      await refreshData(nextModsDir, updatedConfig);
     } catch (err) {
       notifications.show({
         title: "Game Selection Error",
@@ -429,6 +437,21 @@ export default function App() {
     try {
       const updatedConfig = await invoke<AppConfig>("set_show_nsfw", {
         showNsfw: value,
+      });
+      setConfig(updatedConfig);
+    } catch (err) {
+      notifications.show({
+        title: "Settings Error",
+        message: String(err),
+        color: "red",
+      });
+    }
+  };
+
+  const handleUpdateAutoCheckUpdates = async (enabled: boolean) => {
+    try {
+      const updatedConfig = await invoke<AppConfig>("set_auto_check_updates", {
+        autoCheckUpdates: enabled,
       });
       setConfig(updatedConfig);
     } catch (err) {
@@ -1056,10 +1079,12 @@ export default function App() {
                   settings={activeSettings}
                   autoCategorize={autoCategorize}
                   showNsfw={showNsfw}
+                  autoCheckUpdates={Boolean(config?.auto_check_updates)}
                   colorScheme={config?.color_scheme ?? "dark"}
                   onUpdateModsDir={handleUpdateModsDir}
                   onUpdateAutoCategorize={handleUpdateAutoCategorize}
                   onShowNsfwChange={handleUpdateShowNsfw}
+                  onUpdateAutoCheckUpdates={handleUpdateAutoCheckUpdates}
                   onColorSchemeChange={handleUpdateColorScheme}
                 />
               </Box>

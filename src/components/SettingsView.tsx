@@ -19,10 +19,12 @@ interface SettingsViewProps {
   settings: GameSettings;
   autoCategorize: boolean;
   showNsfw: boolean;
+  autoCheckUpdates: boolean;
   colorScheme: string;
   onUpdateModsDir: (dir: string) => void;
   onUpdateAutoCategorize: (enabled: boolean) => void;
   onShowNsfwChange: (value: boolean) => void;
+  onUpdateAutoCheckUpdates: (enabled: boolean) => void;
   onColorSchemeChange: (scheme: string) => void;
 }
 
@@ -31,10 +33,12 @@ export default function SettingsView({
   settings,
   autoCategorize,
   showNsfw,
+  autoCheckUpdates,
   colorScheme,
   onUpdateModsDir,
   onUpdateAutoCategorize,
   onShowNsfwChange,
+  onUpdateAutoCheckUpdates,
   onColorSchemeChange,
 }: SettingsViewProps) {
   const handleBrowseFolder = async () => {
@@ -123,6 +127,21 @@ export default function SettingsView({
               size="md"
               checked={showNsfw}
               onChange={(e) => onShowNsfwChange(e.currentTarget.checked)}
+            />
+          </Group>
+        </Card>
+
+        <Card p="sm">
+          <Group justify="space-between" align="center" gap="xs" wrap="nowrap">
+            <Text fw={600} size="sm">
+              Auto Check for Updates
+            </Text>
+            <Switch
+              size="md"
+              checked={autoCheckUpdates}
+              onChange={(e) =>
+                onUpdateAutoCheckUpdates(e.currentTarget.checked)
+              }
             />
           </Group>
         </Card>

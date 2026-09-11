@@ -24,6 +24,8 @@ pub struct AppConfig {
     pub show_nsfw: bool,
     #[serde(default = "default_color_scheme")]
     pub color_scheme: String,
+    #[serde(default)]
+    pub auto_check_updates: bool,
     pub games: HashMap<String, GameSettings>,
 }
 
@@ -45,6 +47,7 @@ impl Default for AppConfig {
             auto_categorize: true,
             show_nsfw: false,
             color_scheme: "dark".to_string(),
+            auto_check_updates: false,
             games,
         }
     }
@@ -74,3 +77,48 @@ pub fn write_config(path: &Path, config: &AppConfig) -> Result<(), String> {
     fs::write(path, content).map_err(|err| err.to_string())?;
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::tempdir;
+
+    #[test]
+    fn test_config_defaults() {
+        let config = AppConfig::default();
+        assert!(!config.auto_check_updates);
+        assert!(config.auto_categorize);
+        assert!(!config.show_nsfw);
+        assert_eq!(config.color_scheme, "dark");
+    }
+
+    #[test]
+    fn test_read_config_backward_compatibility() {
+        let temp = tempdir().unwrap();
+        let path = temp.path().join("config.json");
+        let raw_json = r#"{
+            "active_game_id": "zzz",
+            "auto_categorize": true,
+            "show_nsfw": false,
+            "color_scheme": "dark",
+            "games": {}
+        }"#;
+        fs::write(&path, raw_json).unwrap();
+
+        let loaded = read_config(&path);
+        assert!(!loaded.auto_check_updates);
+    }
+
+    #[test]
+    fn test_write_and_read_config() {
+        let temp = tempdir().unwrap();
+        let path = temp.path().join("config.json");
+        let mut config = AppConfig::default();
+        config.auto_check_updates = true;
+
+        write_config(&path, &config).unwrap();
+        let loaded = read_config(&path);
+        assert!(loaded.auto_check_updates);
+    }
+}
+

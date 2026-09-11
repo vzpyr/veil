@@ -111,6 +111,15 @@ fn set_color_scheme(app: AppHandle, color_scheme: String) -> Result<AppConfig, S
 }
 
 #[tauri::command]
+fn set_auto_check_updates(app: AppHandle, auto_check_updates: bool) -> Result<AppConfig, String> {
+    let path = get_config_path(&app)?;
+    let mut config = read_config(&path);
+    config.auto_check_updates = auto_check_updates;
+    write_config(&path, &config)?;
+    Ok(config)
+}
+
+#[tauri::command]
 fn cleanup_on_boot(mods_dir: String) -> Result<(), String> {
     let path = Path::new(&mods_dir);
     if !path.exists() {
@@ -361,6 +370,7 @@ pub fn run() {
             set_auto_categorize,
             set_show_nsfw,
             set_color_scheme,
+            set_auto_check_updates,
             cleanup_on_boot,
             scan_installed_mods,
             get_mod_conflicts,
