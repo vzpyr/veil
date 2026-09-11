@@ -129,7 +129,12 @@ pub fn finalize_extracted_content(
     target_parent_dir: &Path,
     default_mod_name: &str,
     duplicate_action: &str,
+    is_cancelled: &dyn Fn() -> bool,
 ) -> Result<PathBuf, String> {
+    if is_cancelled() {
+        return Err("Download cancelled".to_string());
+    }
+
     let sanitized_name = sanitize_folder_name(default_mod_name);
     let final_dest =
         resolve_destination_folder(target_parent_dir, &sanitized_name, duplicate_action);
@@ -160,29 +165,19 @@ pub fn finalize_extracted_content(
     Ok(final_dest)
 }
 
-pub fn extract_zip(
+fn unzip_into(
     archive_path: &Path,
-    target_parent_dir: &Path,
-    default_mod_name: &str,
-    duplicate_action: &str,
-) -> Result<PathBuf, String> {
-    let temp_dest = target_parent_dir.join(format!(
-        ".temp_extract_{}_{}",
-        sanitize_folder_name(default_mod_name),
-        std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap_or_default()
-            .as_millis()
-    ));
-    if temp_dest.exists() {
-        let _ = fs::remove_dir_all(&temp_dest);
-    }
-    fs::create_dir_all(&temp_dest).map_err(|e| e.to_string())?;
-
+    temp_dest: &Path,
+    is_cancelled: &dyn Fn() -> bool,
+) -> Result<(), String> {
     let file = File::open(archive_path).map_err(|e| e.to_string())?;
     let mut zip = ZipArchive::new(BufReader::new(file)).map_err(|e| e.to_string())?;
 
     for i in 0..zip.len() {
+        if is_cancelled() {
+            return Err("Download cancelled".to_string());
+        }
+
         let mut entry = zip.by_index(i).map_err(|e| e.to_string())?;
         let entry_name = entry.name().replace('\\', "/");
 
@@ -192,7 +187,6 @@ pub fn extract_zip(
 
         let rel_path = Path::new(&entry_name);
         if !is_safe_path(rel_path) {
-            let _ = fs::remove_dir_all(&temp_dest);
             return Err(format!(
                 "Unsafe path detected in zip archive: {}",
                 entry_name
@@ -212,48 +206,94 @@ pub fn extract_zip(
         }
     }
 
-    finalize_extracted_content(
-        &temp_dest,
+    Ok(())
+}
+
+pub fn extract_zip(
+    archive_path: &Path,
+    temp_extract_dir: &Path,
+    target_parent_dir: &Path,
+    default_mod_name: &str,
+    duplicate_action: &str,
+    is_cancelled: &dyn Fn() -> bool,
+) -> Result<PathBuf, String> {
+    if temp_extract_dir.exists() {
+        let _ = fs::remove_dir_all(temp_extract_dir);
+    }
+    fs::create_dir_all(temp_extract_dir).map_err(|e| e.to_string())?;
+
+    if let Err(err) = unzip_into(archive_path, temp_extract_dir, is_cancelled) {
+        let _ = fs::remove_dir_all(temp_extract_dir);
+        return Err(err);
+    }
+
+    match finalize_extracted_content(
+        temp_extract_dir,
         target_parent_dir,
         default_mod_name,
         duplicate_action,
-    )
+        is_cancelled,
+    ) {
+        Ok(dir) => Ok(dir),
+        Err(err) => {
+            let _ = fs::remove_dir_all(temp_extract_dir);
+            Err(err)
+        }
+    }
 }
 
 pub fn extract_sevenz(
     archive_path: &Path,
+    temp_extract_dir: &Path,
     target_parent_dir: &Path,
     default_mod_name: &str,
     duplicate_action: &str,
+    is_cancelled: &dyn Fn() -> bool,
 ) -> Result<PathBuf, String> {
-    let temp_dest = target_parent_dir.join(format!(
-        ".temp_extract_{}_{}",
-        sanitize_folder_name(default_mod_name),
-        std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap_or_default()
-            .as_millis()
-    ));
-    if temp_dest.exists() {
-        let _ = fs::remove_dir_all(&temp_dest);
+    if temp_extract_dir.exists() {
+        let _ = fs::remove_dir_all(temp_extract_dir);
     }
-    fs::create_dir_all(&temp_dest).map_err(|e| e.to_string())?;
+    fs::create_dir_all(temp_extract_dir).map_err(|e| e.to_string())?;
 
-    sevenz_rust::decompress_file(archive_path, &temp_dest).map_err(|e| e.to_string())?;
+    if is_cancelled() {
+        let _ = fs::remove_dir_all(temp_extract_dir);
+        return Err("Download cancelled".to_string());
+    }
 
-    finalize_extracted_content(
-        &temp_dest,
+    if let Err(err) =
+        sevenz_rust::decompress_file(archive_path, temp_extract_dir).map_err(|e| e.to_string())
+    {
+        let _ = fs::remove_dir_all(temp_extract_dir);
+        return Err(err);
+    }
+
+    if is_cancelled() {
+        let _ = fs::remove_dir_all(temp_extract_dir);
+        return Err("Download cancelled".to_string());
+    }
+
+    match finalize_extracted_content(
+        temp_extract_dir,
         target_parent_dir,
         default_mod_name,
         duplicate_action,
-    )
+        is_cancelled,
+    ) {
+        Ok(dir) => Ok(dir),
+        Err(err) => {
+            let _ = fs::remove_dir_all(temp_extract_dir);
+            Err(err)
+        }
+    }
 }
 
 pub fn extract_any_archive(
     archive_path: &Path,
+    temp_extract_dir: &Path,
     target_parent_dir: &Path,
     default_mod_name: &str,
     duplicate_action: &str,
+    is_cancelled: &dyn Fn() -> bool,
 ) -> Result<PathBuf, String> {
     if !archive_path.exists() {
         return Err(format!(
@@ -271,15 +311,19 @@ pub fn extract_any_archive(
     match ext.as_str() {
         "zip" => extract_zip(
             archive_path,
+            temp_extract_dir,
             target_parent_dir,
             default_mod_name,
             duplicate_action,
+            is_cancelled,
         ),
         "7z" => extract_sevenz(
             archive_path,
+            temp_extract_dir,
             target_parent_dir,
             default_mod_name,
             duplicate_action,
+            is_cancelled,
         ),
         _ => Err(format!("Unsupported archive format: .{}", ext)),
     }
@@ -323,8 +367,15 @@ mod tests {
             zip.finish().unwrap();
         }
 
-        let extracted_dir =
-            extract_zip(&zip_path, &dest_parent, "My Loose Mod", "replace").unwrap();
+        let extracted_dir = extract_zip(
+            &zip_path,
+            &temp.path().join("extract"),
+            &dest_parent,
+            "My Loose Mod",
+            "replace",
+            &|| false,
+        )
+        .unwrap();
         assert_eq!(extracted_dir, dest_parent.join("My Loose Mod"));
         assert!(extracted_dir.join("mod.ini").exists());
         let content = fs::read_to_string(extracted_dir.join("mod.ini")).unwrap();
@@ -347,8 +398,15 @@ mod tests {
             zip.finish().unwrap();
         }
 
-        let extracted_dir =
-            extract_zip(&zip_path, &dest_parent, "Fallback Name", "replace").unwrap();
+        let extracted_dir = extract_zip(
+            &zip_path,
+            &temp.path().join("extract"),
+            &dest_parent,
+            "Fallback Name",
+            "replace",
+            &|| false,
+        )
+        .unwrap();
         assert_eq!(extracted_dir, dest_parent.join("Fallback Name"));
         assert!(extracted_dir.join("mod.ini").exists());
     }
@@ -373,8 +431,15 @@ mod tests {
             zip.finish().unwrap();
         }
 
-        let extracted_dir =
-            extract_zip(&zip_path, &dest_parent, "Duplicate Mod", "keep_both").unwrap();
+        let extracted_dir = extract_zip(
+            &zip_path,
+            &temp.path().join("extract"),
+            &dest_parent,
+            "Duplicate Mod",
+            "keep_both",
+            &|| false,
+        )
+        .unwrap();
         assert_eq!(extracted_dir, dest_parent.join("Duplicate Mod (1)"));
         assert!(extracted_dir.join("mod.ini").exists());
         assert!(existing_mod.join("old.txt").exists());
@@ -401,10 +466,79 @@ mod tests {
             zip.finish().unwrap();
         }
 
-        let extracted_dir = extract_zip(&zip_path, &dest_parent, "Replace Mod", "replace").unwrap();
+        let extracted_dir = extract_zip(
+            &zip_path,
+            &temp.path().join("extract"),
+            &dest_parent,
+            "Replace Mod",
+            "replace",
+            &|| false,
+        )
+        .unwrap();
         assert_eq!(extracted_dir, dest_parent.join("Replace Mod"));
         assert!(extracted_dir.join("mod.ini").exists());
         assert!(extracted_dir.join("preview.png").exists());
         assert!(!extracted_dir.join("old_obsolete.txt").exists());
+    }
+
+    #[test]
+    fn test_extract_zip_failure_cleans_temp_dir() {
+        let temp = tempdir().unwrap();
+        let zip_path = temp.path().join("corrupt.zip");
+        fs::write(&zip_path, b"this is not a zip archive").unwrap();
+        let dest_parent = temp.path().join("mods");
+        fs::create_dir_all(&dest_parent).unwrap();
+        let temp_extract = temp.path().join("extract");
+
+        let result = extract_zip(
+            &zip_path,
+            &temp_extract,
+            &dest_parent,
+            "Broken Mod",
+            "replace",
+            &|| false,
+        );
+
+        assert!(result.is_err());
+        assert!(!temp_extract.exists());
+    }
+
+    #[test]
+    fn test_extract_zip_cancel_cleans_temp_dir() {
+        let temp = tempdir().unwrap();
+        let zip_path = temp.path().join("two-files.zip");
+        let dest_parent = temp.path().join("mods");
+        fs::create_dir_all(&dest_parent).unwrap();
+
+        {
+            let file = File::create(&zip_path).unwrap();
+            let mut zip = zip::ZipWriter::new(file);
+            let options = SimpleFileOptions::default();
+            zip.start_file("a.ini", options).unwrap();
+            zip.write_all(b"hash = 1").unwrap();
+            zip.start_file("b.ini", options).unwrap();
+            zip.write_all(b"hash = 2").unwrap();
+            zip.finish().unwrap();
+        }
+
+        let checks = std::cell::Cell::new(0);
+        let is_cancelled = || {
+            checks.set(checks.get() + 1);
+            checks.get() > 1
+        };
+
+        let temp_extract = temp.path().join("extract");
+        let result = extract_zip(
+            &zip_path,
+            &temp_extract,
+            &dest_parent,
+            "Cancelled Mod",
+            "replace",
+            &is_cancelled,
+        );
+
+        assert!(matches!(result, Err(err) if err.contains("cancelled")));
+        assert!(!temp_extract.exists());
+        assert!(!dest_parent.join("Cancelled Mod").exists());
     }
 }

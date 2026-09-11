@@ -166,6 +166,10 @@ pub fn scan_mods(mods_dir: &Path) -> Result<Vec<ModItem>, String> {
             None => continue,
         };
 
+        if cat_folder_name.starts_with('.') {
+            continue;
+        }
+
         let is_uncategorized = cat_folder_name.eq_ignore_ascii_case(UNCATEGORIZED_DIR_NAME);
         let category_opt = if is_uncategorized {
             None
@@ -188,6 +192,10 @@ pub fn scan_mods(mods_dir: &Path) -> Result<Vec<ModItem>, String> {
                 Some(n) => n.to_string(),
                 None => continue,
             };
+
+            if sub_name.starts_with('.') {
+                continue;
+            }
 
             let rel_id = format!("{}/{}", cat_folder_name, sub_name);
             let active_symlink = active_dir.join(&rel_id);
@@ -235,6 +243,9 @@ pub fn list_categories(mods_dir: &Path) -> Result<Vec<CategoryItem>, String> {
         let path = entry.path();
         if path.is_dir() {
             if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
+                if name.starts_with('.') {
+                    continue;
+                }
                 if name.eq_ignore_ascii_case(UNCATEGORIZED_DIR_NAME) {
                     continue;
                 }
@@ -789,6 +800,38 @@ mod tests {
         assert!(path.ends_with("preview.png"));
         assert!(!mod_dir.join("preview.jpg").exists());
         assert_eq!(fs::read(mod_dir.join("preview.png")).unwrap(), dummy_bytes);
+    }
+
+    #[test]
+    fn test_scan_skips_hidden_entries() {
+        let temp = tempdir().unwrap();
+        let mods_dir = temp.path();
+
+        crate::symlink::ensure_veil_dirs(mods_dir).unwrap();
+
+        let legacy_temp = get_disabled_dir(mods_dir)
+            .join(".temp_extract_SomeMod_1700000000000")
+            .join("partial.ini");
+        fs::create_dir_all(legacy_temp.parent().unwrap()).unwrap();
+        fs::write(legacy_temp, "hash = 11111111").unwrap();
+
+        let cat_dir = get_disabled_dir(mods_dir).join("Real Category");
+        let mod_dir = cat_dir.join("Visible Mod");
+        fs::create_dir_all(&mod_dir).unwrap();
+        fs::write(mod_dir.join("mod.ini"), "hash = 22222222").unwrap();
+
+        let hidden_sibling = cat_dir.join(".temp_extract_Hidden_1700000000001");
+        fs::create_dir_all(&hidden_sibling).unwrap();
+        fs::write(hidden_sibling.join("x.ini"), "hash = 33333333").unwrap();
+
+        let scanned = scan_mods(mods_dir).unwrap();
+        assert_eq!(scanned.len(), 1);
+        assert_eq!(scanned[0].name, "Visible Mod");
+        assert_eq!(scanned[0].category, Some("Real Category".to_string()));
+
+        let categories = list_categories(mods_dir).unwrap();
+        assert_eq!(categories.len(), 1);
+        assert_eq!(categories[0].name, "Real Category");
     }
 
     #[test]

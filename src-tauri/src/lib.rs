@@ -10,7 +10,7 @@ pub mod symlink;
 use archive::extract_any_archive;
 use config::{AppConfig, GameSettings, get_config_path, read_config, write_config};
 use conflict::{ConflictGroup, detect_conflicts};
-use gamebanana::{CancelRegistry, download_and_install_mod};
+use gamebanana::{CancelRegistry, clear_temp_artifacts, download_and_install_mod};
 use games::{GameDefinition, get_supported_games};
 use keybinds::{
     ModKeybindData, parse_mod_keybinds_and_variables, set_d3dx_user_toggle, update_ini_keybind,
@@ -148,7 +148,12 @@ fn cancel_download(
         for entry in entries.flatten() {
             if let Some(name) = entry.file_name().to_str() {
                 if name.starts_with(&format!("{key}.")) {
-                    let _ = fs::remove_file(entry.path());
+                    let path = entry.path();
+                    if path.is_dir() {
+                        let _ = fs::remove_dir_all(&path);
+                    } else {
+                        let _ = fs::remove_file(&path);
+                    }
                 }
             }
         }
@@ -193,12 +198,24 @@ fn extract_archive_file(
     };
 
     let action = duplicate_action.unwrap_or_else(|| "replace".to_string());
+    let temp_download_dir = path.join(".veil_temp");
+    std::fs::create_dir_all(&temp_download_dir).map_err(|e| e.to_string())?;
+    let temp_extract_dir = temp_download_dir.join(format!(
+        "manual_{}.extract",
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_millis()
+    ));
     let extracted = extract_any_archive(
         Path::new(&archive_path),
+        &temp_extract_dir,
         &target_parent_dir,
         &mod_name,
         &action,
+        &|| false,
     )?;
+    let _ = std::fs::remove_dir_all(&temp_extract_dir);
     let rel_id = extracted
         .strip_prefix(&disabled_dir)
         .map_err(|e| e.to_string())?
@@ -321,6 +338,15 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .manage(CancelRegistry::default())
+        .setup(|app| {
+            if let Ok(config_path) = get_config_path(app.handle()) {
+                let config = read_config(&config_path);
+                for mods_dir in config.games.values().filter_map(|s| s.mods_dir.as_deref()) {
+                    clear_temp_artifacts(Path::new(mods_dir));
+                }
+            }
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             get_games,
             get_config,

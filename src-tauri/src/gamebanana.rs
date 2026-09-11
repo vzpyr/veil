@@ -72,6 +72,32 @@ impl CancelRegistry {
     }
 }
 
+pub fn clear_temp_artifacts(mods_dir: &Path) {
+    let temp_dir = mods_dir.join(".veil_temp");
+    if temp_dir.exists() {
+        let _ = fs::remove_dir_all(&temp_dir);
+    }
+
+    let disabled_dir = get_disabled_dir(mods_dir);
+    let Ok(categories) = fs::read_dir(&disabled_dir) else {
+        return;
+    };
+    for category in categories.flatten() {
+        if !category.path().is_dir() {
+            continue;
+        }
+        let Ok(sub_entries) = fs::read_dir(category.path()) else {
+            continue;
+        };
+        for entry in sub_entries.flatten() {
+            let name = entry.file_name().to_string_lossy().to_string();
+            if name.starts_with(".temp_extract_") {
+                let _ = fs::remove_dir_all(entry.path());
+            }
+        }
+    }
+}
+
 pub async fn download_and_install_mod(
     app: AppHandle,
     cancel: &CancelRegistry,
@@ -116,6 +142,7 @@ pub async fn download_and_install_mod(
 
     let temp_download_dir = mods_path.join(".veil_temp");
     fs::create_dir_all(&temp_download_dir).map_err(|e| e.to_string())?;
+    let temp_extract_dir = temp_download_dir.join(format!("{}.extract", key));
 
     let client = Client::builder()
         .user_agent("VeilModManager/0.1.0")
@@ -232,6 +259,7 @@ pub async fn download_and_install_mod(
 
     if cancel.is_cancelled(&key) {
         let _ = fs::remove_file(&temp_archive_path);
+        let _ = fs::remove_dir_all(&temp_extract_dir);
         return Err("Download cancelled".to_string());
     }
 
@@ -244,21 +272,28 @@ pub async fn download_and_install_mod(
     );
 
     let action = duplicate_action.unwrap_or_else(|| "replace".to_string());
-    let extracted_dir =
-        match extract_any_archive(&temp_archive_path, &target_parent_dir, &mod_name, &action) {
-            Ok(dir) => dir,
-            Err(err) => {
-                let _ = fs::remove_file(&temp_archive_path);
-                let _ = app.emit(
-                    "download-error",
-                    serde_json::json!({
-                        "key": key.clone(),
-                        "error": err.clone()
-                    }),
-                );
-                return Err(err);
-            }
-        };
+    let extracted_dir = match extract_any_archive(
+        &temp_archive_path,
+        &temp_extract_dir,
+        &target_parent_dir,
+        &mod_name,
+        &action,
+        &|| cancel.is_cancelled(&key),
+    ) {
+        Ok(dir) => dir,
+        Err(err) => {
+            let _ = fs::remove_file(&temp_archive_path);
+            let _ = fs::remove_dir_all(&temp_extract_dir);
+            let _ = app.emit(
+                "download-error",
+                serde_json::json!({
+                    "key": key.clone(),
+                    "error": err.clone()
+                }),
+            );
+            return Err(err);
+        }
+    };
     let _ = fs::remove_file(&temp_archive_path);
 
     if let Some(img_url) = preview_url {
