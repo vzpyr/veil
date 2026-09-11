@@ -40,7 +40,12 @@ pub fn detect_conflicts(mods: &[ModItem]) -> Vec<ConflictGroup> {
     for (mod_ids, hashes_set) in mod_set_to_hashes {
         let mod_names: Vec<String> = mod_ids
             .iter()
-            .map(|id| mod_id_to_name.get(id).cloned().unwrap_or_else(|| id.clone()))
+            .map(|id| {
+                mod_id_to_name
+                    .get(id)
+                    .cloned()
+                    .unwrap_or_else(|| id.clone())
+            })
             .collect();
         let hashes: Vec<String> = hashes_set.into_iter().collect();
 
