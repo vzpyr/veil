@@ -83,6 +83,7 @@ export default function App() {
     mode: "create" | "move" | "rename" | "delete";
     modsToMove?: ModItem[];
     categoryName?: string | null;
+    onSuccess?: () => void;
   }>({ open: false, mode: "create", modsToMove: [], categoryName: null });
 
   const [statusFilter, setStatusFilter] = useState<
@@ -520,6 +521,7 @@ export default function App() {
         targetCategory,
       });
       await refreshData();
+      categoryModal.onSuccess?.();
       notifications.show({
         title: "Mods Moved",
         message:
@@ -1089,12 +1091,13 @@ export default function App() {
                     onOpenLinkGameBanana={setLinkingMod}
                     onSetPreview={handleSetModPreview}
                     onBatchToggle={handleBatchToggleMods}
-                    onBatchMoveCategory={(mods) =>
+                    onBatchMoveCategory={(mods, onDone) =>
                       setCategoryModal({
                         open: true,
                         mode: "move",
                         modsToMove: mods,
                         categoryName: null,
+                        onSuccess: onDone,
                       })
                     }
                     onBatchDelete={handleBatchDeleteMods}
@@ -1203,6 +1206,7 @@ export default function App() {
             mode: "create",
             modsToMove: [],
             categoryName: null,
+            onSuccess: undefined,
           })
         }
         mode={categoryModal.mode}

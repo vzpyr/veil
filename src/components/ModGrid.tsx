@@ -26,7 +26,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
 import { ConflictGroup, ModItem, ModUpdateInfo } from "../types";
 import { staggerItem } from "../motion";
@@ -58,7 +58,7 @@ interface ModGridProps {
   onOpenLinkGameBanana: (mod: ModItem) => void;
   onSetPreview: (mod: ModItem) => void;
   onBatchToggle: (modIds: string[], enable: boolean) => Promise<void>;
-  onBatchMoveCategory: (mods: ModItem[]) => void;
+  onBatchMoveCategory: (mods: ModItem[], onDone?: () => void) => void;
   onBatchDelete: (mods: ModItem[]) => Promise<void>;
 }
 
@@ -128,6 +128,20 @@ export default function ModGrid({
     }
   };
 
+  useEffect(() => {
+    setSelectedModIds((prev) => {
+      if (prev.size === 0) return prev;
+      const validIds = new Set(mods.map((m) => m.id));
+      const next = new Set<string>();
+      prev.forEach((id) => {
+        if (validIds.has(id)) {
+          next.add(id);
+        }
+      });
+      return next.size === prev.size ? prev : next;
+    });
+  }, [mods]);
+
   const selectedModsList = useMemo(
     () => mods.filter((m) => selectedModIds.has(m.id)),
     [mods, selectedModIds],
@@ -138,6 +152,8 @@ export default function ModGrid({
     setIsTogglingBatch(true);
     try {
       await onBatchToggle(Array.from(selectedModIds), true);
+      setSelectedModIds(new Set());
+      setIsSelectMode(false);
     } finally {
       setIsTogglingBatch(false);
     }
@@ -148,6 +164,8 @@ export default function ModGrid({
     setIsTogglingBatch(true);
     try {
       await onBatchToggle(Array.from(selectedModIds), false);
+      setSelectedModIds(new Set());
+      setIsSelectMode(false);
     } finally {
       setIsTogglingBatch(false);
     }
@@ -155,7 +173,10 @@ export default function ModGrid({
 
   const handleBatchMove = () => {
     if (selectedModsList.length === 0) return;
-    onBatchMoveCategory(selectedModsList);
+    onBatchMoveCategory(selectedModsList, () => {
+      setSelectedModIds(new Set());
+      setIsSelectMode(false);
+    });
   };
 
   const confirmBatchDelete = async () => {
@@ -164,6 +185,7 @@ export default function ModGrid({
     try {
       await onBatchDelete(selectedModsList);
       setSelectedModIds(new Set());
+      setIsSelectMode(false);
       setDeleteModalOpen(false);
     } finally {
       setIsDeleting(false);
@@ -390,7 +412,7 @@ export default function ModGrid({
         </SimpleGrid>
       )}
 
-      {isSelectMode && (
+      {isSelectMode && selectedModIds.size > 0 && (
         <Box
           style={{
             position: "fixed",
