@@ -4,43 +4,51 @@ use std::collections::{BTreeMap, BTreeSet};
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct ConflictGroup {
-    pub hash: String,
+    pub hashes: Vec<String>,
     pub mod_ids: Vec<String>,
     pub mod_names: Vec<String>,
 }
 
 pub fn detect_conflicts(mods: &[ModItem]) -> Vec<ConflictGroup> {
-    let mut hash_to_mods: BTreeMap<String, Vec<&ModItem>> = BTreeMap::new();
+    let mut hash_to_mods: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
+    let mut mod_id_to_name: BTreeMap<String, String> = BTreeMap::new();
 
     for item in mods {
         if !item.enabled {
             continue;
         }
 
-        let mut seen_for_this_mod = BTreeSet::new();
+        mod_id_to_name.insert(item.id.clone(), item.name.clone());
+
         for hash in &item.hashes {
-            if seen_for_this_mod.insert(hash.clone()) {
-                hash_to_mods.entry(hash.clone()).or_default().push(item);
-            }
+            hash_to_mods
+                .entry(hash.clone())
+                .or_default()
+                .insert(item.id.clone());
+        }
+    }
+
+    let mut mod_set_to_hashes: BTreeMap<Vec<String>, BTreeSet<String>> = BTreeMap::new();
+    for (hash, mod_ids_set) in hash_to_mods {
+        if mod_ids_set.len() > 1 {
+            let mod_ids: Vec<String> = mod_ids_set.into_iter().collect();
+            mod_set_to_hashes.entry(mod_ids).or_default().insert(hash);
         }
     }
 
     let mut conflicts = Vec::new();
-    for (hash, mod_items) in hash_to_mods {
-        if mod_items.len() > 1 {
-            let mut mod_ids: Vec<String> = mod_items.iter().map(|m| m.id.clone()).collect();
-            let mut mod_names: Vec<String> = mod_items.iter().map(|m| m.name.clone()).collect();
-            mod_ids.sort();
-            mod_ids.dedup();
-            mod_names.sort();
-            mod_names.dedup();
+    for (mod_ids, hashes_set) in mod_set_to_hashes {
+        let mod_names: Vec<String> = mod_ids
+            .iter()
+            .map(|id| mod_id_to_name.get(id).cloned().unwrap_or_else(|| id.clone()))
+            .collect();
+        let hashes: Vec<String> = hashes_set.into_iter().collect();
 
-            conflicts.push(ConflictGroup {
-                hash,
-                mod_ids,
-                mod_names,
-            });
-        }
+        conflicts.push(ConflictGroup {
+            hashes,
+            mod_ids,
+            mod_names,
+        });
     }
 
     conflicts
@@ -73,7 +81,11 @@ mod tests {
             folder_path: "/dummy/b".to_string(),
             enabled: true,
             preview_path: None,
-            hashes: vec!["aabbccdd".to_string(), "99887766".to_string()],
+            hashes: vec![
+                "aabbccdd".to_string(),
+                "99887766".to_string(),
+                "11223344".to_string(),
+            ],
             gamebanana_id: None,
             version: None,
             file_id: None,
@@ -96,7 +108,7 @@ mod tests {
 
         let conflicts = detect_conflicts(&[mod_a, mod_b, mod_c_disabled]);
         assert_eq!(conflicts.len(), 1);
-        assert_eq!(conflicts[0].hash, "aabbccdd");
+        assert_eq!(conflicts[0].hashes, vec!["11223344", "aabbccdd"]);
         assert_eq!(conflicts[0].mod_names, vec!["Mod A", "Mod B"]);
     }
 }

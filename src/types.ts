@@ -44,7 +44,7 @@ export interface CategoryItem {
 }
 
 export interface ConflictGroup {
-  hash: string;
+  hashes: string[];
   mod_ids: string[];
   mod_names: string[];
 }

@@ -9,6 +9,7 @@ import {
   Stack,
   Switch,
   Text,
+  Tooltip,
 } from "@mantine/core";
 import { TriangleAlert } from "lucide-react";
 import { ConflictGroup, ModItem } from "../types";
@@ -76,7 +77,7 @@ export default function ConflictDrawer({
             <Stack gap="sm" pr="xs">
               {conflicts.map((c) => (
                 <Card
-                  key={c.hash}
+                  key={c.mod_ids.join(":")}
                   p="xs"
                   style={{
                     backgroundColor: "var(--color-bg-surface-2)",
@@ -85,11 +86,16 @@ export default function ConflictDrawer({
                 >
                   <Group justify="space-between" mb="xs">
                     <Text size="xs" fw={700} c="dimmed">
-                      Colliding Hash
+                      {c.hashes.length === 1
+                        ? "Colliding Hash"
+                        : "Colliding Hashes"}
                     </Text>
-                    <Badge size="xs" color="orange" variant="outline">
-                      {c.hash}
-                    </Badge>
+                    <Tooltip label={c.hashes.join(", ")} multiline maw={300}>
+                      <Badge size="xs" color="orange" variant="outline">
+                        {c.hashes.length}{" "}
+                        {c.hashes.length === 1 ? "Hash" : "Hashes"}
+                      </Badge>
+                    </Tooltip>
                   </Group>
 
                   <Stack gap="xs">

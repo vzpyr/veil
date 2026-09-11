@@ -187,7 +187,9 @@ export default function Header({
 
       <Group gap="xs" wrap="nowrap" style={{ justifySelf: "end" }}>
         {conflicts.length > 0 && (
-          <Tooltip label={`${conflicts.length} mod conflicts detected`}>
+          <Tooltip
+            label={`${conflicts.length} mod ${conflicts.length === 1 ? "conflict" : "conflicts"} detected`}
+          >
             <Button
               size="xs"
               color="orange"
