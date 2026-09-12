@@ -2,7 +2,6 @@ import {
   ActionIcon,
   Badge,
   Box,
-  Button,
   Center,
   Group,
   Image,
@@ -10,6 +9,7 @@ import {
   Select,
   Text,
   Tooltip,
+  useComputedColorScheme,
 } from "@mantine/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import {
@@ -24,7 +24,8 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { GameDefinition } from "../types";
-import veilLogo from "../assets/veil.png";
+import veilLogoWhite from "../assets/veil-white.png";
+import veilLogoBlack from "../assets/veil-black.png";
 
 interface HeaderProps {
   games: GameDefinition[];
@@ -45,6 +46,7 @@ export default function Header({
   activeDownloadCount,
   onOpenDownloadQueue,
 }: HeaderProps) {
+  const computedColorScheme = useComputedColorScheme("dark");
   const appWindow = useMemo(() => getCurrentWindow(), []);
   const [isMaximized, setIsMaximized] = useState(false);
 
@@ -156,7 +158,7 @@ export default function Header({
     >
       <Group gap="sm" wrap="nowrap" style={{ justifySelf: "start" }}>
         <Image
-          src={veilLogo}
+          src={computedColorScheme === "light" ? veilLogoBlack : veilLogoWhite}
           h="var(--size-logo-height)"
           w="auto"
           fit="contain"
