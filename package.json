@@ -8,7 +8,9 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "build:flatpak": "flatpak-builder --user --install-deps-from=flathub --force-clean build-dir com.vzpyr.veil.yml --repo=repo && flatpak build-bundle repo veil.flatpak com.vzpyr.veil"
+    "build:linux": "RUSTFLAGS=\"--remap-path-prefix=$HOME=~\" NO_STRIP=true tauri build --bundles deb,rpm,appimage",
+    "build:flatpak": "flatpak-builder --user --install-deps-from=flathub --force-clean build-dir com.vzpyr.veil.yml --repo=repo && flatpak build-bundle repo veil.flatpak com.vzpyr.veil",
+    "build:all": "npm run build:linux && npm run build:flatpak"
   },
   "dependencies": {
     "@mantine/carousel": "^9.6.1",
