@@ -5,6 +5,7 @@ import {
   Box,
   Button,
   Card,
+  Center,
   Drawer,
   Group,
   Image,
@@ -24,6 +25,7 @@ import {
   History,
   Info,
   MessageCircle,
+  TriangleAlert,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
@@ -88,6 +90,8 @@ export default function GbModDrawer({
   const [posts, setPosts] = useState<GbPost[]>([]);
   const [replies, setReplies] = useState<Record<number, GbPost[]>>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [retryTrigger, setRetryTrigger] = useState(0);
   const [activeTab, setActiveTab] = useState<string | null>("files");
 
   useEffect(() => {
@@ -96,29 +100,68 @@ export default function GbModDrawer({
       setUpdates([]);
       setPosts([]);
       setReplies({});
+      setErrorMessage(null);
       return;
     }
 
+    let isCurrent = true;
+
     async function loadModData(id: number) {
       setIsLoading(true);
+      setErrorMessage(null);
       try {
-        const [profileData, updatesData, postsData] = await Promise.all([
-          fetchModProfile(id),
-          fetchModUpdates(id),
-          fetchModPosts(id, 1),
-        ]);
-        setProfile(profileData);
-        setUpdates(updatesData);
-        setPosts(postsData);
+        const [profileResult, updatesResult, postsResult] =
+          await Promise.allSettled([
+            fetchModProfile(id),
+            fetchModUpdates(id),
+            fetchModPosts(id, 1),
+          ]);
+
+        if (!isCurrent) {
+          return;
+        }
+
+        if (profileResult.status === "fulfilled") {
+          setProfile(profileResult.value);
+        } else {
+          setErrorMessage(
+            profileResult.reason instanceof Error
+              ? profileResult.reason.message
+              : "Failed to load mod profile",
+          );
+        }
+
+        if (updatesResult.status === "fulfilled") {
+          setUpdates(updatesResult.value);
+        } else {
+          setUpdates([]);
+        }
+
+        if (postsResult.status === "fulfilled") {
+          setPosts(postsResult.value);
+        } else {
+          setPosts([]);
+        }
       } catch (err) {
-        console.error(err);
+        if (!isCurrent) {
+          return;
+        }
+        setErrorMessage(
+          err instanceof Error ? err.message : "Failed to load mod details",
+        );
       } finally {
-        setIsLoading(false);
+        if (isCurrent) {
+          setIsLoading(false);
+        }
       }
     }
 
     loadModData(modId);
-  }, [modId, opened]);
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [modId, opened, retryTrigger]);
 
   const handleToggleReplies = async (postId: number) => {
     if (replies[postId]) {
@@ -143,13 +186,14 @@ export default function GbModDrawer({
     ? `${images[0]._sBaseUrl}/${images[0]._sFile530 || images[0]._sFile}`
     : undefined;
 
-  const files = profile?._aFiles
-    ? [...profile._aFiles].sort((a, b) => {
-        const dateDiff = (b._tsDateAdded || 0) - (a._tsDateAdded || 0);
-        if (dateDiff !== 0) return dateDiff;
-        return b._idRow - a._idRow;
-      })
-    : [];
+  const files =
+    profile?._aFiles && Array.isArray(profile._aFiles)
+      ? [...profile._aFiles].sort((a, b) => {
+          const dateDiff = (b._tsDateAdded || 0) - (a._tsDateAdded || 0);
+          if (dateDiff !== 0) return dateDiff;
+          return b._idRow - a._idRow;
+        })
+      : [];
 
   return (
     <Drawer
@@ -209,6 +253,27 @@ export default function GbModDrawer({
     >
       <Box style={{ position: "relative", height: "100%" }}>
         <LoadingOverlay visible={isLoading} />
+
+        {errorMessage && !isLoading && (
+          <Center h="var(--height-empty-state)">
+            <Stack align="center" gap="sm" className="animate-fade-in-up">
+              <TriangleAlert size={44} color="var(--color-status-error)" />
+              <Text fw={600} size="md">
+                Failed to Load Mod
+              </Text>
+              <Text c="dimmed" size="xs" ta="center">
+                {errorMessage}
+              </Text>
+              <Button
+                size="xs"
+                variant="default"
+                onClick={() => setRetryTrigger((prev) => prev + 1)}
+              >
+                Retry
+              </Button>
+            </Stack>
+          </Center>
+        )}
 
         {profile && (
           <ScrollArea style={{ height: "100%" }} offsetScrollbars>

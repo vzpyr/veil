@@ -113,15 +113,47 @@ export interface GbPost {
   _nReplyCount?: number;
 }
 
+async function parseGameBananaResponse<T>(res: Response): Promise<T> {
+  const rawText = await res.text();
+  const braceIndex = rawText.indexOf("{");
+  const bracketIndex = rawText.indexOf("[");
+  let startIndex = -1;
+
+  if (braceIndex !== -1 && bracketIndex !== -1) {
+    startIndex = Math.min(braceIndex, bracketIndex);
+  } else if (braceIndex !== -1) {
+    startIndex = braceIndex;
+  } else if (bracketIndex !== -1) {
+    startIndex = bracketIndex;
+  }
+
+  const lastBraceIndex = rawText.lastIndexOf("}");
+  const lastBracketIndex = rawText.lastIndexOf("]");
+  const endIndex = Math.max(lastBraceIndex, lastBracketIndex);
+
+  if (startIndex === -1 || endIndex === -1 || endIndex < startIndex) {
+    if (!res.ok) {
+      throw new Error(`Failed to fetch data: ${res.statusText}`);
+    }
+    throw new Error("Invalid response format received from GameBanana");
+  }
+
+  const parsed = JSON.parse(rawText.slice(startIndex, endIndex + 1));
+
+  if (!res.ok) {
+    const message = parsed._sErrorMessage || res.statusText;
+    throw new Error(`Failed to fetch data: ${message}`);
+  }
+
+  return parsed as T;
+}
+
 export async function fetchCategories(
   rootCatId: number,
 ): Promise<GbCategory[]> {
   const url = `${API_BASE}Mod/Categories?_idCategoryRow=${rootCatId}&_sSort=a_to_z&_bShowEmpty=false`;
   const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error(`Failed to fetch categories: ${res.statusText}`);
-  }
-  const data = await res.json();
+  const data = await parseGameBananaResponse<GbCategory[]>(res);
   return Array.isArray(data) ? data : [];
 }
 
@@ -130,10 +162,7 @@ export async function fetchGameCategoryTree(
 ): Promise<GbCategoryGroup[]> {
   const rootUrl = `${API_BASE}Mod/Categories?_idGameRow=${gameId}&_sSort=a_to_z`;
   const res = await fetch(rootUrl);
-  if (!res.ok) {
-    throw new Error(`Failed to fetch categories: ${res.statusText}`);
-  }
-  const rootCategories: GbCategory[] = await res.json();
+  const rootCategories = await parseGameBananaResponse<GbCategory[]>(res);
   if (!Array.isArray(rootCategories)) {
     return [];
   }
@@ -193,10 +222,10 @@ export async function fetchSubfeed(
 ): Promise<{ records: GbSubfeedItem[]; isLastPage: boolean }> {
   const url = `${API_BASE}Game/${gameId}/Subfeed?_nPage=${page}&_nPerpage=${LIST_PAGE_SIZE}&_sSort=${sort}&_csvModelInclusions=Mod`;
   const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error(`Failed to fetch mods: ${res.statusText}`);
-  }
-  const data = await res.json();
+  const data = await parseGameBananaResponse<{
+    _aRecords?: GbSubfeedItem[];
+    _bIsComplete?: boolean;
+  }>(res);
   const records = data._aRecords || [];
   const isLastPage = data._bIsComplete ?? records.length === 0;
   return { records, isLastPage };
@@ -211,10 +240,10 @@ export async function fetchByCategory(
     sort === "default" || !sort ? "" : `&_sSort=${encodeURIComponent(sort)}`;
   const url = `${API_BASE}Mod/Index?_aFilters[Generic_Category]=${catId}&_nPage=${page}&_nPerpage=${LIST_PAGE_SIZE}${sortParam}`;
   const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error(`Failed to fetch category mods: ${res.statusText}`);
-  }
-  const data = await res.json();
+  const data = await parseGameBananaResponse<{
+    _aRecords?: GbSubfeedItem[];
+    _bIsComplete?: boolean;
+  }>(res);
   const records = data._aRecords || [];
   const isLastPage = data._bIsComplete ?? records.length === 0;
   return { records, isLastPage };
@@ -227,10 +256,10 @@ export async function searchGameBananaMods(
 ): Promise<{ records: GbSubfeedItem[]; isLastPage: boolean }> {
   const url = `${API_BASE}Util/Search/Results?_idGameRow=${gameId}&_sSearchString=${encodeURIComponent(query)}&_nPage=${page}&_nPerpage=${LIST_PAGE_SIZE}&_sModelName=Mod`;
   const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error(`Search failed: ${res.statusText}`);
-  }
-  const data = await res.json();
+  const data = await parseGameBananaResponse<{
+    _aRecords?: GbSubfeedItem[];
+    _bIsComplete?: boolean;
+  }>(res);
   const records = data._aRecords || [];
   const isLastPage = data._bIsComplete ?? records.length === 0;
   return { records, isLastPage };
@@ -239,41 +268,41 @@ export async function searchGameBananaMods(
 export async function fetchModProfile(modId: number): Promise<GbModProfile> {
   const url = `${API_BASE}Mod/${modId}/ProfilePage`;
   const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error(`Failed to fetch mod profile: ${res.statusText}`);
-  }
-  return res.json();
+  return parseGameBananaResponse<GbModProfile>(res);
 }
 
 export async function fetchModUpdates(modId: number): Promise<GbUpdate[]> {
-  const url = `${API_BASE}Mod/${modId}/Updates?_nPage=1&_nPerpage=10`;
-  const res = await fetch(url);
-  if (!res.ok) {
+  try {
+    const url = `${API_BASE}Mod/${modId}/Updates?_nPage=1&_nPerpage=10`;
+    const res = await fetch(url);
+    const data = await parseGameBananaResponse<{ _aRecords?: GbUpdate[] }>(res);
+    return Array.isArray(data._aRecords) ? data._aRecords : [];
+  } catch {
     return [];
   }
-  const data = await res.json();
-  return data._aRecords || [];
 }
 
 export async function fetchModPosts(
   modId: number,
   page: number,
 ): Promise<GbPost[]> {
-  const url = `${API_BASE}Mod/${modId}/Posts?_nPage=${page}&_nPerpage=15&_sSort=popular`;
-  const res = await fetch(url);
-  if (!res.ok) {
+  try {
+    const url = `${API_BASE}Mod/${modId}/Posts?_nPage=${page}&_nPerpage=15&_sSort=popular`;
+    const res = await fetch(url);
+    const data = await parseGameBananaResponse<{ _aRecords?: GbPost[] }>(res);
+    return Array.isArray(data._aRecords) ? data._aRecords : [];
+  } catch {
     return [];
   }
-  const data = await res.json();
-  return data._aRecords || [];
 }
 
 export async function fetchPostReplies(postId: number): Promise<GbPost[]> {
-  const url = `${API_BASE}Post/${postId}/Posts?_nPage=1&_nPerpage=20`;
-  const res = await fetch(url);
-  if (!res.ok) {
+  try {
+    const url = `${API_BASE}Post/${postId}/Posts?_nPage=1&_nPerpage=20`;
+    const res = await fetch(url);
+    const data = await parseGameBananaResponse<{ _aRecords?: GbPost[] }>(res);
+    return Array.isArray(data._aRecords) ? data._aRecords : [];
+  } catch {
     return [];
   }
-  const data = await res.json();
-  return data._aRecords || [];
 }
