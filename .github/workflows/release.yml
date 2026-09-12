@@ -46,13 +46,7 @@ jobs:
 
       - name: Build Linux
         if: matrix.os == 'ubuntu-latest'
-        env:
-          NO_STRIP: "true"
-          RUSTFLAGS: "--remap-path-prefix=$HOME=~"
-        run: |
-          npm run tauri build -- --bundles ${{ matrix.bundles }}
-          flatpak-builder --user --install-deps-from=flathub --force-clean build-dir com.vzpyr.veil.yml --repo=repo
-          flatpak build-bundle repo veil.flatpak com.vzpyr.veil
+        run: npm run build:all
 
       - name: Build Windows
         if: matrix.os == 'windows-latest'
