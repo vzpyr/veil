@@ -4,6 +4,7 @@ Yet another 3DMigoto mod manager
 
 ## Features
 
+- Windows and Linux support
 - Non-destructive mod activation using symlinks between disabled and active folders
 - Multi-game support for 3DMigoto and XXMI loaders (Arknights: Endfield, Genshin Impact, Honkai Impact 3rd, Honkai: Star Rail, Wuthering Waves, and Zenless Zone Zero)
 - Mod organization with preview images, categories, grid/list view modes, sorting/filtering, multi-select, batch operations, and automatic subfolder detection during extraction
