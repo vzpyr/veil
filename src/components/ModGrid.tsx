@@ -228,58 +228,58 @@ export default function ModGrid({
   return (
     <Box p="sm">
       <Group justify="space-between" mb="sm" wrap="wrap" gap="xs">
-        <SegmentedControl
-          size="xs"
-          value={statusFilter}
-          onChange={(val) =>
-            onStatusFilterChange(val as "all" | "enabled" | "disabled")
-          }
-          data={[
-            {
-              value: "all",
-              label: (
-                <Center
-                  h="var(--control-inner-height-xs)"
-                  style={{
-                    padding: "0 var(--space-xs)",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  All ({totalCount})
-                </Center>
-              ),
-            },
-            {
-              value: "enabled",
-              label: (
-                <Center
-                  h="var(--control-inner-height-xs)"
-                  style={{
-                    padding: "0 var(--space-xs)",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  Enabled ({enabledCount})
-                </Center>
-              ),
-            },
-            {
-              value: "disabled",
-              label: (
-                <Center
-                  h="var(--control-inner-height-xs)"
-                  style={{
-                    padding: "0 var(--space-xs)",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  Disabled ({disabledCount})
-                </Center>
-              ),
-            },
-          ]}
-        />
         <Group gap="xs">
+          <SegmentedControl
+            size="xs"
+            value={statusFilter}
+            onChange={(val) =>
+              onStatusFilterChange(val as "all" | "enabled" | "disabled")
+            }
+            data={[
+              {
+                value: "all",
+                label: (
+                  <Center
+                    h="var(--control-inner-height-xs)"
+                    style={{
+                      padding: "0 var(--space-xs)",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    All ({totalCount})
+                  </Center>
+                ),
+              },
+              {
+                value: "enabled",
+                label: (
+                  <Center
+                    h="var(--control-inner-height-xs)"
+                    style={{
+                      padding: "0 var(--space-xs)",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    Enabled ({enabledCount})
+                  </Center>
+                ),
+              },
+              {
+                value: "disabled",
+                label: (
+                  <Center
+                    h="var(--control-inner-height-xs)"
+                    style={{
+                      padding: "0 var(--space-xs)",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    Disabled ({disabledCount})
+                  </Center>
+                ),
+              },
+            ]}
+          />
           <Select
             size="xs"
             w="var(--control-width-sm)"
@@ -292,6 +292,8 @@ export default function ModGrid({
               { value: "last-updated", label: "Last Updated" },
             ]}
           />
+        </Group>
+        <Group gap="xs">
           <SegmentedControl
             size="xs"
             value={viewMode}

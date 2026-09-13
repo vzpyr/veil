@@ -176,10 +176,11 @@ export default function GbBrowserView({
 
   const sortSelectData = [
     { value: "default", label: "Default Sort" },
-    { value: "new", label: "Newest" },
-    { value: "updated", label: "Recently Updated" },
-    { value: "views", label: "Most Viewed" },
-    { value: "likes", label: "Most Liked" },
+    { value: "Generic_Newest", label: "Newest" },
+    { value: "Generic_LatestUpdated", label: "Recently Updated" },
+    { value: "Generic_MostLiked", label: "Most Liked" },
+    { value: "Generic_MostViewed", label: "Most Viewed" },
+    { value: "Generic_MostDownloaded", label: "Most Downloaded" },
   ];
 
   return (
@@ -232,9 +233,7 @@ export default function GbBrowserView({
               setSearchQuery("");
               setPage(1);
             }}
-            searchable
-            clearable
-            allowDeselect={true}
+            allowDeselect={false}
           />
 
           <Select

@@ -220,14 +220,18 @@ export async function fetchSubfeed(
   page: number,
   sort: string,
 ): Promise<{ records: GbSubfeedItem[]; isLastPage: boolean }> {
-  const url = `${API_BASE}Game/${gameId}/Subfeed?_nPage=${page}&_nPerpage=${LIST_PAGE_SIZE}&_sSort=${sort}&_csvModelInclusions=Mod`;
+  const sortParam =
+    sort === "default" || !sort ? "" : `&_sSort=${encodeURIComponent(sort)}`;
+  const url = `${API_BASE}Mod/Index?_aFilters[Generic_Game]=${gameId}&_nPage=${page}&_nPerpage=${LIST_PAGE_SIZE}${sortParam}`;
   const res = await fetch(url);
   const data = await parseGameBananaResponse<{
     _aRecords?: GbSubfeedItem[];
     _bIsComplete?: boolean;
+    _aMetadata?: { _bIsComplete?: boolean };
   }>(res);
   const records = data._aRecords || [];
-  const isLastPage = data._bIsComplete ?? records.length === 0;
+  const isLastPage =
+    data._bIsComplete ?? data._aMetadata?._bIsComplete ?? records.length === 0;
   return { records, isLastPage };
 }
 
@@ -243,9 +247,11 @@ export async function fetchByCategory(
   const data = await parseGameBananaResponse<{
     _aRecords?: GbSubfeedItem[];
     _bIsComplete?: boolean;
+    _aMetadata?: { _bIsComplete?: boolean };
   }>(res);
   const records = data._aRecords || [];
-  const isLastPage = data._bIsComplete ?? records.length === 0;
+  const isLastPage =
+    data._bIsComplete ?? data._aMetadata?._bIsComplete ?? records.length === 0;
   return { records, isLastPage };
 }
 
