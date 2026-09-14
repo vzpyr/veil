@@ -28,6 +28,11 @@
       "csp": "default-src 'self'; connect-src 'self' ipc: http://ipc.localhost https://gamebanana.com https://api.gamebanana.com; img-src 'self' asset: http://asset.localhost https://*.gamebanana.com; style-src 'self' 'unsafe-inline'"
     }
   },
+  "plugins": {
+    "opener": {
+      "requireLiteralLeadingDot": false
+    }
+  },
   "bundle": {
     "active": true,
     "targets": ["deb", "rpm", "appimage", "nsis"],
