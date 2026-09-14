@@ -23,7 +23,10 @@
     "security": {
       "assetProtocol": {
         "enable": true,
-        "scope": ["**"]
+        "scope": {
+          "requireLiteralLeadingDot": false,
+          "allow": ["**"]
+        }
       },
       "csp": "default-src 'self'; connect-src 'self' ipc: http://ipc.localhost https://gamebanana.com https://api.gamebanana.com; img-src 'self' asset: http://asset.localhost https://*.gamebanana.com; style-src 'self' 'unsafe-inline'"
     }
