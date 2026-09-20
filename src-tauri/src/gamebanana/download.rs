@@ -2,114 +2,14 @@ use crate::archive::{extract_any_archive, reserve_temp_paths, sanitize_folder_na
 use crate::symlink::{disabled_dir, ensure_veil_dirs, resolve_category_dir};
 use futures_util::StreamExt;
 use reqwest::Client;
-use serde::Serialize;
-use std::collections::{HashMap, HashSet};
-use std::fs::{self};
+use std::fs;
 use std::io::{BufWriter, Write};
-use std::path::{Path, PathBuf};
-use std::sync::Mutex;
+use std::path::Path;
 use std::time::Instant;
 use tauri::{AppHandle, Emitter};
 
-#[derive(Debug, Clone, Serialize)]
-pub struct DownloadProgress {
-    pub key: String,
-    pub downloaded: u64,
-    pub total: u64,
-    pub speed: String,
-    pub eta: String,
-    pub percentage: f64,
-}
-
-fn format_bytes(bytes: u64) -> String {
-    const KB: u64 = 1024;
-    const MB: u64 = KB * 1024;
-    const GB: u64 = MB * 1024;
-
-    if bytes >= GB {
-        format!("{:.2} GB", bytes as f64 / GB as f64)
-    } else if bytes >= MB {
-        format!("{:.2} MB", bytes as f64 / MB as f64)
-    } else if bytes >= KB {
-        format!("{:.2} KB", bytes as f64 / KB as f64)
-    } else {
-        format!("{} B", bytes)
-    }
-}
-
-fn format_speed(bytes_per_sec: f64) -> String {
-    format!("{}/s", format_bytes(bytes_per_sec as u64))
-}
-
-fn format_duration(seconds: u64) -> String {
-    let hours = seconds / 3600;
-    let minutes = (seconds % 3600) / 60;
-    let secs = seconds % 60;
-
-    if hours > 0 {
-        format!("{}h {}m {}s", hours, minutes, secs)
-    } else if minutes > 0 {
-        format!("{}m {}s", minutes, secs)
-    } else {
-        format!("{}s", secs)
-    }
-}
-
-#[derive(Default)]
-pub struct CancelRegistry(Mutex<HashSet<String>>);
-
-impl CancelRegistry {
-    pub fn cancel(&self, key: &str) {
-        self.0.lock().unwrap().insert(key.to_string());
-    }
-
-    pub fn is_cancelled(&self, key: &str) -> bool {
-        self.0.lock().unwrap().contains(key)
-    }
-
-    pub fn clear(&self, key: &str) {
-        self.0.lock().unwrap().remove(key);
-    }
-}
-
-pub fn clear_temp_artifacts(mods_dir: &Path) {
-    let _ = fs::remove_dir_all(mods_dir.join(".veil_temp"));
-}
-
-#[derive(Default)]
-pub struct TempRegistry(Mutex<HashMap<String, (PathBuf, PathBuf)>>);
-
-impl TempRegistry {
-    pub fn register(&self, key: &str, archive_path: PathBuf, extract_dir: PathBuf) {
-        self.0
-            .lock()
-            .unwrap()
-            .insert(key.to_string(), (archive_path, extract_dir));
-    }
-
-    pub fn take(&self, key: &str) -> Option<(PathBuf, PathBuf)> {
-        self.0.lock().unwrap().remove(key)
-    }
-}
-
-struct TempGuard<'a> {
-    key: &'a str,
-    registry: &'a TempRegistry,
-}
-
-impl Drop for TempGuard<'_> {
-    fn drop(&mut self) {
-        self.registry.take(self.key);
-    }
-}
-
-pub fn clear_temp_paths(archive_path: &Path, extract_dir: &Path) {
-    let _ = fs::remove_file(archive_path);
-    let _ = fs::remove_dir_all(extract_dir);
-    if let Some(parent) = archive_path.parent() {
-        let _ = fs::remove_dir(parent);
-    }
-}
+use super::progress::{DownloadProgress, format_duration, format_speed};
+use super::temp::{CancelRegistry, TempGuard, TempRegistry, clear_temp_paths};
 
 #[allow(clippy::too_many_arguments)]
 pub async fn download_and_install_mod(
