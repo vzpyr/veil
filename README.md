@@ -15,7 +15,7 @@ Yet another 3DMigoto (and NTE) mod manager
 ## Features
 
 - Supports Windows and Linux
-- Works with all 3DMigoto-based games (AKEF, GI, HI3, HSR, WUWA, ZZZ) and NTE (pak-based)
+- Works with all 3DMigoto-based games (AKEF, GI, HI3, HSR, WUWA, ZZZ) + NTE (NEMI and pak)
 - Non-destructive mod activation using symlinks and _P suffix
 - Mod organization with images, categories, filters, batch operations, and automatic subfolder handling
 - Integrated GameBanana browser for downloading mods with automatic update tracking and handling
