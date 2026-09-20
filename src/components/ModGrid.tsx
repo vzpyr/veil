@@ -162,7 +162,7 @@ export default function ModGrid({
         <Stack align="center" gap="md" className="animate-fade-in-up">
           <Settings size={48} color="var(--color-text-muted)" />
           <Text fw={600} size="lg">
-            No Mods Directory Configured
+            No mods directory configured
           </Text>
           <Text c="dimmed" size="sm" ta="center" maw="var(--max-width-text-lg)">
             Configure your mods directory in Settings to begin managing mods
@@ -209,7 +209,7 @@ export default function ModGrid({
           <Stack align="center" gap="sm" className="animate-fade-in-up">
             <FolderX size={44} color="var(--color-text-muted)" />
             <Text fw={600} size="md">
-              No Mods Found
+              No mods found
             </Text>
             <Text
               c="dimmed"

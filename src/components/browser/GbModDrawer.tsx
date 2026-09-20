@@ -212,7 +212,7 @@ export default function GbModDrawer({
                     <Avatar src={profile._aSubmitter?._sAvatarUrl} size="sm" />
                     <div>
                       <Text fw={600} size="xs">
-                        {profile._aSubmitter?._sName || "Unknown Author"}
+                        {profile._aSubmitter?._sName || "Unknown author"}
                       </Text>
                     </div>
                   </Group>

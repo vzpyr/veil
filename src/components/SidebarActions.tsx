@@ -64,7 +64,7 @@ export default function SidebarActions({
         onClick={onOpenCreateCategory}
         disabled={!hasModsDir}
       >
-        New Category
+        New category
       </Button>
       <Button
         fullWidth
@@ -74,7 +74,7 @@ export default function SidebarActions({
         onClick={onOpenModsFolder}
         disabled={!hasModsDir}
       >
-        Open Mods Folder
+        Open mods folder
       </Button>
       <Button
         fullWidth
@@ -84,7 +84,7 @@ export default function SidebarActions({
         onClick={onOpenManualInstall}
         disabled={!hasModsDir}
       >
-        Install Mods
+        Install mods
       </Button>
       <Button
         fullWidth
@@ -94,7 +94,7 @@ export default function SidebarActions({
         onClick={onCheckUpdates}
         disabled={!hasModsDir || isCheckingUpdates}
       >
-        Check Updates
+        Check updates
       </Button>
       <Button
         fullWidth
@@ -104,7 +104,7 @@ export default function SidebarActions({
         onClick={onRescanMods}
         disabled={!hasModsDir || isRefreshing}
       >
-        Rescan Mods
+        Rescan mods
       </Button>
     </Stack>
   );

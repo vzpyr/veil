@@ -101,7 +101,7 @@ export default function GbModCard({ item, onSelect }: GbModCardProps) {
           <Group gap="xs">
             <Avatar src={item._aSubmitter?._sAvatarUrl} size="xs" />
             <Text size="xs" c="dimmed" truncate maw="var(--max-width-author)">
-              {item._aSubmitter?._sName || "Unknown Author"}
+              {item._aSubmitter?._sName || "Unknown author"}
             </Text>
           </Group>
 

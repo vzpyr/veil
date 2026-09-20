@@ -70,7 +70,7 @@ export default function App() {
         }
       } catch (err) {
         notifications.show({
-          title: "Initialization Error",
+          title: "Initialization error",
           message: String(err),
           color: "red",
         });
@@ -101,7 +101,7 @@ export default function App() {
       await mods.refreshData(nextModsDir, updatedConfig, gameId);
     } catch (err) {
       notifications.show({
-        title: "Game Selection Error",
+        title: "Game selection error",
         message: String(err),
         color: "red",
       });
@@ -117,13 +117,13 @@ export default function App() {
       );
       await mods.refreshData(newDir);
       notifications.show({
-        title: "Settings Saved",
+        title: "Settings saved",
         message: "Mods directory path updated successfully.",
         color: "green",
       });
     } catch (err) {
       notifications.show({
-        title: "Settings Error",
+        title: "Settings error",
         message: String(err),
         color: "red",
       });

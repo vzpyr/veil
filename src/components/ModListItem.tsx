@@ -242,34 +242,34 @@ export default function ModListItem({
                   color="green"
                   onClick={() => onOpenGameBanana(mod)}
                 >
-                  View Update
+                  View update
                 </Menu.Item>
               )}
               <Menu.Item
                 leftSection={<FolderSymlink size={14} />}
                 onClick={() => onMoveCategory(mod)}
               >
-                Move Category
+                Move category
               </Menu.Item>
               <Menu.Item
                 leftSection={<Link size={14} />}
                 onClick={() => onOpenLinkGameBanana(mod)}
               >
                 {mod.gamebanana_id
-                  ? "Edit GameBanana Link"
+                  ? "Edit GameBanana link"
                   : "Link to GameBanana"}
               </Menu.Item>
               <Menu.Item
                 leftSection={<ImageIcon size={14} />}
                 onClick={() => onSetPreview(mod)}
               >
-                Set Preview Image
+                Set preview image
               </Menu.Item>
               <Menu.Item
                 leftSection={<FolderOpen size={14} />}
                 onClick={() => onOpenFolder(mod.folder_path)}
               >
-                Open Folder
+                Open folder
               </Menu.Item>
               <Menu.Divider />
               <Menu.Item
@@ -277,7 +277,7 @@ export default function ModListItem({
                 leftSection={<Trash2 size={14} />}
                 onClick={() => onDelete(mod)}
               >
-                Delete Mod
+                Delete mod
               </Menu.Item>
             </Menu.Dropdown>
           </Menu>

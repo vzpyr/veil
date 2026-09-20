@@ -114,7 +114,7 @@ export default function LinkGameBananaDrawer({
       });
 
       notifications.show({
-        title: "Mod Linked",
+        title: "Mod linked",
         message: `Linked ${mod.name} to GameBanana submission ${profile._sName}.`,
         color: "green",
         icon: <Check size={16} />,
@@ -124,7 +124,7 @@ export default function LinkGameBananaDrawer({
       onClose();
     } catch (err) {
       notifications.show({
-        title: "Link Failed",
+        title: "Link failed",
         message: String(err),
         color: "red",
         icon: <CircleAlert size={16} />,
@@ -146,7 +146,7 @@ export default function LinkGameBananaDrawer({
       });
 
       notifications.show({
-        title: "Mod Unlinked",
+        title: "Mod unlinked",
         message: `Removed GameBanana mapping for ${mod.name}.`,
         color: "gray",
         icon: <Check size={16} />,
@@ -156,7 +156,7 @@ export default function LinkGameBananaDrawer({
       onClose();
     } catch (err) {
       notifications.show({
-        title: "Unlink Failed",
+        title: "Unlink failed",
         message: String(err),
         color: "red",
         icon: <CircleAlert size={16} />,
@@ -175,7 +175,7 @@ export default function LinkGameBananaDrawer({
         <Group gap="xs">
           <Link size={20} color="var(--color-accent-primary)" />
           <Text fw={700} size="md">
-            Link Mod to GameBanana
+            Link mod to GameBanana
           </Text>
         </Group>
       }

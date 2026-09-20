@@ -53,7 +53,7 @@ export default function GbModDrawerTitle({
         </Group>
       ) : (
         <Text fw={700} size="md">
-          Mod Details
+          Mod details
         </Text>
       )}
     </Group>

@@ -49,8 +49,8 @@ export default function SettingsView({
       directory: true,
       multiple: false,
       title: isNtePak
-        ? "Select Neverness to Everness Base Game Directory"
-        : `Select ${activeGame.name} Mods Directory`,
+        ? "Select Neverness to Everness base game directory"
+        : `Select ${activeGame.name} mods directory`,
     });
 
     if (typeof selected === "string") {
@@ -69,7 +69,7 @@ export default function SettingsView({
       <Stack gap="md">
         <div>
           <Text fw={700} size="md">
-            {activeGame.name} Settings
+            {activeGame.name} settings
           </Text>
         </div>
 
@@ -77,7 +77,7 @@ export default function SettingsView({
           <Stack gap="sm">
             <div>
               <Text fw={600} size="sm">
-                {isNtePak ? "Base Game Directory" : "Game Mods Directory"}
+                {isNtePak ? "Base game directory" : "Game mods directory"}
               </Text>
               <Text c="dimmed" size="xs">
                 {isNtePak
@@ -119,7 +119,7 @@ export default function SettingsView({
         <Card p="sm">
           <Group justify="space-between" align="center" gap="xs" wrap="nowrap">
             <Text fw={600} size="sm">
-              Auto-categorize GameBanana Downloads
+              Auto-categorize GameBanana downloads
             </Text>
             <Switch
               size="md"
@@ -132,7 +132,7 @@ export default function SettingsView({
         <Card p="sm">
           <Group justify="space-between" align="center" gap="xs" wrap="nowrap">
             <Text fw={600} size="sm">
-              Show NSFW Mods
+              Show NSFW mods
             </Text>
             <Switch
               size="md"
@@ -145,7 +145,7 @@ export default function SettingsView({
         <Card p="sm">
           <Group justify="space-between" align="center" gap="xs" wrap="nowrap">
             <Text fw={600} size="sm">
-              Auto Check for Updates
+              Auto-check for updates
             </Text>
             <Switch
               size="md"
@@ -160,7 +160,7 @@ export default function SettingsView({
         <Card p="sm">
           <Group justify="space-between" align="center" gap="xs" wrap="nowrap">
             <Text fw={600} size="sm">
-              Color Scheme
+              Color scheme
             </Text>
             <SegmentedControl
               size="xs"

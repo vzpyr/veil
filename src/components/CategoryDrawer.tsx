@@ -123,16 +123,16 @@ export default function CategoryDrawer({
           return `Move ${activeModsToMove[0].name}`;
         }
         if (activeModsToMove.length > 1) {
-          return `Move ${activeModsToMove.length} Mods`;
+          return `Move ${activeModsToMove.length} mods`;
         }
-        return "Move Mods";
+        return "Move mods";
       case "rename":
         return `Rename ${categoryName || "Category"}`;
       case "delete":
         return `Delete ${categoryName || "Category"}`;
       case "create":
       default:
-        return "Create New Category";
+        return "Create new category";
     }
   };
 
@@ -153,7 +153,7 @@ export default function CategoryDrawer({
       <Stack gap="md" h="100%">
         {mode === "move" && (
           <Select
-            label="Destination Category"
+            label="Destination category"
             placeholder="Select a category"
             data={categoryOptions}
             value={selectedCategory}
@@ -164,7 +164,7 @@ export default function CategoryDrawer({
 
         {(mode === "create" || mode === "rename") && (
           <TextInput
-            label={mode === "create" ? "Category Name" : "New Category Name"}
+            label={mode === "create" ? "Category name" : "New category name"}
             value={nameInput}
             onChange={(e) => setNameInput(e.currentTarget.value)}
             onKeyDown={(e) => {
@@ -179,11 +179,11 @@ export default function CategoryDrawer({
         {mode === "delete" && (
           <Stack gap="xs">
             <Text size="sm">
-              Are you sure you want to delete the category folder{" "}
+              Delete the{" "}
               <Text span fw={700}>
                 {categoryName}
-              </Text>
-              ?
+              </Text>{" "}
+              category? Its mods move to Uncategorized.
             </Text>
             <Checkbox
               label="Also delete all mod files inside this category from disk"

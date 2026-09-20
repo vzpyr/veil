@@ -64,7 +64,7 @@ export function DownloadQueueDrawer({
           <Group gap="xs">
             <Download size={20} color="var(--color-accent-primary)" />
             <Text fw={700} size="md">
-              Download Queue
+              Download queue
             </Text>
             {activeCount > 0 && (
               <Badge size="xs" variant="filled" color="dark">
@@ -79,7 +79,7 @@ export function DownloadQueueDrawer({
               leftSection={<Trash2 size={12} />}
               onClick={onClearCompleted}
             >
-              Clear Completed
+              Clear completed
             </Button>
           )}
         </Group>
@@ -91,10 +91,10 @@ export function DownloadQueueDrawer({
             <Stack align="center" gap="sm">
               <Download size={44} color="var(--color-text-muted)" />
               <Text fw={600} size="md">
-                No Downloads in Queue
+                No downloads in queue
               </Text>
               <Text c="dimmed" size="xs" ta="center">
-                No active or queued downloads
+                No active or queued downloads.
               </Text>
             </Stack>
           </Center>

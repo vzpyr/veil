@@ -36,8 +36,8 @@ export default function AsiLoaderCard({
   onUninstall,
 }: AsiLoaderCardProps) {
   const rows = [
-    { label: "Active DLL:", value: dllName },
-    ...(version ? [{ label: "Version:", value: version }] : []),
+    { label: "Active DLL", value: dllName },
+    ...(version ? [{ label: "Version", value: version }] : []),
   ];
 
   return (
@@ -66,7 +66,7 @@ export default function AsiLoaderCard({
         <Stack gap="xs">
           <Select
             size="xs"
-            label="Release Version"
+            label="Release version"
             placeholder="Select release"
             data={releaseOptions}
             value={selectedVersion}
@@ -77,7 +77,7 @@ export default function AsiLoaderCard({
 
           <Select
             size="xs"
-            label="DLL Name"
+            label="DLL name"
             placeholder="Select DLL name"
             data={dllOptions}
             value={selectedDllName}

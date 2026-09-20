@@ -34,16 +34,15 @@ export default function ModBatchDeleteDrawer({
         <Group gap="xs">
           <Trash2 size={20} color="var(--color-status-error)" />
           <Text fw={700} size="md">
-            Delete Selected Mods
+            Delete selected mods
           </Text>
         </Group>
       }
     >
       <Stack gap="md" h="100%">
         <Text size="sm">
-          Are you sure you want to permanently delete {mods.length}{" "}
-          {mods.length === 1 ? "mod" : "mods"} from disk? This action cannot be
-          undone.
+          Permanently delete {mods.length} {mods.length === 1 ? "mod" : "mods"}{" "}
+          from disk? This action cannot be undone.
         </Text>
         <ScrollArea style={{ flex: 1 }}>
           <Stack gap="2xs">

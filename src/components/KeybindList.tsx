@@ -71,7 +71,7 @@ export default function KeybindList({
                       {currentModifiers.ctrl && "Ctrl + "}
                       {currentModifiers.alt && "Alt + "}
                       {currentModifiers.shift && "Shift + "}
-                      Press Key
+                      Press key
                     </Badge>
                     <Tooltip label="Cancel rebind">
                       <ActionIcon

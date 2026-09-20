@@ -43,7 +43,7 @@ export default function ConflictDrawer({
         <Group gap="xs">
           <TriangleAlert size={20} color="var(--color-status-warning)" />
           <Text fw={700} size="md">
-            Mod Conflict Resolution
+            Mod conflict resolution
           </Text>
         </Group>
       }
@@ -64,7 +64,7 @@ export default function ConflictDrawer({
             <Stack align="center" gap="sm">
               <TriangleAlert size={44} color="var(--color-text-muted)" />
               <Text fw={600} size="md">
-                No Active Conflicts
+                No active conflicts
               </Text>
               <Text c="dimmed" size="xs" ta="center">
                 All enabled mods are compatible without overlapping shader or
@@ -87,8 +87,8 @@ export default function ConflictDrawer({
                   <Group justify="space-between" mb="xs">
                     <Text size="xs" fw={700} c="dimmed">
                       {c.hashes.length === 1
-                        ? "Colliding Hash"
-                        : "Colliding Hashes"}
+                        ? "Colliding hash"
+                        : "Colliding hashes"}
                     </Text>
                     <Tooltip label={c.hashes.join(", ")} multiline maw={300}>
                       <Badge size="xs" color="orange" variant="outline">

@@ -14,11 +14,11 @@ export default function LoaderEmptyState({
         <Stack gap="sm" align="center">
           <AlertTriangle size={36} color="var(--color-status-warning)" />
           <Text fw={700} size="md">
-            Game Directory Not Configured
+            Game directory not configured
           </Text>
           <Text c="dimmed" size="xs" ta="center">
-            Please select your Neverness to Everness base game directory in
-            Settings before managing loader binaries.
+            Select your Neverness to Everness base game directory in Settings
+            before managing loader binaries.
           </Text>
           <Button
             size="xs"
@@ -26,7 +26,7 @@ export default function LoaderEmptyState({
             leftSection={<FolderCog size={14} />}
             onClick={onNavigateToSettings}
           >
-            Go to Settings
+            Open Settings
           </Button>
         </Stack>
       </Card>

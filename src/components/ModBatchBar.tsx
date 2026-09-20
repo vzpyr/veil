@@ -62,7 +62,7 @@ export default function ModBatchBar({
               color="gray"
               onClick={onToggleSelectAll}
             >
-              {allVisibleSelected ? "Deselect All" : "Select All"}
+              {allVisibleSelected ? "Deselect all" : "Select all"}
             </Button>
           </Group>
 

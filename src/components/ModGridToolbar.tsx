@@ -84,7 +84,7 @@ export default function ModGridToolbar({
           data={[
             { value: "name-asc", label: "Name (A to Z)" },
             { value: "name-desc", label: "Name (Z to A)" },
-            { value: "last-updated", label: "Last Updated" },
+            { value: "last-updated", label: "Last updated" },
           ]}
         />
       </Group>

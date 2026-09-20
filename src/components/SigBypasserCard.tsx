@@ -34,9 +34,9 @@ export default function SigBypasserCard({
   onUninstall,
 }: SigBypasserCardProps) {
   const rows = [
-    { label: "Target File:", value: "UniversalSigBypasser.asi" },
-    { label: "Subdirectory:", value: subpath ? subpath : "Root (Win64)" },
-    ...(version ? [{ label: "Version:", value: version }] : []),
+    { label: "Target file", value: "UniversalSigBypasser.asi" },
+    { label: "Subdirectory", value: subpath ? subpath : "Root (Win64)" },
+    ...(version ? [{ label: "Version", value: version }] : []),
   ];
 
   return (
@@ -65,7 +65,7 @@ export default function SigBypasserCard({
         <Stack gap="xs">
           <Select
             size="xs"
-            label="Release Version"
+            label="Release version"
             placeholder="Select release"
             data={releaseOptions}
             value={selectedVersion}
@@ -76,7 +76,7 @@ export default function SigBypasserCard({
 
           <TextInput
             size="xs"
-            label="Install Subdirectory"
+            label="Install subdirectory"
             description="Optional relative path inside Win64, e.g. plugins or OptiScaler\plugins"
             placeholder="plugins (default: Win64 root)"
             value={subdir}

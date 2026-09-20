@@ -44,8 +44,8 @@ export default function GbModCommentsTab({
                     onClick={() => onToggleReplies(p._idRow)}
                   >
                     {replies[p._idRow]
-                      ? "Hide Replies"
-                      : `Show Replies (${p._nReplyCount})`}
+                      ? "Hide replies"
+                      : `Show replies (${p._nReplyCount})`}
                   </Button>
 
                   {replies[p._idRow] && (

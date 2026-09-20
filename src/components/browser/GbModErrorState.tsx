@@ -15,7 +15,7 @@ export default function GbModErrorState({
       <Stack align="center" gap="sm" className="animate-fade-in-up">
         <TriangleAlert size={44} color="var(--color-status-error)" />
         <Text fw={600} size="md">
-          Failed to Load Mod
+          Failed to load mod
         </Text>
         <Text c="dimmed" size="xs" ta="center">
           {message}

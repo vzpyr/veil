@@ -57,7 +57,7 @@ export default function KeybindDrawer({
       setData(result);
     } catch (err) {
       notifications.show({
-        title: "Load Failed",
+        title: "Load failed",
         message: String(err),
         color: "red",
       });
@@ -95,7 +95,7 @@ export default function KeybindDrawer({
         prev ? { ...prev, keybinds: previousKeybinds } : null,
       );
       notifications.show({
-        title: "Update Failed",
+        title: "Update failed",
         message: String(err),
         color: "red",
         icon: <CircleAlert size={16} />,
@@ -137,7 +137,7 @@ export default function KeybindDrawer({
     } catch (err) {
       setData(previousData);
       notifications.show({
-        title: "Update Failed",
+        title: "Update failed",
         message: String(err),
         color: "red",
         icon: <CircleAlert size={16} />,
@@ -161,7 +161,7 @@ export default function KeybindDrawer({
         <Group gap="xs">
           <Keyboard size={20} color="var(--color-accent-primary)" />
           <Text fw={700} size="md">
-            Mod Keybinds and Toggles
+            Mod keybinds and toggles
           </Text>
         </Group>
       }
@@ -203,7 +203,7 @@ export default function KeybindDrawer({
             <Stack align="center" gap="sm">
               <SlidersHorizontal size={44} color="var(--color-text-muted)" />
               <Text fw={600} size="md">
-                No Keybinds or Toggles Found
+                No keybinds or toggles found
               </Text>
               <Text
                 size="xs"

@@ -83,7 +83,7 @@ export default function SidebarCategoryList({
       >
         <Stack gap="3xs">
           <CategoryNavLink
-            label="All Mods"
+            label="All mods"
             active={selectedCategory === null}
             onSelect={() => onSelectCategory(null)}
             icon={
@@ -144,7 +144,7 @@ export default function SidebarCategoryList({
                             onRenameCategory(cat.name);
                           }}
                         >
-                          Rename Category
+                          Rename category
                         </Menu.Item>
                         <Menu.Item
                           color="red"
@@ -154,7 +154,7 @@ export default function SidebarCategoryList({
                             onDeleteCategory(cat.name);
                           }}
                         >
-                          Delete Category
+                          Delete category
                         </Menu.Item>
                       </Menu.Dropdown>
                     </Menu>

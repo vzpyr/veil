@@ -71,7 +71,7 @@ export default function GbBrowserView({
         setCategoryGroups(groups);
       } catch (err) {
         notifications.show({
-          title: "Categories Error",
+          title: "Categories error",
           message: String(err),
           color: "red",
         });
@@ -111,7 +111,7 @@ export default function GbBrowserView({
       }
     } catch (err) {
       notifications.show({
-        title: "Browser Error",
+        title: "Browser error",
         message: String(err),
         color: "red",
       });
@@ -158,7 +158,7 @@ export default function GbBrowserView({
   ) => {
     if (!modsDir) {
       notifications.show({
-        title: "No Mods Directory",
+        title: "No mods directory",
         message:
           "Please configure your mods directory in Settings before downloading mods.",
         color: "orange",
@@ -178,12 +178,12 @@ export default function GbBrowserView({
   };
 
   const categorySelectData = [
-    { value: "", label: "All Categories" },
+    { value: "", label: "All categories" },
     ...categoryGroups,
   ];
 
   const sortSelectData = [
-    { value: "default", label: "Default Sort" },
+    { value: "default", label: "Default sort" },
     { value: "Generic_Newest", label: "Newest" },
     { value: "Generic_LatestUpdated", label: "Recently Updated" },
     { value: "Generic_MostLiked", label: "Most Liked" },
@@ -222,7 +222,7 @@ export default function GbBrowserView({
             <Stack align="center" gap="sm" className="animate-fade-in-up">
               <FolderX size={44} color="var(--color-text-muted)" />
               <Text fw={600} size="md">
-                No Mods Found
+                No mods found
               </Text>
               <Text c="dimmed" size="xs" ta="center">
                 Try a different search query or select another category.

@@ -32,7 +32,7 @@ export default function useModOperations({
       });
       await refreshData();
       notifications.show({
-        title: enable ? "Mods Enabled" : "Mods Disabled",
+        title: enable ? "Mods enabled" : "Mods disabled",
         message:
           modIds.length === 1
             ? `Mod ${enable ? "enabled" : "disabled"}.`
@@ -41,7 +41,7 @@ export default function useModOperations({
       });
     } catch (err) {
       notifications.show({
-        title: "Toggle Error",
+        title: "Toggle error",
         message: String(err),
         color: "red",
       });
@@ -68,7 +68,7 @@ export default function useModOperations({
       await refreshData();
       onSuccess?.();
       notifications.show({
-        title: "Mods Moved",
+        title: "Mods moved",
         message:
           modIds.length === 1
             ? "Mod moved successfully."
@@ -77,7 +77,7 @@ export default function useModOperations({
       });
     } catch (err) {
       notifications.show({
-        title: "Move Error",
+        title: "Move error",
         message: String(err),
         color: "red",
       });
@@ -98,7 +98,7 @@ export default function useModOperations({
       });
       await refreshData();
       notifications.show({
-        title: "Mods Deleted",
+        title: "Mods deleted",
         message:
           modsToDelete.length === 1
             ? `${modsToDelete[0].name} removed from disk.`
@@ -107,7 +107,7 @@ export default function useModOperations({
       });
     } catch (err) {
       notifications.show({
-        title: "Delete Error",
+        title: "Delete failed",
         message: String(err),
         color: "red",
       });
@@ -128,7 +128,7 @@ export default function useModOperations({
       });
       await refreshData();
       notifications.show({
-        title: "Category Created",
+        title: "Category created",
         message: `Category "${name}" created.`,
         color: "green",
       });
@@ -152,13 +152,13 @@ export default function useModOperations({
       });
       await refreshData();
       notifications.show({
-        title: "Category Renamed",
+        title: "Category renamed",
         message: `Category "${oldName}" renamed to "${newName}".`,
         color: "green",
       });
     } catch (err) {
       notifications.show({
-        title: "Rename Error",
+        title: "Rename error",
         message: String(err),
         color: "red",
       });
@@ -176,13 +176,13 @@ export default function useModOperations({
       });
       await refreshData();
       notifications.show({
-        title: "Category Deleted",
+        title: "Category deleted",
         message: `Category "${categoryName}" deleted.`,
         color: "orange",
       });
     } catch (err) {
       notifications.show({
-        title: "Delete Error",
+        title: "Delete category failed",
         message: String(err),
         color: "red",
       });
@@ -255,14 +255,14 @@ export default function useModOperations({
 
         await refreshData();
         notifications.show({
-          title: "Preview Updated",
+          title: "Preview updated",
           message: `Preview image updated for ${mod.name}.`,
           color: "green",
         });
       }
     } catch (err) {
       notifications.show({
-        title: "Preview Error",
+        title: "Preview error",
         message: String(err),
         color: "red",
       });

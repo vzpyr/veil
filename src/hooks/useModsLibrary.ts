@@ -82,7 +82,7 @@ export default function useModsLibrary({
         }
       } catch (err) {
         notifications.show({
-          title: "Scanning Error",
+          title: "Scanning error",
           message: String(err),
           color: "red",
         });
@@ -99,13 +99,13 @@ export default function useModsLibrary({
       await invoke("cleanup_on_boot", { modsDir, gameId: activeGameId });
       await refreshData();
       notifications.show({
-        title: "Scan Complete",
+        title: "Scan complete",
         message: "Mods directory rescanned successfully.",
         color: "green",
       });
     } catch (err) {
       notifications.show({
-        title: "Scan Error",
+        title: "Scan error",
         message: String(err),
         color: "red",
       });
@@ -123,20 +123,20 @@ export default function useModsLibrary({
       ).length;
       if (availableCount > 0) {
         notifications.show({
-          title: "Updates Available",
+          title: "Updates available",
           message: `Found ${availableCount} mod update${availableCount > 1 ? "s" : ""}.`,
           color: "teal",
         });
       } else {
         notifications.show({
-          title: "Up to Date",
+          title: "Up to date",
           message: "All linked mods are up to date.",
           color: "green",
         });
       }
     } catch (err) {
       notifications.show({
-        title: "Update Check Failed",
+        title: "Update check failed",
         message: String(err),
         color: "red",
       });

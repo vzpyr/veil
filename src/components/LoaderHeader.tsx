@@ -14,7 +14,7 @@ export default function LoaderHeader({
     <Group justify="space-between" align="center">
       <div>
         <Text fw={700} size="md">
-          Loader and Bypass Setup
+          Loader and bypass setup
         </Text>
         <Text c="dimmed" size="xs">
           Install and manage the x64 ASI loader and signature bypasser required

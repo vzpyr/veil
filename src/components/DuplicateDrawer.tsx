@@ -34,7 +34,7 @@ export function DuplicateDrawer({
         <Group gap="xs">
           <TriangleAlert size={20} color="var(--color-status-warning)" />
           <Text fw={700} size="md">
-            Mod Already Installed
+            Mod already installed
           </Text>
         </Group>
       }
@@ -65,7 +65,7 @@ export function DuplicateDrawer({
         )}
 
         <Text size="xs" c="dimmed">
-          Choose how you would like to handle this installation.
+          Choose how to handle this installation.
         </Text>
 
         <Stack gap="xs">

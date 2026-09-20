@@ -80,7 +80,7 @@ export default function useDownloads({
       );
       if (String(err).includes("cancelled")) return;
       notifications.show({
-        title: "Download Failed",
+        title: "Download failed",
         message: `${nextItem.modName}: ${String(err)}`,
         color: "red",
       });
@@ -121,7 +121,7 @@ export default function useDownloads({
 
     setDownloadQueue((prev) => [...prev.filter((i) => i.id !== key), newItem]);
     notifications.show({
-      title: "Added to Download Queue",
+      title: "Added to download queue",
       message: `${modName} (${file._sFile}) queued for download.`,
       color: "gray",
     });

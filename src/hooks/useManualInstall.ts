@@ -21,7 +21,7 @@ export default function useManualInstall({
   const openPicker = async () => {
     if (!modsDir) {
       notifications.show({
-        title: "No Mods Directory",
+        title: "No mods directory",
         message:
           "Please configure your mods directory in Settings before installing mods.",
         color: "yellow",
@@ -33,7 +33,7 @@ export default function useManualInstall({
         multiple: true,
         filters: [
           {
-            name: "Mod Archives",
+            name: "Mod archives",
             extensions: ["zip", "7z", "rar"],
           },
         ],
@@ -51,7 +51,7 @@ export default function useManualInstall({
       }
     } catch (err) {
       notifications.show({
-        title: "Selection Error",
+        title: "Selection error",
         message: String(err),
         color: "red",
       });
@@ -85,7 +85,7 @@ export default function useManualInstall({
       }
       await refreshData();
       notifications.show({
-        title: "Installation Complete",
+        title: "Installation complete",
         message: isMultiple
           ? `Installed ${archivePaths.length} mods successfully.`
           : `${modName} installed successfully.`,
@@ -93,7 +93,7 @@ export default function useManualInstall({
       });
     } catch (err) {
       notifications.show({
-        title: "Extraction Error",
+        title: "Extraction error",
         message: String(err),
         color: "red",
       });

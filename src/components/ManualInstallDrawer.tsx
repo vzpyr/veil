@@ -80,8 +80,8 @@ export default function ManualInstallDrawer({
           <PackagePlus size={20} color="var(--color-accent-primary)" />
           <Text fw={700} size="md">
             {isMultiple
-              ? `Install ${archivePaths.length} Mods from Archives`
-              : "Install Mod from Archive"}
+              ? `Install ${archivePaths.length} mods from archives`
+              : "Install mod from archive"}
           </Text>
         </Group>
       }
@@ -89,7 +89,7 @@ export default function ManualInstallDrawer({
       <Stack gap="md" h="100%">
         {!isMultiple && (
           <TextInput
-            label="Mod Name"
+            label="Mod name"
             value={modName}
             onChange={(e) => setModName(e.currentTarget.value)}
             required
@@ -105,7 +105,7 @@ export default function ManualInstallDrawer({
         />
 
         <Select
-          label="Duplicate Handling"
+          label="Duplicate handling"
           data={duplicateOptions}
           value={duplicateAction}
           onChange={(val) => setDuplicateAction(val || "replace")}

@@ -101,7 +101,7 @@ export default function NtePakLoaderView({
       }
     } catch (err) {
       notifications.show({
-        title: "Release Fetch Error",
+        title: "Release fetch error",
         message: String(err),
         color: "red",
       });
@@ -133,13 +133,13 @@ export default function NtePakLoaderView({
       });
       await fetchStatus();
       notifications.show({
-        title: "Installed Successfully",
+        title: "Installed successfully",
         message: `Ultimate ASI Loader ${release.tag_name} installed as ${selectedDllName}.`,
         color: "green",
       });
     } catch (err) {
       notifications.show({
-        title: "Installation Failed",
+        title: "Installation failed",
         message: String(err),
         color: "red",
       });
@@ -155,13 +155,13 @@ export default function NtePakLoaderView({
       await invoke("uninstall_nte_pak_asi_loader", { gameDir });
       await fetchStatus();
       notifications.show({
-        title: "Uninstalled Successfully",
+        title: "Uninstalled successfully",
         message: "Ultimate ASI Loader was removed.",
         color: "green",
       });
     } catch (err) {
       notifications.show({
-        title: "Uninstall Failed",
+        title: "Uninstall failed",
         message: String(err),
         color: "red",
       });
@@ -185,13 +185,13 @@ export default function NtePakLoaderView({
       });
       await fetchStatus();
       notifications.show({
-        title: "Installed Successfully",
+        title: "Installed successfully",
         message: `Universal Sig Bypasser ${release.tag_name} installed.`,
         color: "green",
       });
     } catch (err) {
       notifications.show({
-        title: "Installation Failed",
+        title: "Installation failed",
         message: String(err),
         color: "red",
       });
@@ -207,13 +207,13 @@ export default function NtePakLoaderView({
       await invoke("uninstall_nte_pak_sig_bypasser", { gameDir });
       await fetchStatus();
       notifications.show({
-        title: "Uninstalled Successfully",
+        title: "Uninstalled successfully",
         message: "Universal Sig Bypasser was removed.",
         color: "green",
       });
     } catch (err) {
       notifications.show({
-        title: "Uninstall Failed",
+        title: "Uninstall failed",
         message: String(err),
         color: "red",
       });

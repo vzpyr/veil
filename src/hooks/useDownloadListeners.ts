@@ -57,7 +57,7 @@ export default function useDownloadListeners({
             ),
           );
           notifications.show({
-            title: "Installation Complete",
+            title: "Installation complete",
             message: `${event.payload.mod_name} installed successfully.`,
             color: "green",
           });
