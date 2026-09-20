@@ -1,4 +1,4 @@
-import type { Transition, Variants } from "motion/react";
+import type { Variants } from "motion/react";
 
 export const duration = {
   fast: 0.15,
@@ -6,28 +6,10 @@ export const duration = {
   slow: 0.35,
 } as const;
 
-export const ease = {
+const ease = {
   out: [0.16, 1, 0.3, 1],
   inOut: [0.4, 0, 0.2, 1],
 } as const;
-
-const spring: Transition = {
-  type: "spring",
-  stiffness: 420,
-  damping: 32,
-};
-
-export const fadeIn: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { duration: duration.normal, ease: ease.out },
-  },
-  exit: {
-    opacity: 0,
-    transition: { duration: duration.fast, ease: ease.inOut },
-  },
-};
 
 export const fadeUp: Variants = {
   hidden: { opacity: 0, y: 12 },
@@ -39,20 +21,6 @@ export const fadeUp: Variants = {
   exit: {
     opacity: 0,
     y: 12,
-    transition: { duration: duration.fast, ease: ease.inOut },
-  },
-};
-
-export const scaleIn: Variants = {
-  hidden: { opacity: 0, scale: 0.92 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    transition: spring,
-  },
-  exit: {
-    opacity: 0,
-    scale: 0.92,
     transition: { duration: duration.fast, ease: ease.inOut },
   },
 };

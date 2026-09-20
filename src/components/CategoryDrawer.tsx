@@ -12,7 +12,7 @@ import { Folder } from "lucide-react";
 import { useEffect, useState } from "react";
 import { CategoryItem, ModItem } from "../types";
 
-export type CategoryDrawerMode = "create" | "move" | "rename" | "delete";
+type CategoryDrawerMode = "create" | "move" | "rename" | "delete";
 
 interface CategoryDrawerProps {
   opened: boolean;

@@ -52,7 +52,7 @@ export interface ConflictGroup {
   mod_names: string[];
 }
 
-export type DownloadStatus =
+type DownloadStatus =
   "queued" | "downloading" | "extracting" | "completed" | "failed";
 
 export interface DownloadProgressPayload {

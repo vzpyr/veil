@@ -1,4 +1,4 @@
-export function parseBaseKeyFromEvent(e: KeyboardEvent): string {
+function parseBaseKeyFromEvent(e: KeyboardEvent): string {
   const code = e.code;
   if (code.startsWith("Key") && code.length === 4) {
     return code.slice(3).toLowerCase();
