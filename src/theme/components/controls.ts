@@ -112,6 +112,7 @@ export const controls: MantineThemeComponents = {
   Select: {
     defaultProps: {
       radius: "pill",
+      maxDropdownHeight: 380,
       comboboxProps: {
         shadow: "md",
         transitionProps: { transition: "pop-top-left", duration: 150 },
