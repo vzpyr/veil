@@ -1,30 +1,12 @@
-import {
-  Badge,
-  Box,
-  Button,
-  Card,
-  Group,
-  Loader,
-  Select,
-  SimpleGrid,
-  Stack,
-  Text,
-  TextInput,
-} from "@mantine/core";
+import { Box, SimpleGrid, Stack } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { invoke } from "@tauri-apps/api/core";
-import {
-  AlertTriangle,
-  CheckCircle2,
-  Cpu,
-  Download,
-  FolderCog,
-  RefreshCw,
-  ShieldCheck,
-  Trash2,
-} from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { LoaderRelease, NtePakLoaderStatus } from "../types";
+import AsiLoaderCard from "./AsiLoaderCard";
+import LoaderEmptyState from "./LoaderEmptyState";
+import LoaderHeader from "./LoaderHeader";
+import SigBypasserCard from "./SigBypasserCard";
 
 interface LoaderViewProps {
   gameDir?: string;
@@ -241,30 +223,7 @@ export default function LoaderView({
   };
 
   if (!gameDir) {
-    return (
-      <Box p="sm" maw="var(--max-width-settings)" mx="auto">
-        <Card p="md" style={{ backgroundColor: "var(--color-bg-surface-1)" }}>
-          <Stack gap="sm" align="center">
-            <AlertTriangle size={36} color="var(--color-status-warning)" />
-            <Text fw={700} size="md">
-              Game Directory Not Configured
-            </Text>
-            <Text c="dimmed" size="xs" ta="center">
-              Please select your Neverness to Everness base game directory in
-              Settings before managing loader binaries.
-            </Text>
-            <Button
-              size="xs"
-              variant="default"
-              leftSection={<FolderCog size={14} />}
-              onClick={onNavigateToSettings}
-            >
-              Go to Settings
-            </Button>
-          </Stack>
-        </Card>
-      </Box>
-    );
+    return <LoaderEmptyState onNavigateToSettings={onNavigateToSettings} />;
   }
 
   const asiOptions = asiReleases.map((r) => ({
@@ -287,277 +246,50 @@ export default function LoaderView({
     };
   });
 
-  const asiInstalled = Boolean(status?.asi_loader_installed);
-  const sigInstalled = Boolean(status?.sig_bypasser_installed);
-
   return (
     <Box p="sm" maw="var(--max-width-settings)" mx="auto">
       <Stack gap="md">
-        <Group justify="space-between" align="center">
-          <div>
-            <Text fw={700} size="md">
-              Loader and Bypass Setup
-            </Text>
-            <Text c="dimmed" size="xs">
-              Install and manage the x64 ASI loader and signature bypasser
-              required for Neverness to Everness pak mods.
-            </Text>
-          </div>
-          <Button
-            size="xs"
-            variant="subtle"
-            leftSection={<RefreshCw size={14} />}
-            loading={isLoadingReleases}
-            onClick={() => {
-              void fetchReleases();
-              void fetchStatus();
-            }}
-          >
-            Refresh
-          </Button>
-        </Group>
+        <LoaderHeader
+          isLoadingReleases={isLoadingReleases}
+          onRefresh={() => {
+            void fetchReleases();
+            void fetchStatus();
+          }}
+        />
 
         <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
-          <Card
-            p="sm"
-            style={{
-              backgroundColor: "var(--color-bg-card)",
-              border: "1px solid var(--color-border-subtle)",
-            }}
-          >
-            <Stack gap="sm">
-              <Group justify="space-between" align="center">
-                <Group gap="xs">
-                  <Cpu size={18} />
-                  <Text fw={600} size="sm">
-                    Ultimate ASI Loader
-                  </Text>
-                </Group>
-                {asiInstalled ? (
-                  <Badge
-                    color="green"
-                    variant="light"
-                    size="sm"
-                    leftSection={<CheckCircle2 size={12} />}
-                  >
-                    Installed
-                  </Badge>
-                ) : (
-                  <Badge color="gray" variant="light" size="sm">
-                    Not Installed
-                  </Badge>
-                )}
-              </Group>
+          <AsiLoaderCard
+            installed={Boolean(status?.asi_loader_installed)}
+            dllName={status?.asi_loader_dll ?? "version.dll"}
+            version={status?.asi_loader_version}
+            releaseOptions={asiOptions}
+            selectedVersion={selectedAsiVersion}
+            onVersionChange={setSelectedAsiVersion}
+            dllOptions={dllOptions}
+            selectedDllName={selectedDllName}
+            onDllNameChange={setSelectedDllName}
+            isLoadingReleases={isLoadingReleases}
+            isInstalling={isInstallingAsi}
+            isUninstalling={isUninstallingAsi}
+            onInstall={handleInstallAsi}
+            onUninstall={handleUninstallAsi}
+          />
 
-              <Text c="dimmed" size="xs">
-                Injects custom ASI plugins and bypass libraries into the x64
-                game process.
-              </Text>
-
-              {asiInstalled ? (
-                <Stack gap="xs">
-                  <Box
-                    p="xs"
-                    style={{
-                      backgroundColor: "var(--color-bg-surface-2)",
-                      borderRadius: "var(--radius-sm)",
-                      border: "1px solid var(--color-border-subtle)",
-                    }}
-                  >
-                    <Group justify="space-between">
-                      <Text size="xs" c="dimmed">
-                        Active DLL:
-                      </Text>
-                      <Text size="xs" fw={600}>
-                        {status?.asi_loader_dll ?? "version.dll"}
-                      </Text>
-                    </Group>
-                    {status?.asi_loader_version && (
-                      <Group justify="space-between" mt="var(--space-3xs)">
-                        <Text size="xs" c="dimmed">
-                          Version:
-                        </Text>
-                        <Text size="xs" fw={600}>
-                          {status.asi_loader_version}
-                        </Text>
-                      </Group>
-                    )}
-                  </Box>
-
-                  <Button
-                    size="xs"
-                    color="red"
-                    variant="light"
-                    leftSection={<Trash2 size={14} />}
-                    loading={isUninstallingAsi}
-                    onClick={handleUninstallAsi}
-                  >
-                    Uninstall
-                  </Button>
-                </Stack>
-              ) : (
-                <Stack gap="xs">
-                  <Select
-                    size="xs"
-                    label="Release Version"
-                    placeholder="Select release"
-                    data={asiOptions}
-                    value={selectedAsiVersion}
-                    onChange={setSelectedAsiVersion}
-                    allowDeselect={false}
-                    disabled={isLoadingReleases || isInstallingAsi}
-                  />
-
-                  <Select
-                    size="xs"
-                    label="DLL Name"
-                    placeholder="Select DLL name"
-                    data={dllOptions}
-                    value={selectedDllName}
-                    onChange={(val) => val && setSelectedDllName(val)}
-                    allowDeselect={false}
-                    disabled={isInstallingAsi}
-                  />
-
-                  <Button
-                    size="xs"
-                    variant="filled"
-                    leftSection={<Download size={14} />}
-                    loading={isInstallingAsi}
-                    disabled={!selectedAsiVersion}
-                    onClick={handleInstallAsi}
-                  >
-                    Install
-                  </Button>
-                </Stack>
-              )}
-            </Stack>
-          </Card>
-
-          <Card
-            p="sm"
-            style={{
-              backgroundColor: "var(--color-bg-card)",
-              border: "1px solid var(--color-border-subtle)",
-            }}
-          >
-            <Stack gap="sm">
-              <Group justify="space-between" align="center">
-                <Group gap="xs">
-                  <ShieldCheck size={18} />
-                  <Text fw={600} size="sm">
-                    Universal Sig Bypasser
-                  </Text>
-                </Group>
-                {sigInstalled ? (
-                  <Badge
-                    color="green"
-                    variant="light"
-                    size="sm"
-                    leftSection={<CheckCircle2 size={12} />}
-                  >
-                    Installed
-                  </Badge>
-                ) : (
-                  <Badge color="gray" variant="light" size="sm">
-                    Not Installed
-                  </Badge>
-                )}
-              </Group>
-
-              <Text c="dimmed" size="xs">
-                Bypasses signature and checksum checks so loose pak
-                modifications load into the engine.
-              </Text>
-
-              {sigInstalled ? (
-                <Stack gap="xs">
-                  <Box
-                    p="xs"
-                    style={{
-                      backgroundColor: "var(--color-bg-surface-2)",
-                      borderRadius: "var(--radius-sm)",
-                      border: "1px solid var(--color-border-subtle)",
-                    }}
-                  >
-                    <Group justify="space-between">
-                      <Text size="xs" c="dimmed">
-                        Target File:
-                      </Text>
-                      <Text size="xs" fw={600}>
-                        UniversalSigBypasser.asi
-                      </Text>
-                    </Group>
-                    <Group justify="space-between" mt="var(--space-3xs)">
-                      <Text size="xs" c="dimmed">
-                        Subdirectory:
-                      </Text>
-                      <Text size="xs" fw={600}>
-                        {status?.sig_bypasser_subpath
-                          ? status.sig_bypasser_subpath
-                          : "Root (Win64)"}
-                      </Text>
-                    </Group>
-                    {status?.sig_bypasser_version && (
-                      <Group justify="space-between" mt="var(--space-3xs)">
-                        <Text size="xs" c="dimmed">
-                          Version:
-                        </Text>
-                        <Text size="xs" fw={600}>
-                          {status.sig_bypasser_version}
-                        </Text>
-                      </Group>
-                    )}
-                  </Box>
-
-                  <Button
-                    size="xs"
-                    color="red"
-                    variant="light"
-                    leftSection={<Trash2 size={14} />}
-                    loading={isUninstallingSig}
-                    onClick={handleUninstallSig}
-                  >
-                    Uninstall
-                  </Button>
-                </Stack>
-              ) : (
-                <Stack gap="xs">
-                  <Select
-                    size="xs"
-                    label="Release Version"
-                    placeholder="Select release"
-                    data={sigOptions}
-                    value={selectedSigVersion}
-                    onChange={setSelectedSigVersion}
-                    allowDeselect={false}
-                    disabled={isLoadingReleases || isInstallingSig}
-                  />
-
-                  <TextInput
-                    size="xs"
-                    label="Install Subdirectory"
-                    description="Optional relative path inside Win64, e.g. plugins or OptiScaler\plugins"
-                    placeholder="plugins (default: Win64 root)"
-                    value={sigSubdir}
-                    onChange={(e) => setSigSubdir(e.currentTarget.value)}
-                    disabled={isInstallingSig}
-                  />
-
-                  <Button
-                    size="xs"
-                    variant="filled"
-                    leftSection={<Download size={14} />}
-                    loading={isInstallingSig}
-                    disabled={!selectedSigVersion}
-                    onClick={handleInstallSig}
-                  >
-                    Install
-                  </Button>
-                </Stack>
-              )}
-            </Stack>
-          </Card>
+          <SigBypasserCard
+            installed={Boolean(status?.sig_bypasser_installed)}
+            subpath={status?.sig_bypasser_subpath}
+            version={status?.sig_bypasser_version}
+            releaseOptions={sigOptions}
+            selectedVersion={selectedSigVersion}
+            onVersionChange={setSelectedSigVersion}
+            subdir={sigSubdir}
+            onSubdirChange={setSigSubdir}
+            isLoadingReleases={isLoadingReleases}
+            isInstalling={isInstallingSig}
+            isUninstalling={isUninstallingSig}
+            onInstall={handleInstallSig}
+            onUninstall={handleUninstallSig}
+          />
         </SimpleGrid>
       </Stack>
     </Box>
