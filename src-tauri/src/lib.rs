@@ -11,10 +11,10 @@ pub mod symlink;
 mod commands;
 mod mod_folder;
 
+use commands::effective_mods_dir;
 use commands::*;
 use config::{config_path, read_config};
 use gamebanana::{CancelRegistry, TempRegistry, clear_temp_artifacts};
-use std::path::Path;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -26,8 +26,10 @@ pub fn run() {
         .setup(|app| {
             if let Ok(path) = config_path(app.handle()) {
                 let config = read_config(&path);
-                for mods_dir in config.games.values().filter_map(|s| s.mods_dir.as_deref()) {
-                    clear_temp_artifacts(Path::new(mods_dir));
+                for (game_id, settings) in &config.games {
+                    if let Some(dir) = settings.dir.as_deref() {
+                        clear_temp_artifacts(&effective_mods_dir(Some(game_id), dir));
+                    }
                 }
             }
             Ok(())
@@ -36,8 +38,7 @@ pub fn run() {
             get_games,
             get_config,
             set_active_game,
-            set_game_mods_dir,
-            set_nte_pak_game_dir,
+            set_game_dir,
             get_nte_pak_asi_loader_releases,
             get_nte_pak_sig_bypasser_releases,
             get_nte_pak_status,

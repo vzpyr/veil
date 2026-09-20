@@ -5,8 +5,9 @@ use crate::scanner::{link_mod, postprocess_3dmigoto_extracted_mod, unlink_mod};
 use crate::symlink::{
     disabled_dir, effective_category_name, ensure_veil_dirs, resolve_category_dir,
 };
-use std::path::Path;
 use tauri::{AppHandle, State};
+
+use super::effective_mods_dir;
 
 #[tauri::command]
 pub fn cancel_download(
@@ -32,8 +33,10 @@ pub fn extract_archive_file(
     duplicate_action: Option<String>,
     game_id: Option<String>,
 ) -> Result<String, String> {
-    let path = Path::new(&mods_dir);
     let is_nte_pak = game_id.as_deref() == Some("ntepak");
+    let dir = effective_mods_dir(game_id.as_deref(), &mods_dir);
+    let path = dir.as_path();
+
     let base_dir = if is_nte_pak {
         std::fs::create_dir_all(path).map_err(|e| e.to_string())?;
         path.to_path_buf()
@@ -56,7 +59,7 @@ pub fn extract_archive_file(
     std::fs::create_dir_all(&temp_download_dir).map_err(|e| e.to_string())?;
     let temp_extract_dir = temp_download_dir.join(sanitize_folder_name(&mod_name));
     let extracted = extract_any_archive(
-        Path::new(&archive_path),
+        std::path::Path::new(&archive_path),
         &temp_extract_dir,
         &target_parent_dir,
         &mod_name,
@@ -127,14 +130,22 @@ pub fn link_mod_to_gamebanana(
     gamebanana_id: u64,
     version: Option<String>,
     file_id: Option<u64>,
+    game_id: Option<String>,
 ) -> Result<(), String> {
-    let path = Path::new(&mods_dir);
-    ensure_veil_dirs(path)?;
+    let dir = effective_mods_dir(game_id.as_deref(), &mods_dir);
+    let path = dir.as_path();
+    if game_id.as_deref() != Some("ntepak") {
+        ensure_veil_dirs(path)?;
+    }
     link_mod(path, &mod_id, gamebanana_id, version, file_id)
 }
 
 #[tauri::command]
-pub fn unlink_mod_from_gamebanana(mods_dir: String, mod_id: String) -> Result<(), String> {
-    let path = Path::new(&mods_dir);
-    unlink_mod(path, &mod_id)
+pub fn unlink_mod_from_gamebanana(
+    mods_dir: String,
+    mod_id: String,
+    game_id: Option<String>,
+) -> Result<(), String> {
+    let dir = effective_mods_dir(game_id.as_deref(), &mods_dir);
+    unlink_mod(dir.as_path(), &mod_id)
 }

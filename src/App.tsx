@@ -60,7 +60,7 @@ export default function App() {
           await config.load();
         const currentActiveId =
           loadedConfig.active_game_id || loadedGames[0]?.id;
-        const currentModsDir = loadedConfig.games[currentActiveId]?.mods_dir;
+        const currentModsDir = loadedConfig.games[currentActiveId]?.dir;
         if (currentModsDir) {
           await invoke("cleanup_on_boot", {
             modsDir: currentModsDir,
@@ -94,7 +94,7 @@ export default function App() {
       const updatedConfig = await config.setActiveGame(gameId);
       ui.setSelectedCategory(null);
       ui.setSearchQuery("");
-      const nextModsDir = updatedConfig.games[gameId]?.mods_dir;
+      const nextModsDir = updatedConfig.games[gameId]?.dir;
       if (nextModsDir) {
         await invoke("cleanup_on_boot", { modsDir: nextModsDir, gameId });
       }
@@ -111,7 +111,7 @@ export default function App() {
   const handleUpdateModsDir = async (newDir: string) => {
     if (!config.activeGame) return;
     try {
-      const updatedConfig = await config.setGameModsDir(
+      const updatedConfig = await config.setGameDir(
         config.activeGame.id,
         newDir,
       );
@@ -119,25 +119,6 @@ export default function App() {
       notifications.show({
         title: "Settings Saved",
         message: "Mods directory path updated successfully.",
-        color: "green",
-      });
-    } catch (err) {
-      notifications.show({
-        title: "Settings Error",
-        message: String(err),
-        color: "red",
-      });
-    }
-  };
-
-  const handleUpdateNtePakGameDir = async (gameDir: string) => {
-    try {
-      const updatedConfig = await config.setNtePakGameDir(gameDir);
-      const nextModsDir = updatedConfig.games["ntepak"]?.mods_dir;
-      await mods.refreshData(nextModsDir, updatedConfig, "ntepak");
-      notifications.show({
-        title: "Settings Updated",
-        message: "Neverness to Everness game directory updated.",
         color: "green",
       });
     } catch (err) {
@@ -208,7 +189,7 @@ export default function App() {
                   }}
                 >
                   <NtePakLoaderView
-                    gameDir={config.activeSettings?.game_dir}
+                    gameDir={config.modsDir}
                     onNavigateToSettings={() => ui.setActiveTab("settings")}
                   />
                 </Box>
@@ -248,8 +229,7 @@ export default function App() {
                   showNsfw={config.showNsfw}
                   autoCheckUpdates={Boolean(config.config?.auto_check_updates)}
                   colorScheme={config.config?.color_scheme ?? "dark"}
-                  onUpdateModsDir={handleUpdateModsDir}
-                  onUpdateGameDir={handleUpdateNtePakGameDir}
+                  onUpdateDir={handleUpdateModsDir}
                   onUpdateAutoCategorize={config.setAutoCategorize}
                   onShowNsfwChange={config.setShowNsfw}
                   onUpdateAutoCheckUpdates={config.setAutoCheckUpdates}

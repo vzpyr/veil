@@ -5,8 +5,7 @@ export interface GameDefinition {
 }
 
 export interface GameSettings {
-  mods_dir?: string;
-  game_dir?: string;
+  dir?: string;
 }
 
 export interface AppConfig {

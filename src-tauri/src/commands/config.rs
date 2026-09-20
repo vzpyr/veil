@@ -25,15 +25,11 @@ pub fn set_active_game(app: AppHandle, game_id: String) -> Result<AppConfig, Str
 }
 
 #[tauri::command]
-pub fn set_game_mods_dir(
-    app: AppHandle,
-    game_id: String,
-    mods_dir: String,
-) -> Result<AppConfig, String> {
+pub fn set_game_dir(app: AppHandle, game_id: String, dir: String) -> Result<AppConfig, String> {
     let path = config_path(&app)?;
     let mut config = read_config(&path);
 
-    let trimmed = mods_dir.trim().to_string();
+    let trimmed = dir.trim().to_string();
     if !trimmed.is_empty() {
         let p = Path::new(&trimmed);
         if game_id == "ntepak" {
@@ -44,7 +40,7 @@ pub fn set_game_mods_dir(
     }
 
     let entry = config.games.entry(game_id).or_default();
-    entry.mods_dir = if trimmed.is_empty() {
+    entry.dir = if trimmed.is_empty() {
         None
     } else {
         Some(trimmed)

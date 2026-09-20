@@ -43,7 +43,7 @@ export default function useModsLibrary({
         targetModsDir !== undefined
           ? targetModsDir
           : targetGameId
-            ? cfg?.games[targetGameId]?.mods_dir
+            ? cfg?.games[targetGameId]?.dir
             : modsDir;
       if (!targetDir) {
         setMods([]);

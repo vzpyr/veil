@@ -14,7 +14,7 @@ export default function useAppConfig() {
     games.find((g) => g.id === config?.active_game_id) || games[0];
   const activeSettings =
     activeGame && config ? (config.games[activeGame.id] ?? {}) : {};
-  const modsDir = activeSettings.mods_dir;
+  const modsDir = activeSettings.dir;
   const autoCategorize = config?.auto_categorize ?? true;
   const showNsfw = config?.show_nsfw ?? false;
 
@@ -46,18 +46,10 @@ export default function useAppConfig() {
     return updated;
   }, []);
 
-  const setGameModsDir = useCallback(async (gameId: string, dir: string) => {
-    const updated = await invoke<AppConfig>("set_game_mods_dir", {
+  const setGameDir = useCallback(async (gameId: string, dir: string) => {
+    const updated = await invoke<AppConfig>("set_game_dir", {
       gameId,
-      modsDir: dir,
-    });
-    setConfig(updated);
-    return updated;
-  }, []);
-
-  const setNtePakGameDir = useCallback(async (gameDir: string) => {
-    const updated = await invoke<AppConfig>("set_nte_pak_game_dir", {
-      gameDir,
+      dir,
     });
     setConfig(updated);
     return updated;
@@ -103,8 +95,7 @@ export default function useAppConfig() {
     load,
     updateColorScheme,
     setActiveGame,
-    setGameModsDir,
-    setNtePakGameDir,
+    setGameDir,
     setAutoCategorize,
     setShowNsfw,
     setAutoCheckUpdates,

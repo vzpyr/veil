@@ -123,6 +123,7 @@ export default function AppDrawers({
         onClose={() => ui.setLinkingMod(null)}
         mod={ui.linkingMod}
         modsDir={config.modsDir}
+        gameId={config.activeGame?.id}
         onSuccess={() => mods.refreshData()}
       />
     </>

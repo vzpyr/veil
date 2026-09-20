@@ -4,11 +4,13 @@ use crate::nte_pak::{
 };
 use crate::scanner::{ModItem, cleanup_empty_categories, set_mod_preview};
 use crate::symlink::{cleanup_empty_active_dir, ensure_veil_dirs, prune_orphaned_symlinks};
-use std::path::Path;
+
+use super::effective_mods_dir;
 
 #[tauri::command]
 pub fn cleanup_on_boot(mods_dir: String, game_id: Option<String>) -> Result<(), String> {
-    let path = Path::new(&mods_dir);
+    let dir = effective_mods_dir(game_id.as_deref(), &mods_dir);
+    let path = dir.as_path();
     if !path.exists() {
         return Ok(());
     }
@@ -23,7 +25,8 @@ pub fn cleanup_on_boot(mods_dir: String, game_id: Option<String>) -> Result<(), 
 
 #[tauri::command]
 pub fn scan_mods(mods_dir: String, game_id: Option<String>) -> Result<Vec<ModItem>, String> {
-    let path = Path::new(&mods_dir);
+    let dir = effective_mods_dir(game_id.as_deref(), &mods_dir);
+    let path = dir.as_path();
     if game_id.as_deref() == Some("ntepak") {
         std::fs::create_dir_all(path).map_err(|e| e.to_string())?;
         return scan_nte_pak_mods(path);
@@ -42,7 +45,8 @@ pub fn get_mod_conflicts(
     if game_id.as_deref() == Some("ntepak") {
         return Ok(Vec::new());
     }
-    let path = Path::new(&mods_dir);
+    let dir = effective_mods_dir(game_id.as_deref(), &mods_dir);
+    let path = dir.as_path();
     ensure_veil_dirs(path)?;
     let mods = crate::scanner::scan_mods(path)?;
     Ok(detect_conflicts(&mods))
@@ -55,7 +59,8 @@ pub fn toggle_mod(
     enable: bool,
     game_id: Option<String>,
 ) -> Result<bool, String> {
-    let path = Path::new(&mods_dir);
+    let dir = effective_mods_dir(game_id.as_deref(), &mods_dir);
+    let path = dir.as_path();
     if game_id.as_deref() == Some("ntepak") {
         return toggle_nte_pak_mod(path, &mod_id, enable);
     }
@@ -69,7 +74,8 @@ pub fn move_mod(
     target_category: Option<String>,
     game_id: Option<String>,
 ) -> Result<String, String> {
-    let path = Path::new(&mods_dir);
+    let dir = effective_mods_dir(game_id.as_deref(), &mods_dir);
+    let path = dir.as_path();
     if game_id.as_deref() == Some("ntepak") {
         return move_nte_pak_mod_category(path, &mod_id, target_category);
     }
@@ -78,7 +84,8 @@ pub fn move_mod(
 
 #[tauri::command]
 pub fn delete_mod(mods_dir: String, mod_id: String, game_id: Option<String>) -> Result<(), String> {
-    let path = Path::new(&mods_dir);
+    let dir = effective_mods_dir(game_id.as_deref(), &mods_dir);
+    let path = dir.as_path();
     if game_id.as_deref() == Some("ntepak") {
         return delete_nte_pak_mod(path, &mod_id);
     }
@@ -92,7 +99,8 @@ pub fn batch_toggle_mods(
     enable: bool,
     game_id: Option<String>,
 ) -> Result<(), String> {
-    let path = Path::new(&mods_dir);
+    let dir = effective_mods_dir(game_id.as_deref(), &mods_dir);
+    let path = dir.as_path();
     if game_id.as_deref() == Some("ntepak") {
         for id in &mod_ids {
             toggle_nte_pak_mod(path, id, enable)?;
@@ -109,7 +117,8 @@ pub fn batch_move_mods(
     target_category: Option<String>,
     game_id: Option<String>,
 ) -> Result<(), String> {
-    let path = Path::new(&mods_dir);
+    let dir = effective_mods_dir(game_id.as_deref(), &mods_dir);
+    let path = dir.as_path();
     if game_id.as_deref() == Some("ntepak") {
         for id in &mod_ids {
             move_nte_pak_mod_category(path, id, target_category.clone())?;
@@ -125,7 +134,8 @@ pub fn batch_delete_mods(
     mod_ids: Vec<String>,
     game_id: Option<String>,
 ) -> Result<(), String> {
-    let path = Path::new(&mods_dir);
+    let dir = effective_mods_dir(game_id.as_deref(), &mods_dir);
+    let path = dir.as_path();
     if game_id.as_deref() == Some("ntepak") {
         for id in &mod_ids {
             delete_nte_pak_mod(path, id)?;
@@ -140,7 +150,9 @@ pub fn set_mod_preview_image(
     mods_dir: String,
     mod_id: String,
     image_bytes: Vec<u8>,
+    game_id: Option<String>,
 ) -> Result<String, String> {
-    let path = Path::new(&mods_dir);
+    let dir = effective_mods_dir(game_id.as_deref(), &mods_dir);
+    let path = dir.as_path();
     set_mod_preview(path, &mod_id, &image_bytes)
 }

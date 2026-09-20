@@ -4,7 +4,7 @@ use futures_util::StreamExt;
 use reqwest::Client;
 use std::fs;
 use std::io::{BufWriter, Write};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::time::Instant;
 use tauri::{AppHandle, Emitter};
 
@@ -28,8 +28,13 @@ pub async fn download_and_install_mod(
     version: Option<String>,
     game_id: Option<String>,
 ) -> Result<String, String> {
-    let mods_path = Path::new(&mods_dir);
     let is_nte_pak = game_id.as_deref() == Some("ntepak");
+    let resolved_mods_dir = if is_nte_pak {
+        crate::nte_pak::resolve_nte_pak_paths(Path::new(&mods_dir)).1
+    } else {
+        PathBuf::from(&mods_dir)
+    };
+    let mods_path = resolved_mods_dir.as_path();
     let base_dir = if is_nte_pak {
         fs::create_dir_all(mods_path).map_err(|e| e.to_string())?;
         mods_path.to_path_buf()

@@ -250,6 +250,7 @@ export default function useModOperations({
           modsDir,
           modId: mod.id,
           imageBytes,
+          gameId: activeGameId,
         });
 
         await refreshData();

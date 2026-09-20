@@ -21,8 +21,7 @@ interface SettingsViewProps {
   showNsfw: boolean;
   autoCheckUpdates: boolean;
   colorScheme: string;
-  onUpdateModsDir: (dir: string) => void;
-  onUpdateGameDir?: (dir: string) => void;
+  onUpdateDir: (dir: string) => void;
   onUpdateAutoCategorize: (enabled: boolean) => void;
   onShowNsfwChange: (value: boolean) => void;
   onUpdateAutoCheckUpdates: (enabled: boolean) => void;
@@ -36,15 +35,14 @@ export default function SettingsView({
   showNsfw,
   autoCheckUpdates,
   colorScheme,
-  onUpdateModsDir,
-  onUpdateGameDir,
+  onUpdateDir,
   onUpdateAutoCategorize,
   onShowNsfwChange,
   onUpdateAutoCheckUpdates,
   onColorSchemeChange,
 }: SettingsViewProps) {
   const isNtePak = activeGame.id === "ntepak";
-  const displayedDir = isNtePak ? settings.game_dir : settings.mods_dir;
+  const displayedDir = settings.dir;
 
   const handleBrowseFolder = async () => {
     const selected = await open({
@@ -56,11 +54,7 @@ export default function SettingsView({
     });
 
     if (typeof selected === "string") {
-      if (isNtePak && onUpdateGameDir) {
-        onUpdateGameDir(selected);
-      } else {
-        onUpdateModsDir(selected);
-      }
+      onUpdateDir(selected);
     }
   };
 

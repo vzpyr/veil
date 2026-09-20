@@ -4,14 +4,16 @@ use crate::nte_pak::{
 };
 use crate::scanner::CategoryItem;
 use crate::symlink::ensure_veil_dirs;
-use std::path::Path;
+
+use super::effective_mods_dir;
 
 #[tauri::command]
 pub fn get_categories(
     mods_dir: String,
     game_id: Option<String>,
 ) -> Result<Vec<CategoryItem>, String> {
-    let path = Path::new(&mods_dir);
+    let dir = effective_mods_dir(game_id.as_deref(), &mods_dir);
+    let path = dir.as_path();
     if game_id.as_deref() == Some("ntepak") {
         std::fs::create_dir_all(path).map_err(|e| e.to_string())?;
         return list_nte_pak_categories(path);
@@ -26,7 +28,8 @@ pub fn create_category(
     category_name: String,
     game_id: Option<String>,
 ) -> Result<(), String> {
-    let path = Path::new(&mods_dir);
+    let dir = effective_mods_dir(game_id.as_deref(), &mods_dir);
+    let path = dir.as_path();
     if game_id.as_deref() == Some("ntepak") {
         return create_nte_pak_category(path, &category_name);
     }
@@ -40,7 +43,8 @@ pub fn rename_category(
     new_name: String,
     game_id: Option<String>,
 ) -> Result<(), String> {
-    let path = Path::new(&mods_dir);
+    let dir = effective_mods_dir(game_id.as_deref(), &mods_dir);
+    let path = dir.as_path();
     if game_id.as_deref() == Some("ntepak") {
         return rename_nte_pak_category(path, &old_name, &new_name);
     }
@@ -54,7 +58,8 @@ pub fn delete_category(
     delete_mods: bool,
     game_id: Option<String>,
 ) -> Result<(), String> {
-    let path = Path::new(&mods_dir);
+    let dir = effective_mods_dir(game_id.as_deref(), &mods_dir);
+    let path = dir.as_path();
     if game_id.as_deref() == Some("ntepak") {
         return delete_nte_pak_category(path, &category_name, delete_mods);
     }

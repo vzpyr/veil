@@ -23,6 +23,7 @@ interface LinkGameBananaDrawerProps {
   onClose: () => void;
   mod: ModItem | null;
   modsDir: string | undefined;
+  gameId?: string;
   onSuccess: () => void;
 }
 
@@ -45,6 +46,7 @@ export default function LinkGameBananaDrawer({
   onClose,
   mod,
   modsDir,
+  gameId,
   onSuccess,
 }: LinkGameBananaDrawerProps) {
   const [inputVal, setInputVal] = useState<string>("");
@@ -108,6 +110,7 @@ export default function LinkGameBananaDrawer({
         gamebananaId: profile._idRow,
         version: formatVersion(profile._sVersion) || null,
         fileId: latestFileId || null,
+        gameId,
       });
 
       notifications.show({
@@ -139,6 +142,7 @@ export default function LinkGameBananaDrawer({
       await invoke("unlink_mod_from_gamebanana", {
         modsDir,
         modId: mod.id,
+        gameId,
       });
 
       notifications.show({

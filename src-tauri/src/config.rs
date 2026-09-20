@@ -6,8 +6,8 @@ use tauri::{AppHandle, Manager};
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct GameSettings {
-    pub mods_dir: Option<String>,
-    pub game_dir: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub dir: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
