@@ -8,7 +8,7 @@ import LoaderEmptyState from "./LoaderEmptyState";
 import LoaderHeader from "./LoaderHeader";
 import SigBypasserCard from "./SigBypasserCard";
 
-interface LoaderViewProps {
+interface NtePakLoaderViewProps {
   gameDir?: string;
   onNavigateToSettings: () => void;
 }
@@ -34,10 +34,10 @@ const DLL_NAME_OPTIONS = [
   { value: "xinput9_1_0.dll", label: "xinput9_1_0.dll" },
 ];
 
-export default function LoaderView({
+export default function NtePakLoaderView({
   gameDir,
   onNavigateToSettings,
-}: LoaderViewProps) {
+}: NtePakLoaderViewProps) {
   const [asiReleases, setAsiReleases] = useState<LoaderRelease[]>([]);
   const [sigReleases, setSigReleases] = useState<LoaderRelease[]>([]);
   const [selectedAsiVersion, setSelectedAsiVersion] = useState<string | null>(

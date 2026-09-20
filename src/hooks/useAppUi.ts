@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ModItem } from "../types";
 
-export interface CategoryModalState {
+interface CategoryModalState {
   open: boolean;
   mode: "create" | "move" | "rename" | "delete";
   modsToMove?: ModItem[];

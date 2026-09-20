@@ -7,7 +7,7 @@ import { tabContent } from "./motion";
 import Header from "./components/Header";
 import InstalledView from "./components/InstalledView";
 import AppDrawers from "./components/AppDrawers";
-import LoaderView from "./components/LoaderView";
+import NtePakLoaderView from "./components/NtePakLoaderView";
 import SettingsView from "./components/SettingsView";
 import GbBrowserView from "./components/browser/GbBrowserView";
 import useAppConfig from "./hooks/useAppConfig";
@@ -207,7 +207,7 @@ export default function App() {
                     backgroundColor: "var(--color-bg-base)",
                   }}
                 >
-                  <LoaderView
+                  <NtePakLoaderView
                     gameDir={config.activeSettings?.game_dir}
                     onNavigateToSettings={() => ui.setActiveTab("settings")}
                   />
