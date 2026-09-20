@@ -14,7 +14,7 @@ import { CategoryItem } from "../types";
 interface ManualInstallDrawerProps {
   opened: boolean;
   onClose: () => void;
-  archivePath: string;
+  archivePaths: string[];
   categories: CategoryItem[];
   onInstall: (
     modName: string,
@@ -27,7 +27,7 @@ interface ManualInstallDrawerProps {
 export default function ManualInstallDrawer({
   opened,
   onClose,
-  archivePath,
+  archivePaths,
   categories,
   onInstall,
   isInstalling,
@@ -38,15 +38,17 @@ export default function ManualInstallDrawer({
   );
   const [duplicateAction, setDuplicateAction] = useState<string>("replace");
 
+  const isMultiple = archivePaths.length > 1;
+
   useEffect(() => {
-    if (archivePath) {
-      const fileName = archivePath.split(/[/\\]/).pop() || "";
+    if (archivePaths.length > 0) {
+      const fileName = archivePaths[0].split(/[/\\]/).pop() || "";
       const baseName = fileName.replace(/\.(zip|7z|rar|tar|gz)$/i, "");
       setModName(baseName);
       setSelectedCategory("__root__");
       setDuplicateAction("replace");
     }
-  }, [archivePath]);
+  }, [archivePaths]);
 
   const categoryOptions = [
     { value: "__root__", label: "Uncategorized" },
@@ -59,7 +61,7 @@ export default function ManualInstallDrawer({
   ];
 
   const handleConfirm = async () => {
-    if (!modName.trim()) {
+    if (!isMultiple && !modName.trim()) {
       return;
     }
     const targetCategory =
@@ -77,18 +79,22 @@ export default function ManualInstallDrawer({
         <Group gap="xs">
           <PackagePlus size={20} color="var(--color-accent-primary)" />
           <Text fw={700} size="md">
-            Install Mod from Archive
+            {isMultiple
+              ? `Install ${archivePaths.length} Mods from Archives`
+              : "Install Mod from Archive"}
           </Text>
         </Group>
       }
     >
       <Stack gap="md" h="100%">
-        <TextInput
-          label="Mod Name"
-          value={modName}
-          onChange={(e) => setModName(e.currentTarget.value)}
-          required
-        />
+        {!isMultiple && (
+          <TextInput
+            label="Mod Name"
+            value={modName}
+            onChange={(e) => setModName(e.currentTarget.value)}
+            required
+          />
+        )}
 
         <Select
           label="Category"
@@ -120,9 +126,9 @@ export default function ManualInstallDrawer({
             size="xs"
             onClick={handleConfirm}
             loading={isInstalling}
-            disabled={!modName.trim()}
+            disabled={!isMultiple && !modName.trim()}
           >
-            Install
+            {isMultiple ? `Install (${archivePaths.length})` : "Install"}
           </Button>
         </Group>
       </Stack>

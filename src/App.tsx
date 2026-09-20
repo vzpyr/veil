@@ -93,8 +93,9 @@ export default function App() {
   const [sortBy, setSortBy] = useState<string>("name-asc");
   const [manualInstallModalOpen, setManualInstallModalOpen] =
     useState<boolean>(false);
-  const [manualInstallArchivePath, setManualInstallArchivePath] =
-    useState<string>("");
+  const [manualInstallArchivePaths, setManualInstallArchivePaths] = useState<
+    string[]
+  >([]);
   const [isManualInstalling, setIsManualInstalling] = useState<boolean>(false);
 
   const activeGame =
@@ -918,7 +919,7 @@ export default function App() {
     }
     try {
       const selected = await open({
-        multiple: false,
+        multiple: true,
         filters: [
           {
             name: "Mod Archives",
@@ -926,9 +927,16 @@ export default function App() {
           },
         ],
       });
-      if (selected && typeof selected === "string") {
-        setManualInstallArchivePath(selected);
-        setManualInstallModalOpen(true);
+      if (selected) {
+        const paths = Array.isArray(selected)
+          ? selected
+          : typeof selected === "string"
+            ? [selected]
+            : [];
+        if (paths.length > 0) {
+          setManualInstallArchivePaths(paths);
+          setManualInstallModalOpen(true);
+        }
       }
     } catch (err) {
       notifications.show({
@@ -944,21 +952,32 @@ export default function App() {
     category: string | null,
     duplicateAction: string,
   ) => {
-    if (!modsDir || !manualInstallArchivePath) return;
+    if (!modsDir || manualInstallArchivePaths.length === 0) return;
     try {
       setIsManualInstalling(true);
-      await invoke("extract_archive_file", {
-        archivePath: manualInstallArchivePath,
-        modsDir,
-        modName,
-        category,
-        duplicateAction,
-        gameId: activeGame?.id,
-      });
+      const isMultiple = manualInstallArchivePaths.length > 1;
+      for (const archivePath of manualInstallArchivePaths) {
+        const targetName = isMultiple
+          ? (archivePath.split(/[/\\]/).pop() || "").replace(
+              /\.(zip|7z|rar|tar|gz)$/i,
+              "",
+            )
+          : modName;
+        await invoke("extract_archive_file", {
+          archivePath,
+          modsDir,
+          modName: targetName,
+          category,
+          duplicateAction,
+          gameId: activeGame?.id,
+        });
+      }
       await refreshData();
       notifications.show({
         title: "Installation Complete",
-        message: `${modName} installed successfully.`,
+        message: isMultiple
+          ? `Installed ${manualInstallArchivePaths.length} mods successfully.`
+          : `${modName} installed successfully.`,
         color: "green",
       });
     } catch (err) {
@@ -1297,7 +1316,7 @@ export default function App() {
       <ManualInstallDrawer
         opened={manualInstallModalOpen}
         onClose={() => setManualInstallModalOpen(false)}
-        archivePath={manualInstallArchivePath}
+        archivePaths={manualInstallArchivePaths}
         categories={categories}
         onInstall={handleConfirmManualInstall}
         isInstalling={isManualInstalling}

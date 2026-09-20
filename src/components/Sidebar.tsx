@@ -293,7 +293,7 @@ export default function Sidebar({
             onClick={onOpenManualInstall}
             disabled={!hasModsDir}
           >
-            Install Mod
+            Install Mods
           </Button>
           <Button
             fullWidth
