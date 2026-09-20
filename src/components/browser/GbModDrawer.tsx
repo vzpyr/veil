@@ -1,81 +1,43 @@
 import { Carousel } from "@mantine/carousel";
 import {
   Avatar,
-  Badge,
   Box,
-  Button,
   Card,
-  Center,
   Drawer,
   Group,
   Image,
   LoadingOverlay,
-  Progress,
   ScrollArea,
   Stack,
   Tabs,
   Text,
 } from "@mantine/core";
-import {
-  Check,
-  Download,
-  Eye,
-  Globe,
-  Heart,
-  History,
-  Info,
-  MessageCircle,
-  TriangleAlert,
-} from "lucide-react";
+import { Download, History, Info, MessageCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   fetchModPosts,
   fetchModProfile,
   fetchModUpdates,
   fetchPostReplies,
-  GbModFile,
   GbModProfile,
   GbPost,
   GbUpdate,
 } from "../../api/gamebanana";
 import { DownloadQueueItem } from "../../types";
-import { formatVersion } from "../../utils";
+import GbModCommentsTab from "./GbModCommentsTab";
+import GbModDescriptionTab from "./GbModDescriptionTab";
+import GbModDrawerTitle from "./GbModDrawerTitle";
+import GbModErrorState from "./GbModErrorState";
+import GbModFilesTab, { GbInstallHandler } from "./GbModFilesTab";
+import GbModUpdatesTab from "./GbModUpdatesTab";
+import { formatDate } from "./gbFormat";
 
 interface GbModDrawerProps {
   modId: number | null;
   opened: boolean;
   onClose: () => void;
-  onInstall: (
-    file: GbModFile,
-    modName: string,
-    gamebananaId: number,
-    version?: string,
-    categoryName?: string,
-    previewUrl?: string,
-  ) => void;
+  onInstall: GbInstallHandler;
   downloadQueue: DownloadQueueItem[];
-}
-
-function formatBytes(bytes: number): string {
-  if (bytes >= 1024 * 1024 * 1024) {
-    return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
-  }
-  if (bytes >= 1024 * 1024) {
-    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
-  }
-  if (bytes >= 1024) {
-    return `${(bytes / 1024).toFixed(2)} KB`;
-  }
-  return `${bytes} B`;
-}
-
-function formatDate(timestamp: number): string {
-  if (!timestamp) return "";
-  return new Date(timestamp * 1000).toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
 }
 
 export default function GbModDrawer({
@@ -200,79 +162,16 @@ export default function GbModDrawer({
       opened={opened}
       onClose={onClose}
       size="xl"
-      title={
-        <Group gap="xs">
-          <Globe size={20} color="var(--color-accent-primary)" />
-          {profile ? (
-            <Group gap="xs">
-              <Text fw={700} size="md">
-                {profile._sName}
-              </Text>
-              {profile._aCategory && (
-                <Badge size="xs" variant="light" color="gray">
-                  {profile._aCategory._sName}
-                </Badge>
-              )}
-              {profile._sVersion && (
-                <Badge size="xs" variant="outline" color="gray">
-                  v{formatVersion(profile._sVersion)}
-                </Badge>
-              )}
-              {typeof profile._nDownloadCount === "number" && (
-                <Badge size="xs" variant="light" color="gray">
-                  <Group gap="3xs" wrap="nowrap">
-                    <Download size={12} />
-                    <Text size="2xs">{profile._nDownloadCount}</Text>
-                  </Group>
-                </Badge>
-              )}
-              {typeof profile._nLikeCount === "number" && (
-                <Badge size="xs" variant="light" color="gray">
-                  <Group gap="3xs" wrap="nowrap">
-                    <Heart size={12} />
-                    <Text size="2xs">{profile._nLikeCount}</Text>
-                  </Group>
-                </Badge>
-              )}
-              {typeof profile._nViewCount === "number" && (
-                <Badge size="xs" variant="light" color="gray">
-                  <Group gap="3xs" wrap="nowrap">
-                    <Eye size={12} />
-                    <Text size="2xs">{profile._nViewCount}</Text>
-                  </Group>
-                </Badge>
-              )}
-            </Group>
-          ) : (
-            <Text fw={700} size="md">
-              Mod Details
-            </Text>
-          )}
-        </Group>
-      }
+      title={<GbModDrawerTitle profile={profile} />}
     >
       <Box style={{ position: "relative", height: "100%" }}>
         <LoadingOverlay visible={isLoading} />
 
         {errorMessage && !isLoading && (
-          <Center h="var(--height-empty-state)">
-            <Stack align="center" gap="sm" className="animate-fade-in-up">
-              <TriangleAlert size={44} color="var(--color-status-error)" />
-              <Text fw={600} size="md">
-                Failed to Load Mod
-              </Text>
-              <Text c="dimmed" size="xs" ta="center">
-                {errorMessage}
-              </Text>
-              <Button
-                size="xs"
-                variant="default"
-                onClick={() => setRetryTrigger((prev) => prev + 1)}
-              >
-                Retry
-              </Button>
-            </Stack>
-          </Center>
+          <GbModErrorState
+            message={errorMessage}
+            onRetry={() => setRetryTrigger((prev) => prev + 1)}
+          />
         )}
 
         {profile && (
@@ -356,142 +255,13 @@ export default function GbModDrawer({
                 </Tabs.List>
 
                 <Tabs.Panel value="files" pt="sm" className="animate-fade-in">
-                  <Stack gap="xs">
-                    {files.length > 0 ? (
-                      files.map((f) => {
-                        const downloadKey = String(f._idRow);
-                        const queueItem = downloadQueue.find(
-                          (item) => item.id === downloadKey,
-                        );
-                        const isDownloading =
-                          queueItem?.status === "downloading";
-                        const isExtracting = queueItem?.status === "extracting";
-                        const isQueued = queueItem?.status === "queued";
-                        const isCompleted = queueItem?.status === "completed";
-                        const isFailed = queueItem?.status === "failed";
-
-                        return (
-                          <Card key={f._idRow} p="xs">
-                            <Group
-                              justify="space-between"
-                              align="flex-start"
-                              wrap="nowrap"
-                            >
-                              <Stack gap="3xs" style={{ flex: 1, minWidth: 0 }}>
-                                <Text fw={600} size="sm" truncate>
-                                  {f._sFile}
-                                </Text>
-                                <Group gap="xs">
-                                  <Badge
-                                    size="xs"
-                                    variant="outline"
-                                    color="gray"
-                                  >
-                                    {formatBytes(f._nFilesize)}
-                                  </Badge>
-                                  <Text size="2xs" c="dimmed">
-                                    {formatDate(f._tsDateAdded)}
-                                  </Text>
-                                </Group>
-                                {f._sDescription && (
-                                  <Text size="xs" c="dimmed" mt="2xs">
-                                    {f._sDescription}
-                                  </Text>
-                                )}
-                              </Stack>
-
-                              <Button
-                                size="xs"
-                                variant={
-                                  isCompleted || isFailed || isQueued
-                                    ? "light"
-                                    : "filled"
-                                }
-                                color={
-                                  isCompleted
-                                    ? "green"
-                                    : isFailed
-                                      ? "red"
-                                      : isQueued
-                                        ? "yellow"
-                                        : undefined
-                                }
-                                leftSection={
-                                  isCompleted ? (
-                                    <Check size={14} />
-                                  ) : (
-                                    <Download size={14} />
-                                  )
-                                }
-                                loading={isDownloading || isExtracting}
-                                disabled={isCompleted || isQueued}
-                                onClick={() =>
-                                  onInstall(
-                                    f,
-                                    profile._sName,
-                                    profile._idRow,
-                                    formatVersion(profile._sVersion),
-                                    profile._aCategory?._sName,
-                                    primaryPreviewUrl,
-                                  )
-                                }
-                              >
-                                {isDownloading
-                                  ? `${Math.round(queueItem.progress.percentage)}%`
-                                  : isExtracting
-                                    ? "Extracting"
-                                    : isQueued
-                                      ? "Queued"
-                                      : isCompleted
-                                        ? "Installed"
-                                        : isFailed
-                                          ? "Retry"
-                                          : "Install"}
-                              </Button>
-                            </Group>
-
-                            {isDownloading && queueItem && (
-                              <Box mt="xs">
-                                <Group justify="space-between" mb="2xs">
-                                  <Text size="2xs" c="dimmed">
-                                    Speed: {queueItem.progress.speed} | ETA:{" "}
-                                    {queueItem.progress.eta}
-                                  </Text>
-                                  <Text size="2xs" fw={600}>
-                                    {Math.round(queueItem.progress.percentage)}%
-                                  </Text>
-                                </Group>
-                                <Progress
-                                  value={queueItem.progress.percentage}
-                                  size="xs"
-                                  animated
-                                  color="gray"
-                                />
-                              </Box>
-                            )}
-
-                            {isExtracting && (
-                              <Box mt="xs">
-                                <Progress
-                                  value={100}
-                                  size="xs"
-                                  animated
-                                  color="gray"
-                                />
-                                <Text size="2xs" c="dimmed" ta="right" mt="2xs">
-                                  Extracting and installing archive...
-                                </Text>
-                              </Box>
-                            )}
-                          </Card>
-                        );
-                      })
-                    ) : (
-                      <Text size="sm" c="dimmed" ta="center" py="md">
-                        No files available for download
-                      </Text>
-                    )}
-                  </Stack>
+                  <GbModFilesTab
+                    profile={profile}
+                    files={files}
+                    downloadQueue={downloadQueue}
+                    primaryPreviewUrl={primaryPreviewUrl}
+                    onInstall={onInstall}
+                  />
                 </Tabs.Panel>
 
                 <Tabs.Panel
@@ -499,71 +269,11 @@ export default function GbModDrawer({
                   pt="sm"
                   className="animate-fade-in"
                 >
-                  <Box p="xs">
-                    {profile._sText ? (
-                      <div
-                        className="gb-rich-text"
-                        dangerouslySetInnerHTML={{ __html: profile._sText }}
-                      />
-                    ) : (
-                      <Text size="sm" c="dimmed" ta="center" py="md">
-                        No description provided by author
-                      </Text>
-                    )}
-                  </Box>
+                  <GbModDescriptionTab text={profile._sText} />
                 </Tabs.Panel>
 
                 <Tabs.Panel value="updates" pt="sm" className="animate-fade-in">
-                  <Box p="xs">
-                    {updates.length > 0 ? (
-                      <Stack gap="xs">
-                        {updates.map((u) => (
-                          <Card key={u._idRow} p="xs">
-                            <Group justify="space-between" mb="xs">
-                              <Group gap="xs">
-                                <Text fw={600} size="sm">
-                                  {u._sName || "Update"}
-                                </Text>
-                                {formatVersion(u._sVersion) && (
-                                  <Badge size="xs" color="gray">
-                                    v{formatVersion(u._sVersion)}
-                                  </Badge>
-                                )}
-                              </Group>
-                              <Text size="2xs" c="dimmed">
-                                {formatDate(u._tsDateAdded)}
-                              </Text>
-                            </Group>
-
-                            {u._sText && (
-                              <div
-                                className="gb-rich-text"
-                                style={{ marginBottom: "var(--space-xs)" }}
-                                dangerouslySetInnerHTML={{ __html: u._sText }}
-                              />
-                            )}
-
-                            {u._aChangeLog && u._aChangeLog.length > 0 && (
-                              <Stack gap="3xs">
-                                {u._aChangeLog.map((log, lIdx) => (
-                                  <Group key={lIdx} gap="xs">
-                                    <Badge size="xs" variant="dot" color="gray">
-                                      {log.cat}
-                                    </Badge>
-                                    <Text size="xs">{log.text}</Text>
-                                  </Group>
-                                ))}
-                              </Stack>
-                            )}
-                          </Card>
-                        ))}
-                      </Stack>
-                    ) : (
-                      <Text size="sm" c="dimmed" ta="center" py="md">
-                        No updates recorded for this mod
-                      </Text>
-                    )}
-                  </Box>
+                  <GbModUpdatesTab updates={updates} />
                 </Tabs.Panel>
 
                 <Tabs.Panel
@@ -571,97 +281,11 @@ export default function GbModDrawer({
                   pt="sm"
                   className="animate-fade-in"
                 >
-                  <Box p="xs">
-                    {posts.length > 0 ? (
-                      <Stack gap="xs">
-                        {posts.map((p) => (
-                          <Card key={p._idRow} p="xs">
-                            <Group justify="space-between" mb="xs">
-                              <Group gap="xs">
-                                <Avatar
-                                  src={p._aSubmitter?._sAvatarUrl}
-                                  size="xs"
-                                />
-                                <Text fw={600} size="xs">
-                                  {p._aSubmitter?._sName || "User"}
-                                </Text>
-                              </Group>
-                              <Text size="2xs" c="dimmed">
-                                {formatDate(p._tsDateAdded)}
-                              </Text>
-                            </Group>
-
-                            <div
-                              className="gb-rich-text"
-                              dangerouslySetInnerHTML={{ __html: p._sText }}
-                            />
-
-                            {typeof p._nReplyCount === "number" &&
-                              p._nReplyCount > 0 && (
-                                <Box mt="xs">
-                                  <Button
-                                    size="compact-xs"
-                                    variant="subtle"
-                                    onClick={() =>
-                                      handleToggleReplies(p._idRow)
-                                    }
-                                  >
-                                    {replies[p._idRow]
-                                      ? "Hide Replies"
-                                      : `Show Replies (${p._nReplyCount})`}
-                                  </Button>
-
-                                  {replies[p._idRow] && (
-                                    <Stack
-                                      gap="xs"
-                                      pl="md"
-                                      mt="xs"
-                                      style={{
-                                        borderLeft:
-                                          "2px solid var(--color-border-subtle)",
-                                      }}
-                                    >
-                                      {replies[p._idRow].map((r) => (
-                                        <Box key={r._idRow} p="2xs">
-                                          <Group
-                                            justify="space-between"
-                                            mb="3xs"
-                                          >
-                                            <Group gap="xs">
-                                              <Avatar
-                                                src={r._aSubmitter?._sAvatarUrl}
-                                                size="xs"
-                                              />
-                                              <Text fw={600} size="2xs">
-                                                {r._aSubmitter?._sName ||
-                                                  "User"}
-                                              </Text>
-                                            </Group>
-                                            <Text size="2xs" c="dimmed">
-                                              {formatDate(r._tsDateAdded)}
-                                            </Text>
-                                          </Group>
-                                          <div
-                                            className="gb-rich-text"
-                                            dangerouslySetInnerHTML={{
-                                              __html: r._sText,
-                                            }}
-                                          />
-                                        </Box>
-                                      ))}
-                                    </Stack>
-                                  )}
-                                </Box>
-                              )}
-                          </Card>
-                        ))}
-                      </Stack>
-                    ) : (
-                      <Text size="sm" c="dimmed" ta="center" py="md">
-                        No comments posted on this mod yet
-                      </Text>
-                    )}
-                  </Box>
+                  <GbModCommentsTab
+                    posts={posts}
+                    replies={replies}
+                    onToggleReplies={handleToggleReplies}
+                  />
                 </Tabs.Panel>
               </Tabs>
             </Stack>
