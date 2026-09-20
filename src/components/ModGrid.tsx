@@ -1,38 +1,11 @@
-import {
-  ActionIcon,
-  Badge,
-  Box,
-  Button,
-  Card,
-  Center,
-  Drawer,
-  Group,
-  Paper,
-  ScrollArea,
-  SegmentedControl,
-  Select,
-  SimpleGrid,
-  Stack,
-  Text,
-} from "@mantine/core";
-import {
-  CheckSquare,
-  FolderSymlink,
-  FolderX,
-  LayoutGrid,
-  List,
-  Power,
-  PowerOff,
-  Settings,
-  Trash2,
-  X,
-} from "lucide-react";
+import { Box, Button, Center, Stack, Text } from "@mantine/core";
+import { FolderX, Settings } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { motion } from "motion/react";
 import { ConflictGroup, ModItem, ModUpdateInfo } from "../types";
-import { staggerItem } from "../motion";
-import ModCard from "./ModCard";
-import ModListItem from "./ModListItem";
+import ModBatchBar from "./ModBatchBar";
+import ModBatchDeleteDrawer from "./ModBatchDeleteDrawer";
+import ModGridItems from "./ModGridItems";
+import ModGridToolbar from "./ModGridToolbar";
 
 interface ModGridProps {
   mods: ModItem[];
@@ -99,6 +72,11 @@ export default function ModGrid({
   const [isDeleting, setIsDeleting] = useState(false);
   const [isTogglingBatch, setIsTogglingBatch] = useState(false);
 
+  const exitSelectMode = () => {
+    setIsSelectMode(false);
+    setSelectedModIds(new Set());
+  };
+
   const toggleSelectMode = () => {
     setIsSelectMode((prev) => {
       if (prev) {
@@ -150,25 +128,12 @@ export default function ModGrid({
     [mods, selectedModIds],
   );
 
-  const handleBatchEnable = async () => {
+  const handleBatchToggle = async (enable: boolean) => {
     if (selectedModIds.size === 0) return;
     setIsTogglingBatch(true);
     try {
-      await onBatchToggle(Array.from(selectedModIds), true);
-      setSelectedModIds(new Set());
-      setIsSelectMode(false);
-    } finally {
-      setIsTogglingBatch(false);
-    }
-  };
-
-  const handleBatchDisable = async () => {
-    if (selectedModIds.size === 0) return;
-    setIsTogglingBatch(true);
-    try {
-      await onBatchToggle(Array.from(selectedModIds), false);
-      setSelectedModIds(new Set());
-      setIsSelectMode(false);
+      await onBatchToggle(Array.from(selectedModIds), enable);
+      exitSelectMode();
     } finally {
       setIsTogglingBatch(false);
     }
@@ -176,10 +141,7 @@ export default function ModGrid({
 
   const handleBatchMove = () => {
     if (selectedModsList.length === 0) return;
-    onBatchMoveCategory(selectedModsList, () => {
-      setSelectedModIds(new Set());
-      setIsSelectMode(false);
-    });
+    onBatchMoveCategory(selectedModsList, exitSelectMode);
   };
 
   const confirmBatchDelete = async () => {
@@ -187,8 +149,7 @@ export default function ModGrid({
     setIsDeleting(true);
     try {
       await onBatchDelete(selectedModsList);
-      setSelectedModIds(new Set());
-      setIsSelectMode(false);
+      exitSelectMode();
       setDeleteDrawerOpen(false);
     } finally {
       setIsDeleting(false);
@@ -229,113 +190,19 @@ export default function ModGrid({
 
   return (
     <Box p="sm">
-      <Group justify="space-between" mb="sm" wrap="wrap" gap="xs">
-        <Group gap="xs">
-          <SegmentedControl
-            size="xs"
-            value={statusFilter}
-            onChange={(val) =>
-              onStatusFilterChange(val as "all" | "enabled" | "disabled")
-            }
-            data={[
-              {
-                value: "all",
-                label: (
-                  <Center
-                    h="var(--control-inner-height-xs)"
-                    style={{
-                      padding: "0 var(--space-xs)",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    All ({totalCount})
-                  </Center>
-                ),
-              },
-              {
-                value: "enabled",
-                label: (
-                  <Center
-                    h="var(--control-inner-height-xs)"
-                    style={{
-                      padding: "0 var(--space-xs)",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    Enabled ({enabledCount})
-                  </Center>
-                ),
-              },
-              {
-                value: "disabled",
-                label: (
-                  <Center
-                    h="var(--control-inner-height-xs)"
-                    style={{
-                      padding: "0 var(--space-xs)",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    Disabled ({disabledCount})
-                  </Center>
-                ),
-              },
-            ]}
-          />
-          <Select
-            size="xs"
-            w="var(--control-width-sm)"
-            value={sortBy}
-            onChange={(val) => onSortByChange(val || "name-asc")}
-            allowDeselect={false}
-            data={[
-              { value: "name-asc", label: "Name (A to Z)" },
-              { value: "name-desc", label: "Name (Z to A)" },
-              { value: "last-updated", label: "Last Updated" },
-            ]}
-          />
-        </Group>
-        <Group gap="xs">
-          <SegmentedControl
-            size="xs"
-            value={viewMode}
-            onChange={(val) => onViewModeChange(val as "grid" | "list")}
-            data={[
-              {
-                value: "grid",
-                label: (
-                  <Center
-                    h="var(--control-inner-height-xs)"
-                    style={{ padding: "0 var(--space-3xs)" }}
-                  >
-                    <LayoutGrid size={14} />
-                  </Center>
-                ),
-              },
-              {
-                value: "list",
-                label: (
-                  <Center
-                    h="var(--control-inner-height-xs)"
-                    style={{ padding: "0 var(--space-3xs)" }}
-                  >
-                    <List size={14} />
-                  </Center>
-                ),
-              },
-            ]}
-          />
-          <Button
-            size="xs"
-            variant={isSelectMode ? "filled" : "default"}
-            leftSection={<CheckSquare size={14} />}
-            onClick={toggleSelectMode}
-            h="var(--control-height-xs)"
-          >
-            {isSelectMode ? "Done" : "Select"}
-          </Button>
-        </Group>
-      </Group>
+      <ModGridToolbar
+        statusFilter={statusFilter}
+        onStatusFilterChange={onStatusFilterChange}
+        totalCount={totalCount}
+        enabledCount={enabledCount}
+        disabledCount={disabledCount}
+        sortBy={sortBy}
+        onSortByChange={onSortByChange}
+        viewMode={viewMode}
+        onViewModeChange={onViewModeChange}
+        isSelectMode={isSelectMode}
+        onToggleSelectMode={toggleSelectMode}
+      />
 
       {mods.length === 0 ? (
         <Center h="var(--height-empty-state)">
@@ -354,236 +221,49 @@ export default function ModGrid({
             </Text>
           </Stack>
         </Center>
-      ) : viewMode === "list" ? (
-        <Stack gap="xs">
-          {mods.map((mod, index) => (
-            <motion.div
-              key={mod.id}
-              variants={staggerItem()}
-              initial="hidden"
-              animate="visible"
-              custom={index}
-            >
-              <ModListItem
-                mod={mod}
-                inConflict={conflictingModIds.has(mod.id)}
-                updateInfo={updatesMap[mod.id]}
-                isSelectMode={isSelectMode}
-                isSelected={selectedModIds.has(mod.id)}
-                onToggleSelect={handleToggleSelect}
-                onToggle={onToggle}
-                onMoveCategory={onMoveCategory}
-                onOpenFolder={onOpenFolder}
-                onDelete={onDelete}
-                onOpenConflicts={onOpenConflicts}
-                onOpenKeybinds={onOpenKeybinds}
-                onOpenGameBanana={onOpenGameBanana}
-                onOpenLinkGameBanana={onOpenLinkGameBanana}
-                onSetPreview={onSetPreview}
-                isNtePak={activeGameId === "ntepak"}
-              />
-            </motion.div>
-          ))}
-        </Stack>
       ) : (
-        <SimpleGrid cols={{ base: 1, sm: 2, md: 3, lg: 4, xl: 5 }} spacing="sm">
-          {mods.map((mod, index) => (
-            <motion.div
-              key={mod.id}
-              variants={staggerItem()}
-              initial="hidden"
-              animate="visible"
-              custom={index}
-              style={{ height: "100%" }}
-            >
-              <ModCard
-                mod={mod}
-                inConflict={conflictingModIds.has(mod.id)}
-                updateInfo={updatesMap[mod.id]}
-                isSelectMode={isSelectMode}
-                isSelected={selectedModIds.has(mod.id)}
-                onToggleSelect={handleToggleSelect}
-                onToggle={onToggle}
-                onMoveCategory={onMoveCategory}
-                onOpenFolder={onOpenFolder}
-                onDelete={onDelete}
-                onOpenConflicts={onOpenConflicts}
-                onOpenKeybinds={onOpenKeybinds}
-                onOpenGameBanana={onOpenGameBanana}
-                onOpenLinkGameBanana={onOpenLinkGameBanana}
-                onSetPreview={onSetPreview}
-                isNtePak={activeGameId === "ntepak"}
-              />
-            </motion.div>
-          ))}
-        </SimpleGrid>
+        <ModGridItems
+          mods={mods}
+          viewMode={viewMode}
+          conflictingModIds={conflictingModIds}
+          updatesMap={updatesMap}
+          isSelectMode={isSelectMode}
+          selectedModIds={selectedModIds}
+          onToggleSelect={handleToggleSelect}
+          onToggle={onToggle}
+          onMoveCategory={onMoveCategory}
+          onOpenFolder={onOpenFolder}
+          onDelete={onDelete}
+          onOpenConflicts={onOpenConflicts}
+          onOpenKeybinds={onOpenKeybinds}
+          onOpenGameBanana={onOpenGameBanana}
+          onOpenLinkGameBanana={onOpenLinkGameBanana}
+          onSetPreview={onSetPreview}
+          activeGameId={activeGameId}
+        />
       )}
 
       {isSelectMode && (
-        <Box
-          style={{
-            position: "fixed",
-            bottom: "var(--space-lg)",
-            left: "50%",
-            transform: "translateX(-50%)",
-            zIndex: "var(--z-index-floating-bar)",
-            maxWidth: "var(--max-width-floating-bar)",
-            width: "calc(100% - var(--space-2xl))",
-          }}
-        >
-          <Card
-            p="xs"
-            style={{
-              backgroundColor: "var(--color-bg-surface-3)",
-              borderColor: "var(--color-border-strong)",
-              boxShadow: "var(--shadow-lg)",
-              borderRadius: "var(--radius-pill)",
-            }}
-            className="animate-fade-in-up"
-          >
-            <Group
-              justify="space-between"
-              align="center"
-              gap="xs"
-              wrap="nowrap"
-            >
-              <Group gap="xs" wrap="nowrap">
-                <Badge
-                  variant="filled"
-                  color={selectedModIds.size > 0 ? "gray" : "dark"}
-                  size="sm"
-                >
-                  {selectedModIds.size}{" "}
-                  {selectedModIds.size === 1 ? "mod selected" : "mods selected"}
-                </Badge>
-                <Button
-                  variant="subtle"
-                  size="xs"
-                  color="gray"
-                  onClick={toggleSelectAll}
-                >
-                  {allVisibleSelected ? "Deselect All" : "Select All"}
-                </Button>
-              </Group>
-
-              <Group gap="2xs" wrap="nowrap">
-                <Button
-                  variant="default"
-                  size="xs"
-                  leftSection={
-                    <Power size={14} color="var(--color-status-success)" />
-                  }
-                  disabled={selectedModIds.size === 0 || isTogglingBatch}
-                  loading={isTogglingBatch}
-                  onClick={handleBatchEnable}
-                >
-                  Enable
-                </Button>
-                <Button
-                  variant="default"
-                  size="xs"
-                  leftSection={
-                    <PowerOff size={14} color="var(--color-status-warning)" />
-                  }
-                  disabled={selectedModIds.size === 0 || isTogglingBatch}
-                  loading={isTogglingBatch}
-                  onClick={handleBatchDisable}
-                >
-                  Disable
-                </Button>
-                <Button
-                  variant="default"
-                  size="xs"
-                  leftSection={<FolderSymlink size={14} />}
-                  disabled={selectedModIds.size === 0}
-                  onClick={handleBatchMove}
-                >
-                  Move
-                </Button>
-                <Button
-                  variant="filled"
-                  color="red"
-                  size="xs"
-                  leftSection={<Trash2 size={14} />}
-                  disabled={selectedModIds.size === 0}
-                  onClick={() => setDeleteDrawerOpen(true)}
-                >
-                  Delete
-                </Button>
-                <ActionIcon
-                  variant="subtle"
-                  size="sm"
-                  color="gray"
-                  onClick={() => {
-                    setIsSelectMode(false);
-                    setSelectedModIds(new Set());
-                  }}
-                >
-                  <X size={14} />
-                </ActionIcon>
-              </Group>
-            </Group>
-          </Card>
-        </Box>
+        <ModBatchBar
+          selectedCount={selectedModIds.size}
+          allVisibleSelected={allVisibleSelected}
+          isTogglingBatch={isTogglingBatch}
+          onToggleSelectAll={toggleSelectAll}
+          onEnable={() => handleBatchToggle(true)}
+          onDisable={() => handleBatchToggle(false)}
+          onMove={handleBatchMove}
+          onDelete={() => setDeleteDrawerOpen(true)}
+          onClose={exitSelectMode}
+        />
       )}
 
-      <Drawer
+      <ModBatchDeleteDrawer
         opened={deleteDrawerOpen}
-        onClose={() => !isDeleting && setDeleteDrawerOpen(false)}
-        size="md"
-        title={
-          <Group gap="xs">
-            <Trash2 size={20} color="var(--color-status-error)" />
-            <Text fw={700} size="md">
-              Delete Selected Mods
-            </Text>
-          </Group>
-        }
-      >
-        <Stack gap="md" h="100%">
-          <Text size="sm">
-            Are you sure you want to permanently delete{" "}
-            {selectedModsList.length}{" "}
-            {selectedModsList.length === 1 ? "mod" : "mods"} from disk? This
-            action cannot be undone.
-          </Text>
-          <ScrollArea style={{ flex: 1 }}>
-            <Stack gap="2xs">
-              {selectedModsList.map((m) => (
-                <Paper key={m.id} p="xs">
-                  <Text size="xs" fw={600} truncate>
-                    {m.name}
-                  </Text>
-                  {m.category && (
-                    <Text size="2xs" c="dimmed">
-                      Category: {m.category}
-                    </Text>
-                  )}
-                </Paper>
-              ))}
-            </Stack>
-          </ScrollArea>
-          <Group justify="flex-end" gap="xs" mt="auto">
-            <Button
-              variant="default"
-              size="xs"
-              disabled={isDeleting}
-              onClick={() => setDeleteDrawerOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="filled"
-              color="red"
-              size="xs"
-              loading={isDeleting}
-              onClick={confirmBatchDelete}
-            >
-              Delete
-            </Button>
-          </Group>
-        </Stack>
-      </Drawer>
+        mods={selectedModsList}
+        isDeleting={isDeleting}
+        onClose={() => setDeleteDrawerOpen(false)}
+        onConfirm={confirmBatchDelete}
+      />
     </Box>
   );
 }
