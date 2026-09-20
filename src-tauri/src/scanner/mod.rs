@@ -10,7 +10,7 @@ pub use categories::{
 pub use hash::extract_hashes_from_ini;
 pub use mods::{
     batch_delete_mods, batch_move_mods, batch_toggle_mods, delete_mod, link_mod, move_mod_category,
-    scan_mods, set_mod_preview, toggle_mod_status, unlink_mod,
+    postprocess_3dmigoto_extracted_mod, scan_mods, set_mod_preview, toggle_mod_status, unlink_mod,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -377,5 +377,29 @@ mod tests {
 
         let scanned_after_delete = scan_mods(mods_dir).unwrap();
         assert_eq!(scanned_after_delete.len(), 0);
+    }
+
+    #[test]
+    fn test_postprocess_3dmigoto_requires_ini() {
+        let temp = tempdir().unwrap();
+        let mod_dir = temp.path().join("pak_only");
+        fs::create_dir_all(&mod_dir).unwrap();
+        fs::write(mod_dir.join("Costume.pak"), "pak").unwrap();
+
+        let res = postprocess_3dmigoto_extracted_mod(&mod_dir);
+        assert!(res.is_err());
+        assert!(!mod_dir.exists());
+    }
+
+    #[test]
+    fn test_postprocess_3dmigoto_accepts_ini() {
+        let temp = tempdir().unwrap();
+        let mod_dir = temp.path().join("ini_mod");
+        fs::create_dir_all(&mod_dir).unwrap();
+        fs::write(mod_dir.join("mod.ini"), "hash = 12345678").unwrap();
+
+        let res = postprocess_3dmigoto_extracted_mod(&mod_dir);
+        assert!(res.is_ok());
+        assert!(mod_dir.exists());
     }
 }

@@ -25,6 +25,11 @@ pub fn supported_games() -> Vec<GameDefinition> {
             gamebanana_game_id: 10349,
         },
         GameDefinition {
+            id: "nte".to_string(),
+            name: "Neverness to Everness (NEMI)".to_string(),
+            gamebanana_game_id: 23012,
+        },
+        GameDefinition {
             id: "ntepak".to_string(),
             name: "Neverness to Everness (pak)".to_string(),
             gamebanana_game_id: 23012,
@@ -58,8 +63,11 @@ mod tests {
     #[test]
     fn test_supported_games() {
         let games = supported_games();
-        assert_eq!(games.len(), 7);
+        assert_eq!(games.len(), 8);
         assert!(game_by_id("hi3").is_some());
+        let nte = game_by_id("nte").unwrap();
+        assert_eq!(nte.name, "Neverness to Everness (NEMI)");
+        assert_eq!(nte.gamebanana_game_id, 23012);
         assert!(game_by_id("ntepak").is_some());
         let nte_pak = game_by_id("ntepak").unwrap();
         assert_eq!(nte_pak.name, "Neverness to Everness (pak)");

@@ -207,9 +207,12 @@ pub async fn download_and_install_mod(
     };
     clear_temp_paths(&temp_archive_path, &temp_extract_dir);
 
-    if is_nte_pak
-        && let Err(err) = crate::nte_pak::postprocess_nte_pak_extracted_mod(&extracted_dir)
-    {
+    let postprocess_result = if is_nte_pak {
+        crate::nte_pak::postprocess_nte_pak_extracted_mod(&extracted_dir)
+    } else {
+        crate::scanner::postprocess_3dmigoto_extracted_mod(&extracted_dir)
+    };
+    if let Err(err) = postprocess_result {
         let _ = app.emit(
             "download-error",
             serde_json::json!({

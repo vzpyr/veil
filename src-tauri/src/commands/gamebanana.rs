@@ -1,7 +1,7 @@
 use crate::archive::{extract_any_archive, sanitize_folder_name};
 use crate::gamebanana::{CancelRegistry, TempRegistry, clear_temp_paths, download_and_install_mod};
 use crate::nte_pak::postprocess_nte_pak_extracted_mod;
-use crate::scanner::{link_mod, unlink_mod};
+use crate::scanner::{link_mod, postprocess_3dmigoto_extracted_mod, unlink_mod};
 use crate::symlink::{
     disabled_dir, effective_category_name, ensure_veil_dirs, resolve_category_dir,
 };
@@ -70,6 +70,8 @@ pub fn extract_archive_file(
 
     if is_nte_pak {
         postprocess_nte_pak_extracted_mod(&extracted)?;
+    } else {
+        postprocess_3dmigoto_extracted_mod(&extracted)?;
     }
 
     let rel_id = extracted

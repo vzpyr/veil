@@ -9,6 +9,45 @@ use super::ModItem;
 use super::hash::collect_hashes_from_folder;
 use crate::mod_folder::{find_preview_image, is_dir_empty_or_hidden, read_veil_metadata};
 
+pub fn postprocess_3dmigoto_extracted_mod(mod_dir: &Path) -> Result<(), String> {
+    let mut stack = vec![mod_dir.to_path_buf()];
+    let mut has_ini = false;
+
+    while let Some(dir) = stack.pop() {
+        let entries = match fs::read_dir(&dir) {
+            Ok(e) => e,
+            Err(_) => continue,
+        };
+
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.is_dir() {
+                stack.push(path);
+            } else if path.is_file()
+                && let Some(ext) = path.extension().and_then(|e| e.to_str())
+                && ext.eq_ignore_ascii_case("ini")
+            {
+                has_ini = true;
+                break;
+            }
+        }
+
+        if has_ini {
+            break;
+        }
+    }
+
+    if !has_ini {
+        let _ = fs::remove_dir_all(mod_dir);
+        return Err(
+            "Archive does not contain any .ini files. This game only supports 3DMigoto mods."
+                .to_string(),
+        );
+    }
+
+    Ok(())
+}
+
 pub fn scan_mods(mods_dir: &Path) -> Result<Vec<ModItem>, String> {
     let disabled_dir = disabled_dir(mods_dir);
     let active_dir = active_dir(mods_dir);
