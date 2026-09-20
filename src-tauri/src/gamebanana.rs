@@ -126,13 +126,27 @@ pub async fn download_and_install_mod(
     item_id: Option<u64>,
     file_id: Option<u64>,
     version: Option<String>,
+    game_id: Option<String>,
 ) -> Result<String, String> {
     let mods_path = Path::new(&mods_dir);
-    ensure_veil_dirs(mods_path)?;
+    let is_nte = game_id.as_deref() == Some("nte");
+    let base_dir = if is_nte {
+        fs::create_dir_all(mods_path).map_err(|e| e.to_string())?;
+        mods_path.to_path_buf()
+    } else {
+        ensure_veil_dirs(mods_path)?;
+        get_disabled_dir(mods_path)
+    };
     cancel.clear(&key);
 
-    let disabled_dir = get_disabled_dir(mods_path);
-    let target_parent_dir = resolve_category_dir(&disabled_dir, category.as_deref())?;
+    let target_parent_dir = if is_nte {
+        let cat_name = crate::symlink::effective_category_name(category.as_deref());
+        let dir = base_dir.join(cat_name);
+        fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
+        dir
+    } else {
+        resolve_category_dir(&base_dir, category.as_deref())?
+    };
 
     let temp_download_dir = mods_path.join(".veil_temp");
     fs::create_dir_all(&temp_download_dir).map_err(|e| e.to_string())?;
@@ -293,6 +307,17 @@ pub async fn download_and_install_mod(
     };
     clear_temp_paths(&temp_archive_path, &temp_extract_dir);
 
+    if is_nte && let Err(err) = crate::nte::postprocess_nte_extracted_mod(&extracted_dir) {
+        let _ = app.emit(
+            "download-error",
+            serde_json::json!({
+                "key": key.clone(),
+                "error": err.clone()
+            }),
+        );
+        return Err(err);
+    }
+
     if let Some(img_url) = preview_url
         && !img_url.is_empty()
         && let Ok(img_resp) = client.get(&img_url).send().await
@@ -320,7 +345,7 @@ pub async fn download_and_install_mod(
         .to_string();
 
     let rel_id = extracted_dir
-        .strip_prefix(&disabled_dir)
+        .strip_prefix(&base_dir)
         .map_err(|e| e.to_string())?
         .to_string_lossy()
         .replace('\\', "/");

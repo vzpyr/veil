@@ -4,6 +4,7 @@ pub mod conflict;
 pub mod gamebanana;
 pub mod games;
 pub mod keybinds;
+pub mod nte;
 pub mod scanner;
 pub mod symlink;
 
@@ -16,6 +17,13 @@ use gamebanana::{
 use games::{GameDefinition, get_supported_games};
 use keybinds::{
     ModKeybindData, parse_mod_keybinds_and_variables, set_d3dx_user_toggle, update_ini_keybind,
+};
+use nte::{
+    LoaderRelease, NteLoaderStatus, create_nte_category, delete_nte_category, delete_nte_mod,
+    fetch_asi_loader_releases, fetch_sig_bypasser_releases, get_nte_loader_status,
+    install_asi_loader, install_sig_bypasser, list_nte_categories, move_nte_mod_category,
+    postprocess_nte_extracted_mod, rename_nte_category, resolve_nte_paths, scan_nte_mods,
+    toggle_nte_mod, uninstall_asi_loader, uninstall_sig_bypasser,
 };
 use scanner::{
     CategoryItem, ModItem, cleanup_empty_categories, create_category, delete_category, delete_mod,
@@ -61,7 +69,11 @@ fn set_game_mods_dir(
     let trimmed = mods_dir.trim().to_string();
     if !trimmed.is_empty() {
         let p = Path::new(&trimmed);
-        ensure_veil_dirs(p)?;
+        if game_id == "nte" {
+            std::fs::create_dir_all(p).map_err(|e| e.to_string())?;
+        } else {
+            ensure_veil_dirs(p)?;
+        }
     }
 
     let entry = config.games.entry(game_id).or_default();
@@ -73,6 +85,82 @@ fn set_game_mods_dir(
 
     write_config(&path, &config)?;
     Ok(config)
+}
+
+#[tauri::command]
+fn set_nte_game_dir(app: AppHandle, game_dir: String) -> Result<AppConfig, String> {
+    let path = get_config_path(&app)?;
+    let mut config = read_config(&path);
+
+    let trimmed = game_dir.trim().to_string();
+    if trimmed.is_empty() {
+        let entry = config.games.entry("nte".to_string()).or_default();
+        entry.game_dir = None;
+        entry.mods_dir = None;
+    } else {
+        let p = Path::new(&trimmed);
+        let (win64_dir, mods_dir) = resolve_nte_paths(p);
+        std::fs::create_dir_all(&win64_dir).map_err(|e| e.to_string())?;
+        std::fs::create_dir_all(&mods_dir).map_err(|e| e.to_string())?;
+
+        let entry = config.games.entry("nte".to_string()).or_default();
+        entry.game_dir = Some(trimmed);
+        entry.mods_dir = Some(mods_dir.to_string_lossy().to_string());
+    }
+
+    write_config(&path, &config)?;
+    Ok(config)
+}
+
+#[tauri::command]
+async fn get_nte_asi_loader_releases() -> Result<Vec<LoaderRelease>, String> {
+    fetch_asi_loader_releases().await
+}
+
+#[tauri::command]
+async fn get_nte_sig_bypasser_releases() -> Result<Vec<LoaderRelease>, String> {
+    fetch_sig_bypasser_releases().await
+}
+
+#[tauri::command]
+fn get_nte_status(game_dir: String) -> Result<NteLoaderStatus, String> {
+    get_nte_loader_status(Path::new(&game_dir))
+}
+
+#[tauri::command]
+async fn install_nte_asi_loader(
+    game_dir: String,
+    download_url: String,
+    version: String,
+    dll_name: String,
+) -> Result<(), String> {
+    install_asi_loader(Path::new(&game_dir), &download_url, &version, &dll_name).await
+}
+
+#[tauri::command]
+fn uninstall_nte_asi_loader(game_dir: String) -> Result<(), String> {
+    uninstall_asi_loader(Path::new(&game_dir))
+}
+
+#[tauri::command]
+async fn install_nte_sig_bypasser(
+    game_dir: String,
+    download_url: String,
+    version: String,
+    subpath: Option<String>,
+) -> Result<(), String> {
+    install_sig_bypasser(
+        Path::new(&game_dir),
+        &download_url,
+        &version,
+        subpath.as_deref(),
+    )
+    .await
+}
+
+#[tauri::command]
+fn uninstall_nte_sig_bypasser(game_dir: String) -> Result<(), String> {
+    uninstall_sig_bypasser(Path::new(&game_dir))
 }
 
 #[tauri::command]
@@ -127,9 +215,12 @@ fn set_view_mode(app: AppHandle, view_mode: String) -> Result<AppConfig, String>
 }
 
 #[tauri::command]
-fn cleanup_on_boot(mods_dir: String) -> Result<(), String> {
+fn cleanup_on_boot(mods_dir: String, game_id: Option<String>) -> Result<(), String> {
     let path = Path::new(&mods_dir);
     if !path.exists() {
+        return Ok(());
+    }
+    if game_id.as_deref() == Some("nte") {
         return Ok(());
     }
     prune_orphaned_symlinks(path)?;
@@ -139,8 +230,12 @@ fn cleanup_on_boot(mods_dir: String) -> Result<(), String> {
 }
 
 #[tauri::command]
-fn scan_installed_mods(mods_dir: String) -> Result<Vec<ModItem>, String> {
+fn scan_installed_mods(mods_dir: String, game_id: Option<String>) -> Result<Vec<ModItem>, String> {
     let path = Path::new(&mods_dir);
+    if game_id.as_deref() == Some("nte") {
+        std::fs::create_dir_all(path).map_err(|e| e.to_string())?;
+        return scan_nte_mods(path);
+    }
     ensure_veil_dirs(path)?;
     prune_orphaned_symlinks(path)?;
     cleanup_empty_active_dir(path)?;
@@ -148,7 +243,13 @@ fn scan_installed_mods(mods_dir: String) -> Result<Vec<ModItem>, String> {
 }
 
 #[tauri::command]
-fn get_mod_conflicts(mods_dir: String) -> Result<Vec<ConflictGroup>, String> {
+fn get_mod_conflicts(
+    mods_dir: String,
+    game_id: Option<String>,
+) -> Result<Vec<ConflictGroup>, String> {
+    if game_id.as_deref() == Some("nte") {
+        return Ok(Vec::new());
+    }
     let path = Path::new(&mods_dir);
     ensure_veil_dirs(path)?;
     let mods = scan_mods(path)?;
@@ -156,15 +257,27 @@ fn get_mod_conflicts(mods_dir: String) -> Result<Vec<ConflictGroup>, String> {
 }
 
 #[tauri::command]
-fn get_categories(mods_dir: String) -> Result<Vec<CategoryItem>, String> {
+fn get_categories(mods_dir: String, game_id: Option<String>) -> Result<Vec<CategoryItem>, String> {
     let path = Path::new(&mods_dir);
+    if game_id.as_deref() == Some("nte") {
+        std::fs::create_dir_all(path).map_err(|e| e.to_string())?;
+        return list_nte_categories(path);
+    }
     ensure_veil_dirs(path)?;
     list_categories(path)
 }
 
 #[tauri::command]
-fn toggle_mod(mods_dir: String, mod_id: String, enable: bool) -> Result<bool, String> {
+fn toggle_mod(
+    mods_dir: String,
+    mod_id: String,
+    enable: bool,
+    game_id: Option<String>,
+) -> Result<bool, String> {
     let path = Path::new(&mods_dir);
+    if game_id.as_deref() == Some("nte") {
+        return toggle_nte_mod(path, &mod_id, enable);
+    }
     toggle_mod_status(path, &mod_id, enable)
 }
 
@@ -173,26 +286,83 @@ fn move_mod(
     mods_dir: String,
     mod_id: String,
     target_category: Option<String>,
+    game_id: Option<String>,
 ) -> Result<String, String> {
     let path = Path::new(&mods_dir);
+    if game_id.as_deref() == Some("nte") {
+        return move_nte_mod_category(path, &mod_id, target_category);
+    }
     move_mod_category(path, &mod_id, target_category)
 }
 
 #[tauri::command]
-fn create_new_category(mods_dir: String, category_name: String) -> Result<(), String> {
+fn create_new_category(
+    mods_dir: String,
+    category_name: String,
+    game_id: Option<String>,
+) -> Result<(), String> {
     let path = Path::new(&mods_dir);
+    if game_id.as_deref() == Some("nte") {
+        return create_nte_category(path, &category_name);
+    }
     create_category(path, &category_name)
 }
 
 #[tauri::command]
-fn delete_installed_mod(mods_dir: String, mod_id: String) -> Result<(), String> {
+fn rename_existing_category(
+    mods_dir: String,
+    old_name: String,
+    new_name: String,
+    game_id: Option<String>,
+) -> Result<(), String> {
     let path = Path::new(&mods_dir);
+    if game_id.as_deref() == Some("nte") {
+        return rename_nte_category(path, &old_name, &new_name);
+    }
+    rename_category(path, &old_name, &new_name)
+}
+
+#[tauri::command]
+fn delete_existing_category(
+    mods_dir: String,
+    category_name: String,
+    delete_mods: bool,
+    game_id: Option<String>,
+) -> Result<(), String> {
+    let path = Path::new(&mods_dir);
+    if game_id.as_deref() == Some("nte") {
+        return delete_nte_category(path, &category_name, delete_mods);
+    }
+    delete_category(path, &category_name, delete_mods)
+}
+
+#[tauri::command]
+fn delete_installed_mod(
+    mods_dir: String,
+    mod_id: String,
+    game_id: Option<String>,
+) -> Result<(), String> {
+    let path = Path::new(&mods_dir);
+    if game_id.as_deref() == Some("nte") {
+        return delete_nte_mod(path, &mod_id);
+    }
     delete_mod(path, &mod_id)
 }
 
 #[tauri::command]
-fn batch_toggle_mods(mods_dir: String, mod_ids: Vec<String>, enable: bool) -> Result<(), String> {
+fn batch_toggle_mods(
+    mods_dir: String,
+    mod_ids: Vec<String>,
+    enable: bool,
+    game_id: Option<String>,
+) -> Result<(), String> {
     let path = Path::new(&mods_dir);
+    if game_id.as_deref() == Some("nte") {
+        for id in &mod_ids {
+            toggle_nte_mod(path, id, enable)?;
+        }
+        return Ok(());
+    }
     scanner::batch_toggle_mods(path, &mod_ids, enable)
 }
 
@@ -201,14 +371,31 @@ fn batch_move_mods(
     mods_dir: String,
     mod_ids: Vec<String>,
     target_category: Option<String>,
+    game_id: Option<String>,
 ) -> Result<(), String> {
     let path = Path::new(&mods_dir);
+    if game_id.as_deref() == Some("nte") {
+        for id in &mod_ids {
+            move_nte_mod_category(path, id, target_category.clone())?;
+        }
+        return Ok(());
+    }
     scanner::batch_move_mods(path, &mod_ids, target_category)
 }
 
 #[tauri::command]
-fn batch_delete_mods(mods_dir: String, mod_ids: Vec<String>) -> Result<(), String> {
+fn batch_delete_mods(
+    mods_dir: String,
+    mod_ids: Vec<String>,
+    game_id: Option<String>,
+) -> Result<(), String> {
     let path = Path::new(&mods_dir);
+    if game_id.as_deref() == Some("nte") {
+        for id in &mod_ids {
+            delete_nte_mod(path, id)?;
+        }
+        return Ok(());
+    }
     scanner::batch_delete_mods(path, &mod_ids)
 }
 
@@ -234,12 +421,26 @@ fn extract_archive_file(
     mod_name: String,
     category: Option<String>,
     duplicate_action: Option<String>,
+    game_id: Option<String>,
 ) -> Result<String, String> {
     let path = Path::new(&mods_dir);
-    ensure_veil_dirs(path)?;
+    let is_nte = game_id.as_deref() == Some("nte");
+    let base_dir = if is_nte {
+        std::fs::create_dir_all(path).map_err(|e| e.to_string())?;
+        path.to_path_buf()
+    } else {
+        ensure_veil_dirs(path)?;
+        get_disabled_dir(path)
+    };
 
-    let disabled_dir = get_disabled_dir(path);
-    let target_parent_dir = resolve_category_dir(&disabled_dir, category.as_deref())?;
+    let target_parent_dir = if is_nte {
+        let cat_name = crate::symlink::effective_category_name(category.as_deref());
+        let dir = base_dir.join(cat_name);
+        std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
+        dir
+    } else {
+        resolve_category_dir(&base_dir, category.as_deref())?
+    };
 
     let action = duplicate_action.unwrap_or_else(|| "replace".to_string());
     let temp_download_dir = path.join(".veil_temp");
@@ -257,8 +458,13 @@ fn extract_archive_file(
     if let Some(parent) = temp_extract_dir.parent() {
         let _ = std::fs::remove_dir(parent);
     }
+
+    if is_nte {
+        postprocess_nte_extracted_mod(&extracted)?;
+    }
+
     let rel_id = extracted
-        .strip_prefix(&disabled_dir)
+        .strip_prefix(&base_dir)
         .map_err(|e| e.to_string())?
         .to_string_lossy()
         .replace('\\', "/");
@@ -282,6 +488,7 @@ async fn download_mod(
     item_id: Option<u64>,
     file_id: Option<u64>,
     version: Option<String>,
+    game_id: Option<String>,
 ) -> Result<String, String> {
     download_and_install_mod(
         app,
@@ -297,6 +504,7 @@ async fn download_mod(
         item_id,
         file_id,
         version,
+        game_id,
     )
     .await
 }
@@ -340,26 +548,6 @@ fn link_mod_to_gamebanana(
 }
 
 #[tauri::command]
-fn rename_existing_category(
-    mods_dir: String,
-    old_name: String,
-    new_name: String,
-) -> Result<(), String> {
-    let path = Path::new(&mods_dir);
-    rename_category(path, &old_name, &new_name)
-}
-
-#[tauri::command]
-fn delete_existing_category(
-    mods_dir: String,
-    category_name: String,
-    delete_mods: bool,
-) -> Result<(), String> {
-    let path = Path::new(&mods_dir);
-    delete_category(path, &category_name, delete_mods)
-}
-
-#[tauri::command]
 fn set_mod_preview_image(
     mods_dir: String,
     mod_id: String,
@@ -372,7 +560,6 @@ fn set_mod_preview_image(
 #[tauri::command]
 fn unlink_mod_from_gamebanana(mods_dir: String, mod_id: String) -> Result<(), String> {
     let path = Path::new(&mods_dir);
-    ensure_veil_dirs(path)?;
     unlink_mod(path, &mod_id)
 }
 
@@ -397,6 +584,14 @@ pub fn run() {
             get_config,
             set_active_game,
             set_game_mods_dir,
+            set_nte_game_dir,
+            get_nte_asi_loader_releases,
+            get_nte_sig_bypasser_releases,
+            get_nte_status,
+            install_nte_asi_loader,
+            uninstall_nte_asi_loader,
+            install_nte_sig_bypasser,
+            uninstall_nte_sig_bypasser,
             set_auto_categorize,
             set_show_nsfw,
             set_color_scheme,

@@ -461,13 +461,22 @@ pub fn cleanup_empty_categories(mods_dir: &Path) -> Result<(), String> {
     Ok(())
 }
 
+fn resolve_mod_folder(mods_dir: &Path, mod_id: &str) -> std::path::PathBuf {
+    let disabled_dir = get_disabled_dir(mods_dir);
+    let disabled_path = disabled_dir.join(mod_id);
+    if disabled_path.exists() {
+        disabled_path
+    } else {
+        mods_dir.join(mod_id)
+    }
+}
+
 pub fn set_mod_preview(
     mods_dir: &Path,
     mod_id: &str,
     image_bytes: &[u8],
 ) -> Result<String, String> {
-    let disabled_dir = get_disabled_dir(mods_dir);
-    let mod_folder = disabled_dir.join(mod_id);
+    let mod_folder = resolve_mod_folder(mods_dir, mod_id);
 
     if !mod_folder.exists() {
         return Err(format!(
@@ -660,8 +669,7 @@ pub fn link_mod(
     version: Option<String>,
     file_id: Option<u64>,
 ) -> Result<(), String> {
-    let disabled_dir = get_disabled_dir(mods_dir);
-    let mod_folder = disabled_dir.join(mod_rel_path);
+    let mod_folder = resolve_mod_folder(mods_dir, mod_rel_path);
     if !mod_folder.is_dir() {
         return Err(format!(
             "Mod folder does not exist: {}",
@@ -682,8 +690,7 @@ pub fn link_mod(
 }
 
 pub fn unlink_mod(mods_dir: &Path, mod_rel_path: &str) -> Result<(), String> {
-    let disabled_dir = get_disabled_dir(mods_dir);
-    let mod_folder = disabled_dir.join(mod_rel_path);
+    let mod_folder = resolve_mod_folder(mods_dir, mod_rel_path);
     let dotfile = mod_folder.join(".veil.json");
     if dotfile.is_file() {
         fs::remove_file(dotfile).map_err(|e| e.to_string())?;

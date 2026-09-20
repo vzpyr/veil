@@ -25,6 +25,11 @@ pub fn get_supported_games() -> Vec<GameDefinition> {
             gamebanana_game_id: 10349,
         },
         GameDefinition {
+            id: "nte".to_string(),
+            name: "Neverness to Everness (pak)".to_string(),
+            gamebanana_game_id: 23012,
+        },
+        GameDefinition {
             id: "starrail".to_string(),
             name: "Honkai Star Rail".to_string(),
             gamebanana_game_id: 18366,
@@ -53,8 +58,12 @@ mod tests {
     #[test]
     fn test_get_supported_games() {
         let games = get_supported_games();
-        assert_eq!(games.len(), 6);
+        assert_eq!(games.len(), 7);
         assert!(get_game_by_id("hi3").is_some());
+        assert!(get_game_by_id("nte").is_some());
+        let nte = get_game_by_id("nte").unwrap();
+        assert_eq!(nte.name, "Neverness to Everness (pak)");
+        assert_eq!(nte.gamebanana_game_id, 23012);
         let hi3 = get_game_by_id("hi3").unwrap();
         assert_eq!(hi3.name, "Honkai Impact 3rd");
         assert_eq!(hi3.gamebanana_game_id, 10349);

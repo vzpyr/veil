@@ -44,6 +44,7 @@ interface ModListItemProps {
   onOpenGameBanana: (mod: ModItem) => void;
   onOpenLinkGameBanana: (mod: ModItem) => void;
   onSetPreview: (mod: ModItem) => void;
+  isNte?: boolean;
 }
 
 export default function ModListItem({
@@ -62,6 +63,7 @@ export default function ModListItem({
   onOpenGameBanana,
   onOpenLinkGameBanana,
   onSetPreview,
+  isNte = false,
 }: ModListItemProps) {
   const previewUrl = mod.preview_path ? convertFileSrc(mod.preview_path) : null;
 
@@ -185,10 +187,12 @@ export default function ModListItem({
             </Group>
 
             <Group gap="xs" align="center">
-              <Badge size="xs" variant="outline" color="gray">
-                {mod.hashes.length}{" "}
-                {mod.hashes.length === 1 ? "hash" : "hashes"}
-              </Badge>
+              {!isNte && (
+                <Badge size="xs" variant="outline" color="gray">
+                  {mod.hashes.length}{" "}
+                  {mod.hashes.length === 1 ? "hash" : "hashes"}
+                </Badge>
+              )}
               {mod.version && (
                 <Badge size="xs" variant="subtle" color="gray">
                   v{formatVersion(mod.version)}
@@ -210,16 +214,18 @@ export default function ModListItem({
             onChange={(e) => onToggle(mod.id, e.currentTarget.checked)}
           />
 
-          <Tooltip label="Keybinds and toggles">
-            <ActionIcon
-              variant="subtle"
-              size="sm"
-              color="gray"
-              onClick={() => onOpenKeybinds(mod)}
-            >
-              <Keyboard size={16} />
-            </ActionIcon>
-          </Tooltip>
+          {!isNte && (
+            <Tooltip label="Keybinds and toggles">
+              <ActionIcon
+                variant="subtle"
+                size="sm"
+                color="gray"
+                onClick={() => onOpenKeybinds(mod)}
+              >
+                <Keyboard size={16} />
+              </ActionIcon>
+            </Tooltip>
+          )}
 
           <Menu position="bottom-end" shadow="md" width={190}>
             <Menu.Target>

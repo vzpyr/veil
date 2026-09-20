@@ -6,6 +6,7 @@ export interface GameDefinition {
 
 export interface GameSettings {
   mods_dir?: string;
+  game_dir?: string;
 }
 
 export interface AppConfig {
@@ -115,4 +116,19 @@ export interface ModVariableState {
 export interface ModKeybindData {
   keybinds: ModKeybind[];
   variables: ModVariableState[];
+}
+
+export interface LoaderRelease {
+  tag_name: string;
+  download_url: string;
+}
+
+export interface NteLoaderStatus {
+  asi_loader_installed: boolean;
+  asi_loader_version?: string;
+  asi_loader_dll?: string;
+  sig_bypasser_installed: boolean;
+  sig_bypasser_version?: string;
+  sig_bypasser_subpath?: string;
+  occupied_dlls: string[];
 }

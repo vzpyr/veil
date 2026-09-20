@@ -42,6 +42,7 @@ interface ModCardProps {
   onOpenGameBanana: (mod: ModItem) => void;
   onOpenLinkGameBanana: (mod: ModItem) => void;
   onSetPreview: (mod: ModItem) => void;
+  isNte?: boolean;
 }
 
 export default function ModCard({
@@ -60,6 +61,7 @@ export default function ModCard({
   onOpenGameBanana,
   onOpenLinkGameBanana,
   onSetPreview,
+  isNte = false,
 }: ModCardProps) {
   const previewUrl = mod.preview_path ? convertFileSrc(mod.preview_path) : null;
 
@@ -190,16 +192,18 @@ export default function ModCard({
           </Tooltip>
 
           <Group gap="3xs" wrap="nowrap" onClick={(e) => e.stopPropagation()}>
-            <Tooltip label="Keybinds and toggles">
-              <ActionIcon
-                variant="subtle"
-                size="sm"
-                color="gray"
-                onClick={() => onOpenKeybinds(mod)}
-              >
-                <Keyboard size={16} />
-              </ActionIcon>
-            </Tooltip>
+            {!isNte && (
+              <Tooltip label="Keybinds and toggles">
+                <ActionIcon
+                  variant="subtle"
+                  size="sm"
+                  color="gray"
+                  onClick={() => onOpenKeybinds(mod)}
+                >
+                  <Keyboard size={16} />
+                </ActionIcon>
+              </Tooltip>
+            )}
 
             <Menu position="bottom-end" shadow="md" width={190}>
               <Menu.Target>
@@ -260,9 +264,12 @@ export default function ModCard({
 
         <Group justify="space-between" align="center">
           <Group gap="2xs">
-            <Badge size="xs" variant="outline" color="gray">
-              {mod.hashes.length} {mod.hashes.length === 1 ? "hash" : "hashes"}
-            </Badge>
+            {!isNte && (
+              <Badge size="xs" variant="outline" color="gray">
+                {mod.hashes.length}{" "}
+                {mod.hashes.length === 1 ? "hash" : "hashes"}
+              </Badge>
+            )}
             {mod.version && (
               <Badge size="xs" variant="subtle" color="gray">
                 v{formatVersion(mod.version)}

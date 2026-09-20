@@ -61,6 +61,7 @@ interface ModGridProps {
   onBatchToggle: (modIds: string[], enable: boolean) => Promise<void>;
   onBatchMoveCategory: (mods: ModItem[], onDone?: () => void) => void;
   onBatchDelete: (mods: ModItem[]) => Promise<void>;
+  activeGameId?: string;
 }
 
 export default function ModGrid({
@@ -90,6 +91,7 @@ export default function ModGrid({
   onBatchToggle,
   onBatchMoveCategory,
   onBatchDelete,
+  activeGameId,
 }: ModGridProps) {
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedModIds, setSelectedModIds] = useState<Set<string>>(new Set());
@@ -378,6 +380,7 @@ export default function ModGrid({
                 onOpenGameBanana={onOpenGameBanana}
                 onOpenLinkGameBanana={onOpenLinkGameBanana}
                 onSetPreview={onSetPreview}
+                isNte={activeGameId === "nte"}
               />
             </motion.div>
           ))}
@@ -409,6 +412,7 @@ export default function ModGrid({
                 onOpenGameBanana={onOpenGameBanana}
                 onOpenLinkGameBanana={onOpenLinkGameBanana}
                 onSetPreview={onSetPreview}
+                isNte={activeGameId === "nte"}
               />
             </motion.div>
           ))}

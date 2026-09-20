@@ -14,6 +14,7 @@ import {
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import {
   Copy,
+  Cpu,
   Download,
   Folder,
   Globe,
@@ -86,62 +87,90 @@ export default function Header({
     label: g.name,
   }));
 
-  const tabData = [
-    {
-      value: "installed",
-      label: (
-        <Center
-          style={{
-            width: "100%",
-            gap: "var(--space-2xs)",
-            whiteSpace: "nowrap",
-            padding: "0 var(--space-xs)",
-          }}
-        >
-          <Folder size={16} />
-          <Text c="inherit" size="xs" fw={600}>
-            Mods
-          </Text>
-        </Center>
-      ),
-    },
-    {
-      value: "browser",
-      label: (
-        <Center
-          style={{
-            width: "100%",
-            gap: "var(--space-2xs)",
-            whiteSpace: "nowrap",
-            padding: "0 var(--space-xs)",
-          }}
-        >
-          <Globe size={16} />
-          <Text c="inherit" size="xs" fw={600}>
-            GameBanana
-          </Text>
-        </Center>
-      ),
-    },
-    {
-      value: "settings",
-      label: (
-        <Center
-          style={{
-            width: "100%",
-            gap: "var(--space-2xs)",
-            whiteSpace: "nowrap",
-            padding: "0 var(--space-xs)",
-          }}
-        >
-          <Settings size={16} />
-          <Text c="inherit" size="xs" fw={600}>
-            Settings
-          </Text>
-        </Center>
-      ),
-    },
-  ];
+  const tabData = useMemo(() => {
+    const tabs = [
+      {
+        value: "installed",
+        label: (
+          <Center
+            style={{
+              width: "100%",
+              gap: "var(--space-2xs)",
+              whiteSpace: "nowrap",
+              padding: "0 var(--space-xs)",
+            }}
+          >
+            <Folder size={16} />
+            <Text c="inherit" size="xs" fw={600}>
+              Mods
+            </Text>
+          </Center>
+        ),
+      },
+    ];
+
+    if (activeGameId === "nte") {
+      tabs.push({
+        value: "loader",
+        label: (
+          <Center
+            style={{
+              width: "100%",
+              gap: "var(--space-2xs)",
+              whiteSpace: "nowrap",
+              padding: "0 var(--space-xs)",
+            }}
+          >
+            <Cpu size={16} />
+            <Text c="inherit" size="xs" fw={600}>
+              Loader
+            </Text>
+          </Center>
+        ),
+      });
+    }
+
+    tabs.push(
+      {
+        value: "browser",
+        label: (
+          <Center
+            style={{
+              width: "100%",
+              gap: "var(--space-2xs)",
+              whiteSpace: "nowrap",
+              padding: "0 var(--space-xs)",
+            }}
+          >
+            <Globe size={16} />
+            <Text c="inherit" size="xs" fw={600}>
+              GameBanana
+            </Text>
+          </Center>
+        ),
+      },
+      {
+        value: "settings",
+        label: (
+          <Center
+            style={{
+              width: "100%",
+              gap: "var(--space-2xs)",
+              whiteSpace: "nowrap",
+              padding: "0 var(--space-xs)",
+            }}
+          >
+            <Settings size={16} />
+            <Text c="inherit" size="xs" fw={600}>
+              Settings
+            </Text>
+          </Center>
+        ),
+      },
+    );
+
+    return tabs;
+  }, [activeGameId]);
 
   return (
     <Box

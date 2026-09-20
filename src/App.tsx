@@ -23,6 +23,7 @@ import { DuplicateDrawer } from "./components/DuplicateDrawer";
 import Header from "./components/Header";
 import KeybindDrawer from "./components/KeybindDrawer";
 import LinkGameBananaDrawer from "./components/LinkGameBananaDrawer";
+import LoaderView from "./components/LoaderView";
 import ManualInstallDrawer from "./components/ManualInstallDrawer";
 import ModGrid from "./components/ModGrid";
 import SettingsView from "./components/SettingsView";
@@ -99,14 +100,26 @@ export default function App() {
   const activeGame =
     games.find((g) => g.id === config?.active_game_id) || games[0];
   const activeSettings =
-    activeGame && config ? config.games[activeGame.id] : undefined;
-  const modsDir = activeSettings?.mods_dir;
+    activeGame && config ? (config.games[activeGame.id] ?? {}) : {};
+  const modsDir = activeSettings.mods_dir;
   const autoCategorize = config?.auto_categorize ?? true;
   const showNsfw = config?.show_nsfw ?? false;
 
   const refreshData = useCallback(
-    async (targetModsDir?: string, activeConfig?: AppConfig | null) => {
-      const targetDir = targetModsDir || modsDir;
+    async (
+      targetModsDir?: string,
+      activeConfig?: AppConfig | null,
+      overrideGameId?: string,
+    ) => {
+      const cfg = activeConfig ?? configRef.current;
+      const targetGameId =
+        overrideGameId || cfg?.active_game_id || activeGame?.id;
+      const targetDir =
+        targetModsDir !== undefined
+          ? targetModsDir
+          : targetGameId
+            ? cfg?.games[targetGameId]?.mods_dir
+            : modsDir;
       if (!targetDir) {
         setMods([]);
         setCategories([]);
@@ -117,9 +130,18 @@ export default function App() {
       try {
         setIsRefreshing(true);
         const [scannedMods, catList, conflictList] = await Promise.all([
-          invoke<ModItem[]>("scan_installed_mods", { modsDir: targetDir }),
-          invoke<CategoryItem[]>("get_categories", { modsDir: targetDir }),
-          invoke<ConflictGroup[]>("get_mod_conflicts", { modsDir: targetDir }),
+          invoke<ModItem[]>("scan_installed_mods", {
+            modsDir: targetDir,
+            gameId: targetGameId,
+          }),
+          invoke<CategoryItem[]>("get_categories", {
+            modsDir: targetDir,
+            gameId: targetGameId,
+          }),
+          invoke<ConflictGroup[]>("get_mod_conflicts", {
+            modsDir: targetDir,
+            gameId: targetGameId,
+          }),
         ]);
         setMods(scannedMods);
         setCategories(catList);
@@ -143,13 +165,13 @@ export default function App() {
         setIsRefreshing(false);
       }
     },
-    [modsDir],
+    [modsDir, activeGame?.id],
   );
 
   const handleRescanMods = async () => {
     if (!modsDir) return;
     try {
-      await invoke("cleanup_on_boot", { modsDir });
+      await invoke("cleanup_on_boot", { modsDir, gameId: activeGame?.id });
       await refreshData();
       notifications.show({
         title: "Scan Complete",
@@ -307,6 +329,7 @@ export default function App() {
       itemId: nextItem.gamebananaId,
       fileId: nextItem.fileId,
       version: nextItem.version,
+      gameId: activeGame?.id,
     }).catch((err) => {
       setDownloadQueue((prev) =>
         prev.map((item) =>
@@ -322,7 +345,7 @@ export default function App() {
         color: "red",
       });
     });
-  }, [downloadQueue, modsDir]);
+  }, [downloadQueue, modsDir, activeGame?.id]);
 
   useEffect(() => {
     async function initialize() {
@@ -342,8 +365,11 @@ export default function App() {
           loadedConfig.active_game_id || loadedGames[0]?.id;
         const currentModsDir = loadedConfig.games[currentActiveId]?.mods_dir;
         if (currentModsDir) {
-          await invoke("cleanup_on_boot", { modsDir: currentModsDir });
-          await refreshData(currentModsDir, loadedConfig);
+          await invoke("cleanup_on_boot", {
+            modsDir: currentModsDir,
+            gameId: currentActiveId,
+          });
+          await refreshData(currentModsDir, loadedConfig, currentActiveId);
         }
       } catch (err) {
         notifications.show({
@@ -360,6 +386,9 @@ export default function App() {
 
   const handleSelectGame = async (gameId: string) => {
     try {
+      if (activeTab === "loader" && gameId !== "nte") {
+        setActiveTab("installed");
+      }
       const updatedConfig = await invoke<AppConfig>("set_active_game", {
         gameId,
       });
@@ -368,9 +397,9 @@ export default function App() {
       setSearchQuery("");
       const nextModsDir = updatedConfig.games[gameId]?.mods_dir;
       if (nextModsDir) {
-        await invoke("cleanup_on_boot", { modsDir: nextModsDir });
+        await invoke("cleanup_on_boot", { modsDir: nextModsDir, gameId });
       }
-      await refreshData(nextModsDir, updatedConfig);
+      await refreshData(nextModsDir, updatedConfig, gameId);
     } catch (err) {
       notifications.show({
         title: "Game Selection Error",
@@ -479,6 +508,28 @@ export default function App() {
     }
   };
 
+  const handleUpdateNteGameDir = async (gameDir: string) => {
+    try {
+      const updatedConfig = await invoke<AppConfig>("set_nte_game_dir", {
+        gameDir,
+      });
+      setConfig(updatedConfig);
+      const nextModsDir = updatedConfig.games["nte"]?.mods_dir;
+      await refreshData(nextModsDir, updatedConfig, "nte");
+      notifications.show({
+        title: "Settings Updated",
+        message: "Neverness to Everness game directory updated.",
+        color: "green",
+      });
+    } catch (err) {
+      notifications.show({
+        title: "Settings Error",
+        message: String(err),
+        color: "red",
+      });
+    }
+  };
+
   const handleBatchToggleMods = async (modIds: string[], enable: boolean) => {
     if (!modsDir || modIds.length === 0) return;
     try {
@@ -486,6 +537,7 @@ export default function App() {
         modsDir,
         modIds,
         enable,
+        gameId: activeGame?.id,
       });
       await refreshData();
       notifications.show({
@@ -519,6 +571,7 @@ export default function App() {
         modsDir,
         modIds,
         targetCategory,
+        gameId: activeGame?.id,
       });
       await refreshData();
       categoryModal.onSuccess?.();
@@ -552,6 +605,7 @@ export default function App() {
       await invoke("create_new_category", {
         modsDir,
         categoryName: name,
+        gameId: activeGame?.id,
       });
       await refreshData();
       notifications.show({
@@ -575,6 +629,7 @@ export default function App() {
         modsDir,
         oldName,
         newName,
+        gameId: activeGame?.id,
       });
       if (selectedCategory === oldName) {
         setSelectedCategory(newName);
@@ -604,6 +659,7 @@ export default function App() {
         modsDir,
         categoryName,
         deleteMods,
+        gameId: activeGame?.id,
       });
       if (selectedCategory === categoryName) {
         setSelectedCategory(null);
@@ -708,6 +764,7 @@ export default function App() {
       await invoke("batch_delete_mods", {
         modsDir,
         modIds: modsToDelete.map((m) => m.id),
+        gameId: activeGame?.id,
       });
       await refreshData();
       notifications.show({
@@ -896,6 +953,7 @@ export default function App() {
         modName,
         category,
         duplicateAction,
+        gameId: activeGame?.id,
       });
       await refreshData();
       notifications.show({
@@ -1101,9 +1159,25 @@ export default function App() {
                       })
                     }
                     onBatchDelete={handleBatchDeleteMods}
+                    activeGameId={activeGame?.id}
                   />
                 </Box>
               </>
+            )}
+
+            {activeTab === "loader" && activeGame?.id === "nte" && (
+              <Box
+                style={{
+                  flex: 1,
+                  overflowY: "auto",
+                  backgroundColor: "var(--color-bg-base)",
+                }}
+              >
+                <LoaderView
+                  gameDir={activeSettings?.game_dir}
+                  onNavigateToSettings={() => setActiveTab("settings")}
+                />
+              </Box>
             )}
 
             {activeTab === "browser" && activeGame && (
@@ -1125,7 +1199,7 @@ export default function App() {
               </Box>
             )}
 
-            {activeTab === "settings" && activeGame && activeSettings && (
+            {activeTab === "settings" && activeGame && (
               <Box
                 style={{
                   flex: 1,
@@ -1141,6 +1215,7 @@ export default function App() {
                   autoCheckUpdates={Boolean(config?.auto_check_updates)}
                   colorScheme={config?.color_scheme ?? "dark"}
                   onUpdateModsDir={handleUpdateModsDir}
+                  onUpdateGameDir={handleUpdateNteGameDir}
                   onUpdateAutoCategorize={handleUpdateAutoCategorize}
                   onShowNsfwChange={handleUpdateShowNsfw}
                   onUpdateAutoCheckUpdates={handleUpdateAutoCheckUpdates}

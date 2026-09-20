@@ -22,6 +22,7 @@ interface SettingsViewProps {
   autoCheckUpdates: boolean;
   colorScheme: string;
   onUpdateModsDir: (dir: string) => void;
+  onUpdateGameDir?: (dir: string) => void;
   onUpdateAutoCategorize: (enabled: boolean) => void;
   onShowNsfwChange: (value: boolean) => void;
   onUpdateAutoCheckUpdates: (enabled: boolean) => void;
@@ -36,26 +37,36 @@ export default function SettingsView({
   autoCheckUpdates,
   colorScheme,
   onUpdateModsDir,
+  onUpdateGameDir,
   onUpdateAutoCategorize,
   onShowNsfwChange,
   onUpdateAutoCheckUpdates,
   onColorSchemeChange,
 }: SettingsViewProps) {
+  const isNte = activeGame.id === "nte";
+  const displayedDir = isNte ? settings.game_dir : settings.mods_dir;
+
   const handleBrowseFolder = async () => {
     const selected = await open({
       directory: true,
       multiple: false,
-      title: `Select ${activeGame.name} Mods Directory`,
+      title: isNte
+        ? "Select Neverness to Everness Base Game Directory"
+        : `Select ${activeGame.name} Mods Directory`,
     });
 
     if (typeof selected === "string") {
-      onUpdateModsDir(selected);
+      if (isNte && onUpdateGameDir) {
+        onUpdateGameDir(selected);
+      } else {
+        onUpdateModsDir(selected);
+      }
     }
   };
 
   const handleOpenFolder = async () => {
-    if (settings.mods_dir) {
-      await openPath(settings.mods_dir);
+    if (displayedDir) {
+      await openPath(displayedDir);
     }
   };
 
@@ -72,23 +83,27 @@ export default function SettingsView({
           <Stack gap="sm">
             <div>
               <Text fw={600} size="sm">
-                Game Mods Directory
+                {isNte ? "Base Game Directory" : "Game Mods Directory"}
               </Text>
               <Text c="dimmed" size="xs">
-                Select your Model Importer's Mods directory.
+                {isNte
+                  ? "Select your Neverness to Everness base game directory."
+                  : "Select your Model Importer's Mods directory."}
               </Text>
             </div>
 
             <Group gap="xs" align="center" wrap="nowrap">
               <TextInput
                 size="xs"
-                value={settings.mods_dir || ""}
-                placeholder="No directory selected"
+                value={displayedDir || ""}
+                placeholder={
+                  isNte ? "No game directory selected" : "No directory selected"
+                }
                 readOnly
                 leftSection={<Folder size={16} />}
                 style={{ flex: 1 }}
               />
-              {settings.mods_dir && (
+              {displayedDir && (
                 <Button
                   size="xs"
                   variant="default"
