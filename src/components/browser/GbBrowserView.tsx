@@ -1,19 +1,13 @@
 import {
-  ActionIcon,
   Box,
-  Button,
   Center,
-  Group,
   LoadingOverlay,
-  Select,
   SimpleGrid,
   Stack,
   Text,
-  TextInput,
-  Tooltip,
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { ArrowLeft, ArrowRight, FolderX, Search, X } from "lucide-react";
+import { FolderX } from "lucide-react";
 import { motion } from "motion/react";
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -28,6 +22,8 @@ import {
 } from "../../api/gamebanana";
 import { DownloadQueueItem, GameDefinition } from "../../types";
 import { staggerItem } from "../../motion";
+import GbBrowserPagination from "./GbBrowserPagination";
+import GbBrowserToolbar from "./GbBrowserToolbar";
 import GbModCard from "./GbModCard";
 import GbModDrawer from "./GbModDrawer";
 
@@ -140,6 +136,18 @@ export default function GbBrowserView({
     setPage(1);
   };
 
+  const handleCategoryChange = (value: string | null) => {
+    setSelectedCategory(value);
+    setActiveSearch("");
+    setSearchQuery("");
+    setPage(1);
+  };
+
+  const handleSortChange = (value: string) => {
+    setSortOption(value);
+    setPage(1);
+  };
+
   const handleInstallFile = (
     file: GbModFile,
     modName: string,
@@ -193,68 +201,18 @@ export default function GbBrowserView({
         flexDirection: "column",
       }}
     >
-      <Group justify="space-between" mb="sm" wrap="wrap" gap="xs">
-        <TextInput
-          size="xs"
-          placeholder="Search mods..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.currentTarget.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              handleSearchSubmit();
-            }
-          }}
-          leftSection={<Search size={14} />}
-          rightSection={
-            searchQuery ? (
-              <Tooltip label="Clear search">
-                <ActionIcon
-                  size="xs"
-                  variant="subtle"
-                  onClick={handleClearSearch}
-                >
-                  <X size={12} />
-                </ActionIcon>
-              </Tooltip>
-            ) : null
-          }
-          style={{ flex: 1, minWidth: "var(--min-width-search)" }}
-        />
-
-        <Group gap="xs">
-          <Select
-            size="xs"
-            w="var(--control-width-lg)"
-            data={categorySelectData}
-            value={selectedCategory || ""}
-            onChange={(val) => {
-              setSelectedCategory(val || null);
-              setActiveSearch("");
-              setSearchQuery("");
-              setPage(1);
-            }}
-            allowDeselect={false}
-          />
-
-          <Select
-            size="xs"
-            w="var(--control-width-sm)"
-            data={sortSelectData}
-            value={sortOption}
-            onChange={(val) => {
-              if (val) {
-                setSortOption(val);
-                setPage(1);
-              }
-            }}
-            allowDeselect={false}
-          />
-
-          <Button size="xs" variant="default" onClick={handleSearchSubmit}>
-            Search
-          </Button>
-        </Group>
-      </Group>
+      <GbBrowserToolbar
+        searchQuery={searchQuery}
+        onSearchQueryChange={setSearchQuery}
+        onSearchSubmit={handleSearchSubmit}
+        onClearSearch={handleClearSearch}
+        categorySelectData={categorySelectData}
+        selectedCategory={selectedCategory}
+        onCategoryChange={handleCategoryChange}
+        sortSelectData={sortSelectData}
+        sortOption={sortOption}
+        onSortChange={handleSortChange}
+      />
 
       <Box style={{ flex: 1, position: "relative" }}>
         <LoadingOverlay visible={isLoading} />
@@ -294,29 +252,13 @@ export default function GbBrowserView({
         )}
       </Box>
 
-      <Group justify="center" gap="sm" mt="md" py="xs">
-        <Button
-          size="xs"
-          variant="default"
-          leftSection={<ArrowLeft size={14} />}
-          disabled={page <= 1 || isLoading}
-          onClick={() => setPage((p) => Math.max(1, p - 1))}
-        >
-          Previous
-        </Button>
-        <Text size="xs" fw={600} c="dimmed">
-          Page {page}
-        </Text>
-        <Button
-          size="xs"
-          variant="default"
-          rightSection={<ArrowRight size={14} />}
-          disabled={isLastPage || isLoading}
-          onClick={() => setPage((p) => p + 1)}
-        >
-          Next
-        </Button>
-      </Group>
+      <GbBrowserPagination
+        page={page}
+        isLastPage={isLastPage}
+        isLoading={isLoading}
+        onPrevious={() => setPage((p) => Math.max(1, p - 1))}
+        onNext={() => setPage((p) => p + 1)}
+      />
 
       <GbModDrawer
         modId={selectedModId}
