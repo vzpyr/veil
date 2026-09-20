@@ -1,35 +1,15 @@
 import {
   ActionIcon,
-  Badge,
   Box,
-  Button,
-  Group,
-  Menu,
-  NavLink,
-  ScrollArea,
   Stack,
   Text,
   TextInput,
   Tooltip,
 } from "@mantine/core";
-import {
-  Archive,
-  EllipsisVertical,
-  Folder,
-  FolderOpen,
-  FolderPlus,
-  PackagePlus,
-  Pencil,
-  RefreshCw,
-  Search,
-  Sparkles,
-  Trash2,
-  TriangleAlert,
-  X,
-} from "lucide-react";
-import { motion } from "motion/react";
+import { Search, X } from "lucide-react";
 import { CategoryItem, ConflictGroup } from "../types";
-import { fadeUp, staggerContainer } from "../motion";
+import SidebarActions from "./SidebarActions";
+import SidebarCategoryList from "./SidebarCategoryList";
 
 interface SidebarProps {
   categories: CategoryItem[];
@@ -118,204 +98,32 @@ export default function Sidebar({
         </Text>
       </Box>
 
-      <ScrollArea style={{ flex: 1 }}>
-        <motion.div
-          variants={staggerContainer()}
-          initial="hidden"
-          animate="visible"
-        >
-          <Stack gap="3xs">
-            <motion.div variants={fadeUp}>
-              <NavLink
-                label="All Mods"
-                active={selectedCategory === null}
-                onClick={() => onSelectCategory(null)}
-                leftSection={
-                  selectedCategory === null ? (
-                    <Folder size={16} fill="currentColor" />
-                  ) : (
-                    <Folder size={16} />
-                  )
-                }
-                rightSection={
-                  <Badge
-                    size="xs"
-                    variant="light"
-                    color="gray"
-                    className="badge-count"
-                  >
-                    {totalModsCount}
-                  </Badge>
-                }
-              />
-            </motion.div>
-
-            <motion.div variants={fadeUp}>
-              <NavLink
-                label="Uncategorized"
-                active={selectedCategory === "__root__"}
-                onClick={() => onSelectCategory("__root__")}
-                leftSection={
-                  selectedCategory === "__root__" ? (
-                    <Archive size={16} fill="currentColor" />
-                  ) : (
-                    <Archive size={16} />
-                  )
-                }
-                rightSection={
-                  <Badge
-                    size="xs"
-                    variant="light"
-                    color="gray"
-                    className="badge-count"
-                  >
-                    {uncategorizedCount}
-                  </Badge>
-                }
-              />
-            </motion.div>
-
-            {categories.map((cat) => (
-              <motion.div key={cat.name} variants={fadeUp}>
-                <NavLink
-                  label={cat.name}
-                  active={selectedCategory === cat.name}
-                  onClick={() => onSelectCategory(cat.name)}
-                  leftSection={
-                    selectedCategory === cat.name ? (
-                      <Folder size={16} fill="currentColor" />
-                    ) : (
-                      <Folder size={16} />
-                    )
-                  }
-                  rightSection={
-                    <Group gap="2xs" wrap="nowrap">
-                      <Menu position="bottom-end" withinPortal>
-                        <Menu.Target>
-                          <ActionIcon
-                            size="sm"
-                            variant="subtle"
-                            color="gray"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <EllipsisVertical size={16} />
-                          </ActionIcon>
-                        </Menu.Target>
-                        <Menu.Dropdown>
-                          <Menu.Item
-                            leftSection={<Pencil size={14} />}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onRenameCategory(cat.name);
-                            }}
-                          >
-                            Rename Category
-                          </Menu.Item>
-                          <Menu.Item
-                            color="red"
-                            leftSection={<Trash2 size={14} />}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onDeleteCategory(cat.name);
-                            }}
-                          >
-                            Delete Category
-                          </Menu.Item>
-                        </Menu.Dropdown>
-                      </Menu>
-                      <Badge
-                        size="xs"
-                        variant="light"
-                        color="gray"
-                        className="badge-count"
-                      >
-                        {cat.mod_count}
-                      </Badge>
-                    </Group>
-                  }
-                />
-              </motion.div>
-            ))}
-          </Stack>
-        </motion.div>
-      </ScrollArea>
+      <SidebarCategoryList
+        categories={categories}
+        selectedCategory={selectedCategory}
+        onSelectCategory={onSelectCategory}
+        totalModsCount={totalModsCount}
+        uncategorizedCount={uncategorizedCount}
+        onRenameCategory={onRenameCategory}
+        onDeleteCategory={onDeleteCategory}
+      />
 
       <Box
         pt="sm"
         style={{ borderTop: "1px solid var(--color-border-subtle)" }}
       >
-        <Stack gap="xs">
-          {conflicts.length > 0 && (
-            <Tooltip
-              label={`${conflicts.length} mod ${conflicts.length === 1 ? "conflict" : "conflicts"} detected`}
-            >
-              <Button
-                fullWidth
-                size="xs"
-                color="orange"
-                variant="light"
-                className="animate-scale-in"
-                leftSection={<TriangleAlert size={14} />}
-                onClick={onOpenConflicts}
-              >
-                Conflicts
-                <Badge size="xs" color="orange" ml="xs" variant="filled">
-                  {conflicts.length}
-                </Badge>
-              </Button>
-            </Tooltip>
-          )}
-          <Button
-            fullWidth
-            variant="default"
-            size="xs"
-            leftSection={<FolderPlus size={14} />}
-            onClick={onOpenCreateCategory}
-            disabled={!hasModsDir}
-          >
-            New Category
-          </Button>
-          <Button
-            fullWidth
-            variant="default"
-            size="xs"
-            leftSection={<FolderOpen size={14} />}
-            onClick={onOpenModsFolder}
-            disabled={!hasModsDir}
-          >
-            Open Mods Folder
-          </Button>
-          <Button
-            fullWidth
-            variant="default"
-            size="xs"
-            leftSection={<PackagePlus size={14} />}
-            onClick={onOpenManualInstall}
-            disabled={!hasModsDir}
-          >
-            Install Mods
-          </Button>
-          <Button
-            fullWidth
-            variant="default"
-            size="xs"
-            leftSection={<Sparkles size={14} />}
-            onClick={onCheckUpdates}
-            disabled={!hasModsDir || isCheckingUpdates}
-          >
-            Check Updates
-          </Button>
-          <Button
-            fullWidth
-            variant="default"
-            size="xs"
-            leftSection={<RefreshCw size={14} />}
-            onClick={onRescanMods}
-            disabled={!hasModsDir || isRefreshing}
-          >
-            Rescan Mods
-          </Button>
-        </Stack>
+        <SidebarActions
+          conflicts={conflicts}
+          onOpenConflicts={onOpenConflicts}
+          onOpenCreateCategory={onOpenCreateCategory}
+          onOpenModsFolder={onOpenModsFolder}
+          onOpenManualInstall={onOpenManualInstall}
+          onCheckUpdates={onCheckUpdates}
+          isCheckingUpdates={isCheckingUpdates}
+          onRescanMods={onRescanMods}
+          isRefreshing={isRefreshing}
+          hasModsDir={hasModsDir}
+        />
       </Box>
     </Stack>
   );
