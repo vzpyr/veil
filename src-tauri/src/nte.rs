@@ -100,7 +100,7 @@ fn extract_tags_from_atom(atom_xml: &str) -> Vec<String> {
 
 pub async fn fetch_asi_loader_releases() -> Result<Vec<LoaderRelease>, String> {
     let client = Client::builder()
-        .user_agent("Veil-App/0.1")
+        .user_agent("Veil/1.0")
         .build()
         .map_err(|e| e.to_string())?;
 
@@ -134,7 +134,7 @@ pub async fn fetch_asi_loader_releases() -> Result<Vec<LoaderRelease>, String> {
 
 pub async fn fetch_sig_bypasser_releases() -> Result<Vec<LoaderRelease>, String> {
     let client = Client::builder()
-        .user_agent("Veil-App/0.1")
+        .user_agent("Veil/1.0")
         .build()
         .map_err(|e| e.to_string())?;
 
@@ -348,7 +348,7 @@ pub async fn install_asi_loader(
     }
 
     let client = Client::builder()
-        .user_agent("Veil-App/0.1")
+        .user_agent("Veil/1.0")
         .build()
         .map_err(|e| e.to_string())?;
 
@@ -427,7 +427,7 @@ pub async fn install_sig_bypasser(
     fs::create_dir_all(&win64_dir).map_err(|e| e.to_string())?;
 
     let client = Client::builder()
-        .user_agent("Veil-App/0.1")
+        .user_agent("Veil/1.0")
         .build()
         .map_err(|e| e.to_string())?;
 
@@ -436,7 +436,7 @@ pub async fn install_sig_bypasser(
     } else {
         let tag = if version.eq_ignore_ascii_case("latest") {
             let redirect_client = Client::builder()
-                .user_agent("Veil-App/0.1")
+                .user_agent("Veil/1.0")
                 .redirect(reqwest::redirect::Policy::none())
                 .build()
                 .map_err(|e| e.to_string())?;

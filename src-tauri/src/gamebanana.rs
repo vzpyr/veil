@@ -153,7 +153,7 @@ pub async fn download_and_install_mod(
     let sanitized_mod_name = sanitize_folder_name(&mod_name);
 
     let client = Client::builder()
-        .user_agent("VeilModManager/0.1.0")
+        .user_agent("Veil/1.0")
         .build()
         .map_err(|e| e.to_string())?;
 
