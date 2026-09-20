@@ -131,7 +131,7 @@ export default function App() {
       try {
         setIsRefreshing(true);
         const [scannedMods, catList, conflictList] = await Promise.all([
-          invoke<ModItem[]>("scan_installed_mods", {
+          invoke<ModItem[]>("scan_mods", {
             modsDir: targetDir,
             gameId: targetGameId,
           }),
@@ -387,7 +387,7 @@ export default function App() {
 
   const handleSelectGame = async (gameId: string) => {
     try {
-      if (activeTab === "loader" && gameId !== "nte") {
+      if (activeTab === "loader" && gameId !== "ntepak") {
         setActiveTab("installed");
       }
       const updatedConfig = await invoke<AppConfig>("set_active_game", {
@@ -509,14 +509,14 @@ export default function App() {
     }
   };
 
-  const handleUpdateNteGameDir = async (gameDir: string) => {
+  const handleUpdateNtePakGameDir = async (gameDir: string) => {
     try {
-      const updatedConfig = await invoke<AppConfig>("set_nte_game_dir", {
+      const updatedConfig = await invoke<AppConfig>("set_nte_pak_game_dir", {
         gameDir,
       });
       setConfig(updatedConfig);
-      const nextModsDir = updatedConfig.games["nte"]?.mods_dir;
-      await refreshData(nextModsDir, updatedConfig, "nte");
+      const nextModsDir = updatedConfig.games["ntepak"]?.mods_dir;
+      await refreshData(nextModsDir, updatedConfig, "ntepak");
       notifications.show({
         title: "Settings Updated",
         message: "Neverness to Everness game directory updated.",
@@ -603,7 +603,7 @@ export default function App() {
   const handleCreateCategory = async (name: string) => {
     if (!modsDir) return;
     try {
-      await invoke("create_new_category", {
+      await invoke("create_category", {
         modsDir,
         categoryName: name,
         gameId: activeGame?.id,
@@ -626,7 +626,7 @@ export default function App() {
   const handleRenameCategory = async (oldName: string, newName: string) => {
     if (!modsDir) return;
     try {
-      await invoke("rename_existing_category", {
+      await invoke("rename_category", {
         modsDir,
         oldName,
         newName,
@@ -656,7 +656,7 @@ export default function App() {
   ) => {
     if (!modsDir) return;
     try {
-      await invoke("delete_existing_category", {
+      await invoke("delete_category", {
         modsDir,
         categoryName,
         deleteMods,
@@ -1184,7 +1184,7 @@ export default function App() {
               </>
             )}
 
-            {activeTab === "loader" && activeGame?.id === "nte" && (
+            {activeTab === "loader" && activeGame?.id === "ntepak" && (
               <Box
                 style={{
                   flex: 1,
@@ -1234,7 +1234,7 @@ export default function App() {
                   autoCheckUpdates={Boolean(config?.auto_check_updates)}
                   colorScheme={config?.color_scheme ?? "dark"}
                   onUpdateModsDir={handleUpdateModsDir}
-                  onUpdateGameDir={handleUpdateNteGameDir}
+                  onUpdateGameDir={handleUpdateNtePakGameDir}
                   onUpdateAutoCategorize={handleUpdateAutoCategorize}
                   onShowNsfwChange={handleUpdateShowNsfw}
                   onUpdateAutoCheckUpdates={handleUpdateAutoCheckUpdates}

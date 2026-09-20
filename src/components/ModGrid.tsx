@@ -380,7 +380,7 @@ export default function ModGrid({
                 onOpenGameBanana={onOpenGameBanana}
                 onOpenLinkGameBanana={onOpenLinkGameBanana}
                 onSetPreview={onSetPreview}
-                isNte={activeGameId === "nte"}
+                isNtePak={activeGameId === "ntepak"}
               />
             </motion.div>
           ))}
@@ -412,7 +412,7 @@ export default function ModGrid({
                 onOpenGameBanana={onOpenGameBanana}
                 onOpenLinkGameBanana={onOpenLinkGameBanana}
                 onSetPreview={onSetPreview}
-                isNte={activeGameId === "nte"}
+                isNtePak={activeGameId === "ntepak"}
               />
             </motion.div>
           ))}

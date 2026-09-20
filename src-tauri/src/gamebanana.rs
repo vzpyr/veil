@@ -1,5 +1,5 @@
 use crate::archive::{extract_any_archive, reserve_temp_paths, sanitize_folder_name};
-use crate::symlink::{ensure_veil_dirs, get_disabled_dir, resolve_category_dir};
+use crate::symlink::{disabled_dir, ensure_veil_dirs, resolve_category_dir};
 use futures_util::StreamExt;
 use reqwest::Client;
 use serde::Serialize;
@@ -129,17 +129,17 @@ pub async fn download_and_install_mod(
     game_id: Option<String>,
 ) -> Result<String, String> {
     let mods_path = Path::new(&mods_dir);
-    let is_nte = game_id.as_deref() == Some("nte");
-    let base_dir = if is_nte {
+    let is_nte_pak = game_id.as_deref() == Some("ntepak");
+    let base_dir = if is_nte_pak {
         fs::create_dir_all(mods_path).map_err(|e| e.to_string())?;
         mods_path.to_path_buf()
     } else {
         ensure_veil_dirs(mods_path)?;
-        get_disabled_dir(mods_path)
+        disabled_dir(mods_path)
     };
     cancel.clear(&key);
 
-    let target_parent_dir = if is_nte {
+    let target_parent_dir = if is_nte_pak {
         let cat_name = crate::symlink::effective_category_name(category.as_deref());
         let dir = base_dir.join(cat_name);
         fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
@@ -307,7 +307,9 @@ pub async fn download_and_install_mod(
     };
     clear_temp_paths(&temp_archive_path, &temp_extract_dir);
 
-    if is_nte && let Err(err) = crate::nte::postprocess_nte_extracted_mod(&extracted_dir) {
+    if is_nte_pak
+        && let Err(err) = crate::nte_pak::postprocess_nte_pak_extracted_mod(&extracted_dir)
+    {
         let _ = app.emit(
             "download-error",
             serde_json::json!({

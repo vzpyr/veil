@@ -38,7 +38,7 @@ pub struct LoaderRelease {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
-pub struct NteLoaderMetadata {
+pub struct NtePakLoaderMetadata {
     pub asi_loader_version: Option<String>,
     pub asi_loader_dll: Option<String>,
     pub asi_loader_sha256: Option<String>,
@@ -48,7 +48,7 @@ pub struct NteLoaderMetadata {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct NteLoaderStatus {
+pub struct NtePakLoaderStatus {
     pub asi_loader_installed: bool,
     pub asi_loader_version: Option<String>,
     pub asi_loader_dll: Option<String>,
@@ -58,7 +58,7 @@ pub struct NteLoaderStatus {
     pub occupied_dlls: Vec<String>,
 }
 
-pub fn resolve_nte_paths(game_dir: &Path) -> (PathBuf, PathBuf) {
+pub fn resolve_nte_pak_paths(game_dir: &Path) -> (PathBuf, PathBuf) {
     let ht_dir = if game_dir.join("Client/WindowsNoEditor/HT").exists() {
         game_dir.join("Client/WindowsNoEditor/HT")
     } else if game_dir.join("WindowsNoEditor/HT").exists() {
@@ -166,22 +166,22 @@ pub async fn fetch_sig_bypasser_releases() -> Result<Vec<LoaderRelease>, String>
     Ok(result)
 }
 
-fn get_loader_metadata_path(win64_dir: &Path) -> PathBuf {
+fn loader_metadata_path(win64_dir: &Path) -> PathBuf {
     win64_dir.join(".veil_loader.json")
 }
 
-fn read_loader_metadata(win64_dir: &Path) -> NteLoaderMetadata {
-    let path = get_loader_metadata_path(win64_dir);
+fn read_loader_metadata(win64_dir: &Path) -> NtePakLoaderMetadata {
+    let path = loader_metadata_path(win64_dir);
     if let Ok(content) = fs::read_to_string(&path)
-        && let Ok(meta) = serde_json::from_str::<NteLoaderMetadata>(&content)
+        && let Ok(meta) = serde_json::from_str::<NtePakLoaderMetadata>(&content)
     {
         return meta;
     }
-    NteLoaderMetadata::default()
+    NtePakLoaderMetadata::default()
 }
 
-fn write_loader_metadata(win64_dir: &Path, meta: &NteLoaderMetadata) -> Result<(), String> {
-    let path = get_loader_metadata_path(win64_dir);
+fn write_loader_metadata(win64_dir: &Path, meta: &NtePakLoaderMetadata) -> Result<(), String> {
+    let path = loader_metadata_path(win64_dir);
     let serialized = serde_json::to_string_pretty(meta).map_err(|e| e.to_string())?;
     fs::write(&path, serialized).map_err(|e| e.to_string())?;
     Ok(())
@@ -235,8 +235,8 @@ pub fn validate_safe_subpath(raw: &str) -> Result<PathBuf, String> {
     }
 }
 
-pub fn get_nte_loader_status(game_dir: &Path) -> Result<NteLoaderStatus, String> {
-    let (win64_dir, _) = resolve_nte_paths(game_dir);
+pub fn nte_pak_loader_status(game_dir: &Path) -> Result<NtePakLoaderStatus, String> {
+    let (win64_dir, _) = resolve_nte_pak_paths(game_dir);
     let mut meta = read_loader_metadata(&win64_dir);
 
     let mut asi_installed = false;
@@ -303,7 +303,7 @@ pub fn get_nte_loader_status(game_dir: &Path) -> Result<NteLoaderStatus, String>
         }
     }
 
-    Ok(NteLoaderStatus {
+    Ok(NtePakLoaderStatus {
         asi_loader_installed: asi_installed,
         asi_loader_version: if asi_installed {
             meta.asi_loader_version
@@ -328,7 +328,7 @@ pub async fn install_asi_loader(
     version: &str,
     dll_name: &str,
 ) -> Result<(), String> {
-    let (win64_dir, _) = resolve_nte_paths(game_dir);
+    let (win64_dir, _) = resolve_nte_pak_paths(game_dir);
     fs::create_dir_all(&win64_dir).map_err(|e| e.to_string())?;
 
     let mut meta = read_loader_metadata(&win64_dir);
@@ -390,7 +390,7 @@ pub async fn install_asi_loader(
 }
 
 pub fn uninstall_asi_loader(game_dir: &Path) -> Result<(), String> {
-    let (win64_dir, _) = resolve_nte_paths(game_dir);
+    let (win64_dir, _) = resolve_nte_pak_paths(game_dir);
     let mut meta = read_loader_metadata(&win64_dir);
 
     if let Some(ref dll) = meta.asi_loader_dll {
@@ -423,7 +423,7 @@ pub async fn install_sig_bypasser(
     version: &str,
     subpath: Option<&str>,
 ) -> Result<(), String> {
-    let (win64_dir, _) = resolve_nte_paths(game_dir);
+    let (win64_dir, _) = resolve_nte_pak_paths(game_dir);
     fs::create_dir_all(&win64_dir).map_err(|e| e.to_string())?;
 
     let client = Client::builder()
@@ -547,7 +547,7 @@ pub async fn install_sig_bypasser(
 }
 
 pub fn uninstall_sig_bypasser(game_dir: &Path) -> Result<(), String> {
-    let (win64_dir, _) = resolve_nte_paths(game_dir);
+    let (win64_dir, _) = resolve_nte_pak_paths(game_dir);
     let mut meta = read_loader_metadata(&win64_dir);
 
     let asi_path = if let Some(ref sub) = meta.sig_bypasser_subpath {
@@ -595,7 +595,7 @@ pub fn uninstall_sig_bypasser(game_dir: &Path) -> Result<(), String> {
     Ok(())
 }
 
-pub fn postprocess_nte_extracted_mod(mod_dir: &Path) -> Result<(), String> {
+pub fn postprocess_nte_pak_extracted_mod(mod_dir: &Path) -> Result<(), String> {
     let mut has_pak = false;
     let mut files_to_check = Vec::new();
     let mut stack = vec![mod_dir.to_path_buf()];
@@ -697,7 +697,7 @@ fn read_veil_metadata(dir: &Path) -> (Option<u64>, Option<String>, Option<u64>) 
     (gb_id, version, file_id)
 }
 
-fn is_nte_mod_enabled(mod_dir: &Path) -> bool {
+fn is_nte_pak_mod_enabled(mod_dir: &Path) -> bool {
     let mut stack = vec![mod_dir.to_path_buf()];
     while let Some(dir) = stack.pop() {
         let entries = match fs::read_dir(&dir) {
@@ -721,7 +721,7 @@ fn is_nte_mod_enabled(mod_dir: &Path) -> bool {
     false
 }
 
-pub fn scan_nte_mods(mods_dir: &Path) -> Result<Vec<ModItem>, String> {
+pub fn scan_nte_pak_mods(mods_dir: &Path) -> Result<Vec<ModItem>, String> {
     if !mods_dir.exists() {
         return Ok(Vec::new());
     }
@@ -775,7 +775,7 @@ pub fn scan_nte_mods(mods_dir: &Path) -> Result<Vec<ModItem>, String> {
             }
 
             let rel_id = format!("{}/{}", cat_folder_name, sub_name);
-            let is_enabled = is_nte_mod_enabled(&sub_path);
+            let is_enabled = is_nte_pak_mod_enabled(&sub_path);
             let preview = find_preview_image(&sub_path);
             let (gb_id, ver, fid) = read_veil_metadata(&sub_path);
             let updated_at = sub_path
@@ -805,7 +805,7 @@ pub fn scan_nte_mods(mods_dir: &Path) -> Result<Vec<ModItem>, String> {
     Ok(mods)
 }
 
-pub fn toggle_nte_mod(mods_dir: &Path, rel_id: &str, enable: bool) -> Result<bool, String> {
+pub fn toggle_nte_pak_mod(mods_dir: &Path, rel_id: &str, enable: bool) -> Result<bool, String> {
     let mod_dir = mods_dir.join(rel_id);
     if !mod_dir.exists() {
         return Err(format!("Mod folder does not exist: {}", mod_dir.display()));
@@ -862,7 +862,7 @@ pub fn toggle_nte_mod(mods_dir: &Path, rel_id: &str, enable: bool) -> Result<boo
     Ok(enable)
 }
 
-pub fn delete_nte_mod(mods_dir: &Path, rel_id: &str) -> Result<(), String> {
+pub fn delete_nte_pak_mod(mods_dir: &Path, rel_id: &str) -> Result<(), String> {
     let mod_dir = mods_dir.join(rel_id);
     if mod_dir.exists() {
         fs::remove_dir_all(&mod_dir).map_err(|e| e.to_string())?;
@@ -878,7 +878,7 @@ pub fn delete_nte_mod(mods_dir: &Path, rel_id: &str) -> Result<(), String> {
     Ok(())
 }
 
-pub fn move_nte_mod_category(
+pub fn move_nte_pak_mod_category(
     mods_dir: &Path,
     mod_rel_path: &str,
     target_category: Option<String>,
@@ -939,7 +939,7 @@ pub fn move_nte_mod_category(
     Ok(new_rel_path)
 }
 
-pub fn list_nte_categories(mods_dir: &Path) -> Result<Vec<CategoryItem>, String> {
+pub fn list_nte_pak_categories(mods_dir: &Path) -> Result<Vec<CategoryItem>, String> {
     if !mods_dir.exists() {
         return Ok(Vec::new());
     }
@@ -974,7 +974,7 @@ pub fn list_nte_categories(mods_dir: &Path) -> Result<Vec<CategoryItem>, String>
     Ok(categories)
 }
 
-pub fn create_nte_category(mods_dir: &Path, category_name: &str) -> Result<(), String> {
+pub fn create_nte_pak_category(mods_dir: &Path, category_name: &str) -> Result<(), String> {
     let trimmed = category_name.trim();
     if trimmed.is_empty() {
         return Err("Category name cannot be empty".to_string());
@@ -991,7 +991,11 @@ pub fn create_nte_category(mods_dir: &Path, category_name: &str) -> Result<(), S
     Ok(())
 }
 
-pub fn rename_nte_category(mods_dir: &Path, old_name: &str, new_name: &str) -> Result<(), String> {
+pub fn rename_nte_pak_category(
+    mods_dir: &Path,
+    old_name: &str,
+    new_name: &str,
+) -> Result<(), String> {
     let trimmed_old = old_name.trim();
     let trimmed_new = new_name.trim();
     if trimmed_old.is_empty() || trimmed_new.is_empty() {
@@ -1019,7 +1023,7 @@ pub fn rename_nte_category(mods_dir: &Path, old_name: &str, new_name: &str) -> R
     Ok(())
 }
 
-pub fn delete_nte_category(
+pub fn delete_nte_pak_category(
     mods_dir: &Path,
     category_name: &str,
     delete_mods: bool,
@@ -1078,11 +1082,11 @@ mod tests {
     use tempfile::tempdir;
 
     #[test]
-    fn test_resolve_nte_paths() {
+    fn test_resolve_nte_pak_paths() {
         let temp = tempdir().unwrap();
         let base = temp.path();
 
-        let (win64_1, mods_1) = resolve_nte_paths(base);
+        let (win64_1, mods_1) = resolve_nte_pak_paths(base);
         assert_eq!(
             win64_1,
             base.join("Client/WindowsNoEditor/HT/Binaries/Win64")
@@ -1094,25 +1098,25 @@ mod tests {
 
         let ht_dir = base.join("Client/WindowsNoEditor/HT");
         fs::create_dir_all(&ht_dir).unwrap();
-        let (win64_2, mods_2) = resolve_nte_paths(base);
+        let (win64_2, mods_2) = resolve_nte_pak_paths(base);
         assert_eq!(win64_2, ht_dir.join("Binaries/Win64"));
         assert_eq!(mods_2, ht_dir.join("Content/Paks/veil"));
     }
 
     #[test]
-    fn test_postprocess_nte_extracted_mod_error_without_pak() {
+    fn test_postprocess_nte_pak_extracted_mod_error_without_pak() {
         let temp = tempdir().unwrap();
         let mod_dir = temp.path().join("ini_mod");
         fs::create_dir_all(&mod_dir).unwrap();
         fs::write(mod_dir.join("mod.ini"), "test").unwrap();
 
-        let res = postprocess_nte_extracted_mod(&mod_dir);
+        let res = postprocess_nte_pak_extracted_mod(&mod_dir);
         assert!(res.is_err());
         assert!(!mod_dir.exists());
     }
 
     #[test]
-    fn test_postprocess_nte_extracted_mod_normalizes_p() {
+    fn test_postprocess_nte_pak_extracted_mod_normalizes_p() {
         let temp = tempdir().unwrap();
         let mod_dir = temp.path().join("pak_mod");
         fs::create_dir_all(&mod_dir).unwrap();
@@ -1120,7 +1124,7 @@ mod tests {
         fs::write(mod_dir.join("Costume_P.ucas"), "ucas_data").unwrap();
         fs::write(mod_dir.join("Costume_P.utoc"), "utoc_data").unwrap();
 
-        let res = postprocess_nte_extracted_mod(&mod_dir);
+        let res = postprocess_nte_pak_extracted_mod(&mod_dir);
         assert!(res.is_ok());
         assert!(mod_dir.join("Costume.pak").is_file());
         assert!(mod_dir.join("Costume.ucas").is_file());
@@ -1129,7 +1133,7 @@ mod tests {
     }
 
     #[test]
-    fn test_toggle_nte_mod() {
+    fn test_toggle_nte_pak_mod() {
         let temp = tempdir().unwrap();
         let mods_dir = temp.path();
         let rel_id = "Uncategorized/TestMod";
@@ -1139,13 +1143,13 @@ mod tests {
         fs::write(mod_dir.join("TestMod.pak"), "pak").unwrap();
         fs::write(mod_dir.join("TestMod.ucas"), "ucas").unwrap();
 
-        let enabled_res = toggle_nte_mod(mods_dir, rel_id, true);
+        let enabled_res = toggle_nte_pak_mod(mods_dir, rel_id, true);
         assert!(enabled_res.is_ok());
         assert!(mod_dir.join("TestMod_P.pak").is_file());
         assert!(mod_dir.join("TestMod_P.ucas").is_file());
         assert!(!mod_dir.join("TestMod.pak").exists());
 
-        let disabled_res = toggle_nte_mod(mods_dir, rel_id, false);
+        let disabled_res = toggle_nte_pak_mod(mods_dir, rel_id, false);
         assert!(disabled_res.is_ok());
         assert!(mod_dir.join("TestMod.pak").is_file());
         assert!(mod_dir.join("TestMod.ucas").is_file());
@@ -1153,7 +1157,7 @@ mod tests {
     }
 
     #[test]
-    fn test_scan_nte_mods() {
+    fn test_scan_nte_pak_mods() {
         let temp = tempdir().unwrap();
         let mods_dir = temp.path();
 
@@ -1167,7 +1171,7 @@ mod tests {
         fs::create_dir_all(&mod2_dir).unwrap();
         fs::write(mod2_dir.join("ModTwo.pak"), "pak").unwrap();
 
-        let mods = scan_nte_mods(mods_dir).unwrap();
+        let mods = scan_nte_pak_mods(mods_dir).unwrap();
         assert_eq!(mods.len(), 2);
 
         let m1 = mods.iter().find(|m| m.name == "ModOne").unwrap();
@@ -1180,20 +1184,20 @@ mod tests {
     }
 
     #[test]
-    fn test_nte_loader_status_and_occupied_dlls() {
+    fn test_nte_pak_loader_status_and_occupied_dlls() {
         let temp = tempdir().unwrap();
         let base = temp.path();
-        let (win64_dir, _) = resolve_nte_paths(base);
+        let (win64_dir, _) = resolve_nte_pak_paths(base);
         fs::create_dir_all(&win64_dir).unwrap();
 
         fs::write(win64_dir.join("version.dll"), "optiscaler-binary-bytes").unwrap();
 
-        let status = get_nte_loader_status(base).unwrap();
+        let status = nte_pak_loader_status(base).unwrap();
         assert!(!status.asi_loader_installed);
         assert_eq!(status.asi_loader_dll, None);
         assert!(status.occupied_dlls.contains(&"version.dll".to_string()));
 
-        let meta = NteLoaderMetadata {
+        let meta = NtePakLoaderMetadata {
             asi_loader_version: Some("v1.0.0".to_string()),
             asi_loader_dll: Some("dinput8.dll".to_string()),
             asi_loader_sha256: Some(compute_bytes_sha256(b"our-asi-bytes")),
@@ -1204,7 +1208,7 @@ mod tests {
         write_loader_metadata(&win64_dir, &meta).unwrap();
         fs::write(win64_dir.join("dinput8.dll"), b"our-asi-bytes").unwrap();
 
-        let status2 = get_nte_loader_status(base).unwrap();
+        let status2 = nte_pak_loader_status(base).unwrap();
         assert!(status2.asi_loader_installed);
         assert_eq!(status2.asi_loader_dll, Some("dinput8.dll".to_string()));
         assert_eq!(status2.asi_loader_version, Some("v1.0.0".to_string()));
@@ -1242,7 +1246,7 @@ mod tests {
     fn test_sig_bypasser_subpath_status_and_uninstall() {
         let temp = tempdir().unwrap();
         let base = temp.path();
-        let (win64_dir, _) = resolve_nte_paths(base);
+        let (win64_dir, _) = resolve_nte_pak_paths(base);
         fs::create_dir_all(&win64_dir).unwrap();
 
         let sub_dir = win64_dir.join("OptiScaler/plugins");
@@ -1250,7 +1254,7 @@ mod tests {
         let asi_data = b"asi-plugin-payload";
         fs::write(sub_dir.join("UniversalSigBypasser.asi"), asi_data).unwrap();
 
-        let meta = NteLoaderMetadata {
+        let meta = NtePakLoaderMetadata {
             asi_loader_version: None,
             asi_loader_dll: None,
             asi_loader_sha256: None,
@@ -1260,7 +1264,7 @@ mod tests {
         };
         write_loader_metadata(&win64_dir, &meta).unwrap();
 
-        let status = get_nte_loader_status(base).unwrap();
+        let status = nte_pak_loader_status(base).unwrap();
         assert!(status.sig_bypasser_installed);
         assert_eq!(status.sig_bypasser_version, Some("v1.2".to_string()));
         assert_eq!(
@@ -1272,7 +1276,7 @@ mod tests {
         assert!(uninstall_res.is_ok());
         assert!(!sub_dir.join("UniversalSigBypasser.asi").exists());
 
-        let status_after = get_nte_loader_status(base).unwrap();
+        let status_after = nte_pak_loader_status(base).unwrap();
         assert!(!status_after.sig_bypasser_installed);
         assert_eq!(status_after.sig_bypasser_subpath, None);
     }

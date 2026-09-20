@@ -23,10 +23,10 @@ import {
   GbCategoryGroup,
   GbModFile,
   GbSubfeedItem,
+  isGbModNsfw,
   searchGameBananaMods,
 } from "../../api/gamebanana";
 import { DownloadQueueItem, GameDefinition } from "../../types";
-import { isGbModNsfw } from "../../api/gamebanana";
 import { staggerItem } from "../../motion";
 import GbModCard from "./GbModCard";
 import GbModDrawer from "./GbModDrawer";

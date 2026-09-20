@@ -1,7 +1,7 @@
 use crate::archive::sanitize_folder_name;
 use crate::symlink::{
-    UNCATEGORIZED_DIR_NAME, create_mod_symlink, effective_category_name, get_active_dir,
-    get_disabled_dir, remove_mod_symlink,
+    UNCATEGORIZED_DIR_NAME, active_dir, create_mod_symlink, disabled_dir, effective_category_name,
+    remove_mod_symlink,
 };
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
@@ -138,8 +138,8 @@ fn read_veil_metadata(dir: &Path) -> (Option<u64>, Option<String>, Option<u64>) 
 }
 
 pub fn scan_mods(mods_dir: &Path) -> Result<Vec<ModItem>, String> {
-    let disabled_dir = get_disabled_dir(mods_dir);
-    let active_dir = get_active_dir(mods_dir);
+    let disabled_dir = disabled_dir(mods_dir);
+    let active_dir = active_dir(mods_dir);
 
     if !disabled_dir.exists() {
         return Ok(Vec::new());
@@ -224,7 +224,7 @@ pub fn scan_mods(mods_dir: &Path) -> Result<Vec<ModItem>, String> {
 }
 
 pub fn list_categories(mods_dir: &Path) -> Result<Vec<CategoryItem>, String> {
-    let disabled_dir = get_disabled_dir(mods_dir);
+    let disabled_dir = disabled_dir(mods_dir);
     if !disabled_dir.exists() {
         return Ok(Vec::new());
     }
@@ -267,7 +267,7 @@ pub fn create_category(mods_dir: &Path, category_name: &str) -> Result<(), Strin
     if sanitized.eq_ignore_ascii_case(UNCATEGORIZED_DIR_NAME) {
         return Err("Cannot use reserved category name 'Uncategorized'".to_string());
     }
-    let cat_dir = get_disabled_dir(mods_dir).join(&sanitized);
+    let cat_dir = disabled_dir(mods_dir).join(&sanitized);
     if cat_dir.exists() {
         return Err(format!("Category already exists: {}", sanitized));
     }
@@ -294,8 +294,8 @@ pub fn rename_category(mods_dir: &Path, old_name: &str, new_name: &str) -> Resul
         return Ok(());
     }
 
-    let disabled_dir = get_disabled_dir(mods_dir);
-    let active_dir = get_active_dir(mods_dir);
+    let disabled_dir = disabled_dir(mods_dir);
+    let active_dir = active_dir(mods_dir);
 
     let old_cat_dir = disabled_dir.join(&sanitized_old);
     let new_cat_dir = disabled_dir.join(&sanitized_new);
@@ -358,8 +358,8 @@ pub fn delete_category(
         return Err("Cannot delete the reserved Uncategorized category".to_string());
     }
 
-    let disabled_dir = get_disabled_dir(mods_dir);
-    let active_dir = get_active_dir(mods_dir);
+    let disabled_dir = disabled_dir(mods_dir);
+    let active_dir = active_dir(mods_dir);
 
     let cat_dir = disabled_dir.join(&sanitized);
     if !cat_dir.exists() {
@@ -428,7 +428,7 @@ fn is_dir_empty_or_hidden(dir: &Path) -> bool {
 }
 
 pub fn cleanup_empty_categories(mods_dir: &Path) -> Result<(), String> {
-    let disabled_dir = get_disabled_dir(mods_dir);
+    let disabled_dir = disabled_dir(mods_dir);
     if !disabled_dir.exists() {
         return Ok(());
     }
@@ -462,7 +462,7 @@ pub fn cleanup_empty_categories(mods_dir: &Path) -> Result<(), String> {
 }
 
 fn resolve_mod_folder(mods_dir: &Path, mod_id: &str) -> std::path::PathBuf {
-    let disabled_dir = get_disabled_dir(mods_dir);
+    let disabled_dir = disabled_dir(mods_dir);
     let disabled_path = disabled_dir.join(mod_id);
     if disabled_path.exists() {
         disabled_path
@@ -504,8 +504,8 @@ pub fn move_mod_category(
     mod_rel_path: &str,
     target_category: Option<String>,
 ) -> Result<String, String> {
-    let disabled_dir = get_disabled_dir(mods_dir);
-    let active_dir = get_active_dir(mods_dir);
+    let disabled_dir = disabled_dir(mods_dir);
+    let active_dir = active_dir(mods_dir);
 
     let old_source = disabled_dir.join(mod_rel_path);
     if !old_source.exists() {
@@ -564,8 +564,8 @@ pub fn move_mod_category(
 }
 
 pub fn delete_mod(mods_dir: &Path, mod_rel_path: &str) -> Result<(), String> {
-    let disabled_dir = get_disabled_dir(mods_dir);
-    let active_dir = get_active_dir(mods_dir);
+    let disabled_dir = disabled_dir(mods_dir);
+    let active_dir = active_dir(mods_dir);
 
     let active_link = active_dir.join(mod_rel_path);
     if active_link.symlink_metadata().is_ok() {
@@ -640,8 +640,8 @@ pub fn toggle_mod_status(
     mod_rel_path: &str,
     enable: bool,
 ) -> Result<bool, String> {
-    let disabled_dir = get_disabled_dir(mods_dir);
-    let active_dir = get_active_dir(mods_dir);
+    let disabled_dir = disabled_dir(mods_dir);
+    let active_dir = active_dir(mods_dir);
 
     let source_path = disabled_dir.join(mod_rel_path);
     let target_path = active_dir.join(mod_rel_path);
@@ -727,11 +727,11 @@ mod tests {
 
         crate::symlink::ensure_veil_dirs(mods_dir).unwrap();
 
-        let mod_a_dir = get_disabled_dir(mods_dir).join("Jane Doe").join("Outfit A");
+        let mod_a_dir = disabled_dir(mods_dir).join("Jane Doe").join("Outfit A");
         fs::create_dir_all(&mod_a_dir).unwrap();
         fs::write(mod_a_dir.join("mod.ini"), "hash = ffeeddcc").unwrap();
 
-        let mod_b_dir = get_disabled_dir(mods_dir)
+        let mod_b_dir = disabled_dir(mods_dir)
             .join(crate::symlink::UNCATEGORIZED_DIR_NAME)
             .join("CustomHUD");
         fs::create_dir_all(&mod_b_dir).unwrap();
@@ -776,7 +776,7 @@ mod tests {
 
         crate::symlink::ensure_veil_dirs(mods_dir).unwrap();
 
-        let mod_dir = get_disabled_dir(mods_dir)
+        let mod_dir = disabled_dir(mods_dir)
             .join(crate::symlink::UNCATEGORIZED_DIR_NAME)
             .join("Nicole Mod");
         fs::create_dir_all(&mod_dir).unwrap();
@@ -817,36 +817,32 @@ mod tests {
         crate::symlink::ensure_veil_dirs(mods_dir).unwrap();
         create_category(mods_dir, "OldCategory").unwrap();
 
-        let mod_dir = get_disabled_dir(mods_dir)
-            .join("OldCategory")
-            .join("TestMod");
+        let mod_dir = disabled_dir(mods_dir).join("OldCategory").join("TestMod");
         fs::create_dir_all(&mod_dir).unwrap();
         fs::write(mod_dir.join("test.ini"), "hash = aabbccdd").unwrap();
 
         toggle_mod_status(mods_dir, "OldCategory/TestMod", true).unwrap();
-        let active_symlink = crate::symlink::get_active_dir(mods_dir)
+        let active_symlink = crate::symlink::active_dir(mods_dir)
             .join("OldCategory")
             .join("TestMod");
         assert!(active_symlink.symlink_metadata().is_ok());
 
         rename_category(mods_dir, "OldCategory", "NewCategory").unwrap();
-        let new_mod_dir = get_disabled_dir(mods_dir)
-            .join("NewCategory")
-            .join("TestMod");
+        let new_mod_dir = disabled_dir(mods_dir).join("NewCategory").join("TestMod");
         assert!(new_mod_dir.exists());
 
-        let new_active_symlink = crate::symlink::get_active_dir(mods_dir)
+        let new_active_symlink = crate::symlink::active_dir(mods_dir)
             .join("NewCategory")
             .join("TestMod");
         assert!(new_active_symlink.symlink_metadata().is_ok());
 
         delete_category(mods_dir, "NewCategory", false).unwrap();
-        let preserved_mod = get_disabled_dir(mods_dir)
+        let preserved_mod = disabled_dir(mods_dir)
             .join(crate::symlink::UNCATEGORIZED_DIR_NAME)
             .join("TestMod");
         assert!(preserved_mod.exists());
 
-        let preserved_active = crate::symlink::get_active_dir(mods_dir)
+        let preserved_active = crate::symlink::active_dir(mods_dir)
             .join(crate::symlink::UNCATEGORIZED_DIR_NAME)
             .join("TestMod");
         assert!(preserved_active.symlink_metadata().is_ok());
@@ -858,7 +854,7 @@ mod tests {
         let mods_dir = temp.path();
 
         crate::symlink::ensure_veil_dirs(mods_dir).unwrap();
-        let mod_dir = get_disabled_dir(mods_dir)
+        let mod_dir = disabled_dir(mods_dir)
             .join(crate::symlink::UNCATEGORIZED_DIR_NAME)
             .join("PreviewMod");
         fs::create_dir_all(&mod_dir).unwrap();
@@ -878,13 +874,13 @@ mod tests {
 
         crate::symlink::ensure_veil_dirs(mods_dir).unwrap();
 
-        let hidden_in_category = get_disabled_dir(mods_dir)
+        let hidden_in_category = disabled_dir(mods_dir)
             .join(".internal_cache")
             .join("stale.ini");
         fs::create_dir_all(hidden_in_category.parent().unwrap()).unwrap();
         fs::write(hidden_in_category, "hash = 11111111").unwrap();
 
-        let cat_dir = get_disabled_dir(mods_dir).join("Real Category");
+        let cat_dir = disabled_dir(mods_dir).join("Real Category");
         let mod_dir = cat_dir.join("Visible Mod");
         fs::create_dir_all(&mod_dir).unwrap();
         fs::write(mod_dir.join("mod.ini"), "hash = 22222222").unwrap();
@@ -923,9 +919,9 @@ mod tests {
         let categories_after_scan = list_categories(mods_dir).unwrap();
         assert_eq!(categories_after_scan.len(), 1);
         assert_eq!(categories_after_scan[0].name, "Dialyn");
-        assert!(get_disabled_dir(mods_dir).join("Dialyn").exists());
+        assert!(disabled_dir(mods_dir).join("Dialyn").exists());
         assert!(
-            !get_disabled_dir(mods_dir)
+            !disabled_dir(mods_dir)
                 .join(crate::symlink::UNCATEGORIZED_DIR_NAME)
                 .join("Dialyn")
                 .exists()
@@ -937,7 +933,7 @@ mod tests {
         let temp = tempdir().unwrap();
         let mods_dir = temp.path();
 
-        let disabled_dir = get_disabled_dir(mods_dir);
+        let disabled_dir = disabled_dir(mods_dir);
         let custom_cat = disabled_dir.join("Characters");
         let mod_a = custom_cat.join("ModA");
         fs::create_dir_all(&mod_a).unwrap();
@@ -966,8 +962,8 @@ mod tests {
         let temp = tempdir().unwrap();
         let mods_dir = temp.path();
 
-        let disabled_dir = get_disabled_dir(mods_dir);
-        let active_dir = crate::symlink::get_active_dir(mods_dir);
+        let disabled_dir = disabled_dir(mods_dir);
+        let active_dir = crate::symlink::active_dir(mods_dir);
         let mod_dir = disabled_dir.join("Weapons").join("Sword");
         fs::create_dir_all(&mod_dir).unwrap();
         fs::write(mod_dir.join("sword.ini"), "hash = 33333333").unwrap();
@@ -987,8 +983,8 @@ mod tests {
         let temp = tempdir().unwrap();
         let mods_dir = temp.path();
 
-        let disabled_dir = get_disabled_dir(mods_dir);
-        let active_dir = crate::symlink::get_active_dir(mods_dir);
+        let disabled_dir = disabled_dir(mods_dir);
+        let active_dir = crate::symlink::active_dir(mods_dir);
 
         let empty_cat = disabled_dir.join("EmptyCategory");
         let empty_uncat = disabled_dir.join(crate::symlink::UNCATEGORIZED_DIR_NAME);
@@ -1012,7 +1008,7 @@ mod tests {
         let mods_dir = temp.path();
 
         crate::symlink::ensure_veil_dirs(mods_dir).unwrap();
-        let disabled_dir = get_disabled_dir(mods_dir);
+        let disabled_dir = disabled_dir(mods_dir);
 
         let mod1_dir = disabled_dir.join("CatA").join("Mod1");
         let mod2_dir = disabled_dir.join("CatA").join("Mod2");

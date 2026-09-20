@@ -123,7 +123,7 @@ export interface LoaderRelease {
   download_url: string;
 }
 
-export interface NteLoaderStatus {
+export interface NtePakLoaderStatus {
   asi_loader_installed: boolean;
   asi_loader_version?: string;
   asi_loader_dll?: string;

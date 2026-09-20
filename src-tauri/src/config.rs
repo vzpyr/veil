@@ -55,7 +55,7 @@ impl Default for AppConfig {
     }
 }
 
-pub fn get_config_path(app: &AppHandle) -> Result<PathBuf, String> {
+pub fn config_path(app: &AppHandle) -> Result<PathBuf, String> {
     let base = app.path().app_config_dir().map_err(|err| err.to_string())?;
     fs::create_dir_all(&base).map_err(|err| err.to_string())?;
     Ok(base.join("config.json"))

@@ -43,20 +43,20 @@ export default function SettingsView({
   onUpdateAutoCheckUpdates,
   onColorSchemeChange,
 }: SettingsViewProps) {
-  const isNte = activeGame.id === "nte";
-  const displayedDir = isNte ? settings.game_dir : settings.mods_dir;
+  const isNtePak = activeGame.id === "ntepak";
+  const displayedDir = isNtePak ? settings.game_dir : settings.mods_dir;
 
   const handleBrowseFolder = async () => {
     const selected = await open({
       directory: true,
       multiple: false,
-      title: isNte
+      title: isNtePak
         ? "Select Neverness to Everness Base Game Directory"
         : `Select ${activeGame.name} Mods Directory`,
     });
 
     if (typeof selected === "string") {
-      if (isNte && onUpdateGameDir) {
+      if (isNtePak && onUpdateGameDir) {
         onUpdateGameDir(selected);
       } else {
         onUpdateModsDir(selected);
@@ -83,10 +83,10 @@ export default function SettingsView({
           <Stack gap="sm">
             <div>
               <Text fw={600} size="sm">
-                {isNte ? "Base Game Directory" : "Game Mods Directory"}
+                {isNtePak ? "Base Game Directory" : "Game Mods Directory"}
               </Text>
               <Text c="dimmed" size="xs">
-                {isNte
+                {isNtePak
                   ? "Select your Neverness to Everness base game directory."
                   : "Select your Model Importer's Mods directory."}
               </Text>
@@ -97,7 +97,9 @@ export default function SettingsView({
                 size="xs"
                 value={displayedDir || ""}
                 placeholder={
-                  isNte ? "No game directory selected" : "No directory selected"
+                  isNtePak
+                    ? "No game directory selected"
+                    : "No directory selected"
                 }
                 readOnly
                 leftSection={<Folder size={16} />}

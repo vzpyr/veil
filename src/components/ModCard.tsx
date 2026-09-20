@@ -42,7 +42,7 @@ interface ModCardProps {
   onOpenGameBanana: (mod: ModItem) => void;
   onOpenLinkGameBanana: (mod: ModItem) => void;
   onSetPreview: (mod: ModItem) => void;
-  isNte?: boolean;
+  isNtePak?: boolean;
 }
 
 export default function ModCard({
@@ -61,7 +61,7 @@ export default function ModCard({
   onOpenGameBanana,
   onOpenLinkGameBanana,
   onSetPreview,
-  isNte = false,
+  isNtePak = false,
 }: ModCardProps) {
   const previewUrl = mod.preview_path ? convertFileSrc(mod.preview_path) : null;
 
@@ -192,7 +192,7 @@ export default function ModCard({
           </Tooltip>
 
           <Group gap="3xs" wrap="nowrap" onClick={(e) => e.stopPropagation()}>
-            {!isNte && (
+            {!isNtePak && (
               <Tooltip label="Keybinds and toggles">
                 <ActionIcon
                   variant="subtle"
@@ -264,7 +264,7 @@ export default function ModCard({
 
         <Group justify="space-between" align="center">
           <Group gap="2xs">
-            {!isNte && (
+            {!isNtePak && (
               <Badge size="xs" variant="outline" color="gray">
                 {mod.hashes.length}{" "}
                 {mod.hashes.length === 1 ? "hash" : "hashes"}

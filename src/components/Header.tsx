@@ -109,7 +109,7 @@ export default function Header({
       },
     ];
 
-    if (activeGameId === "nte") {
+    if (activeGameId === "ntepak") {
       tabs.push({
         value: "loader",
         label: (

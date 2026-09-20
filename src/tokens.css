@@ -454,14 +454,5 @@ body {
 }
 
 .mantine-Switch-input:checked + .mantine-Switch-track .mantine-Switch-thumb {
-  background-color: var(--color-text-inverse);
-  border-color: var(--color-text-inverse);
-}
-
-.mantine-Tabs-tab[data-active] {
-  border-color: var(--color-accent-primary);
-}
-
-.mantine-InputWrapper-label {
-  margin-bottom: var(--space-xs);
+  --switch-thumb-bg: var(--color-text-inverse);
 }

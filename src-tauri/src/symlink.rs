@@ -6,11 +6,11 @@ pub const DISABLED_DIR_NAME: &str = "DISABLED_veil";
 pub const ACTIVE_DIR_NAME: &str = "veil";
 pub const UNCATEGORIZED_DIR_NAME: &str = "Uncategorized";
 
-pub fn get_disabled_dir(mods_dir: &Path) -> PathBuf {
+pub fn disabled_dir(mods_dir: &Path) -> PathBuf {
     mods_dir.join(DISABLED_DIR_NAME)
 }
 
-pub fn get_active_dir(mods_dir: &Path) -> PathBuf {
+pub fn active_dir(mods_dir: &Path) -> PathBuf {
     mods_dir.join(ACTIVE_DIR_NAME)
 }
 
@@ -31,10 +31,10 @@ pub fn effective_category_name(category: Option<&str>) -> String {
 }
 
 pub fn resolve_category_dir(
-    disabled_dir: &Path,
+    disabled_directory: &Path,
     category: Option<&str>,
 ) -> Result<PathBuf, String> {
-    let dir = disabled_dir.join(effective_category_name(category));
+    let dir = disabled_directory.join(effective_category_name(category));
     fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
     Ok(dir)
 }
@@ -46,8 +46,8 @@ pub fn ensure_veil_dirs(mods_dir: &Path) -> Result<(), String> {
             mods_dir.display()
         ));
     }
-    let disabled_dir = get_disabled_dir(mods_dir);
-    fs::create_dir_all(&disabled_dir).map_err(|err| err.to_string())?;
+    let disabled = disabled_dir(mods_dir);
+    fs::create_dir_all(&disabled).map_err(|err| err.to_string())?;
     Ok(())
 }
 
@@ -127,8 +127,8 @@ pub fn remove_mod_symlink(target_path: &Path) -> Result<(), String> {
         };
         if is_cat_empty {
             let _ = fs::remove_dir_all(category_dir);
-            if let Some(active_dir) = category_dir.parent() {
-                let is_active_empty = match fs::read_dir(active_dir) {
+            if let Some(active_directory) = category_dir.parent() {
+                let is_active_empty = match fs::read_dir(active_directory) {
                     Ok(mut entries) => entries.all(|e| {
                         if let Ok(entry) = e {
                             entry.file_name().to_string_lossy().starts_with('.')
@@ -139,7 +139,7 @@ pub fn remove_mod_symlink(target_path: &Path) -> Result<(), String> {
                     Err(_) => false,
                 };
                 if is_active_empty {
-                    let _ = fs::remove_dir_all(active_dir);
+                    let _ = fs::remove_dir_all(active_directory);
                 }
             }
         }
@@ -156,26 +156,26 @@ pub fn is_symlink_valid(link_path: &Path) -> bool {
 }
 
 pub fn prune_orphaned_symlinks(mods_dir: &Path) -> Result<usize, String> {
-    let active_dir = get_active_dir(mods_dir);
-    if !active_dir.exists() {
+    let active = active_dir(mods_dir);
+    if !active.exists() {
         return Ok(0);
     }
 
     let mut pruned_count = 0;
-    prune_dir_recursive(&active_dir, &mut pruned_count)?;
+    prune_dir_recursive(&active, &mut pruned_count)?;
     cleanup_empty_active_dir(mods_dir)?;
     Ok(pruned_count)
 }
 
 pub fn cleanup_empty_active_dir(mods_dir: &Path) -> Result<(), String> {
-    let active_dir = get_active_dir(mods_dir);
-    if !active_dir.exists() {
+    let active = active_dir(mods_dir);
+    if !active.exists() {
         return Ok(());
     }
 
-    prune_empty_dirs_recursive(&active_dir)?;
+    prune_empty_dirs_recursive(&active)?;
 
-    let is_empty = match fs::read_dir(&active_dir) {
+    let is_empty = match fs::read_dir(&active) {
         Ok(mut entries) => entries.all(|e| {
             if let Ok(entry) = e {
                 entry.file_name().to_string_lossy().starts_with('.')
@@ -187,7 +187,7 @@ pub fn cleanup_empty_active_dir(mods_dir: &Path) -> Result<(), String> {
     };
 
     if is_empty {
-        let _ = fs::remove_dir_all(&active_dir);
+        let _ = fs::remove_dir_all(&active);
     }
 
     Ok(())

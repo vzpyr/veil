@@ -7,7 +7,7 @@ pub struct GameDefinition {
     pub gamebanana_game_id: u64,
 }
 
-pub fn get_supported_games() -> Vec<GameDefinition> {
+pub fn supported_games() -> Vec<GameDefinition> {
     vec![
         GameDefinition {
             id: "endfield".to_string(),
@@ -25,7 +25,7 @@ pub fn get_supported_games() -> Vec<GameDefinition> {
             gamebanana_game_id: 10349,
         },
         GameDefinition {
-            id: "nte".to_string(),
+            id: "ntepak".to_string(),
             name: "Neverness to Everness (pak)".to_string(),
             gamebanana_game_id: 23012,
         },
@@ -47,8 +47,8 @@ pub fn get_supported_games() -> Vec<GameDefinition> {
     ]
 }
 
-pub fn get_game_by_id(id: &str) -> Option<GameDefinition> {
-    get_supported_games().into_iter().find(|game| game.id == id)
+pub fn game_by_id(id: &str) -> Option<GameDefinition> {
+    supported_games().into_iter().find(|game| game.id == id)
 }
 
 #[cfg(test)]
@@ -56,15 +56,15 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_get_supported_games() {
-        let games = get_supported_games();
+    fn test_supported_games() {
+        let games = supported_games();
         assert_eq!(games.len(), 7);
-        assert!(get_game_by_id("hi3").is_some());
-        assert!(get_game_by_id("nte").is_some());
-        let nte = get_game_by_id("nte").unwrap();
-        assert_eq!(nte.name, "Neverness to Everness (pak)");
-        assert_eq!(nte.gamebanana_game_id, 23012);
-        let hi3 = get_game_by_id("hi3").unwrap();
+        assert!(game_by_id("hi3").is_some());
+        assert!(game_by_id("ntepak").is_some());
+        let nte_pak = game_by_id("ntepak").unwrap();
+        assert_eq!(nte_pak.name, "Neverness to Everness (pak)");
+        assert_eq!(nte_pak.gamebanana_game_id, 23012);
+        let hi3 = game_by_id("hi3").unwrap();
         assert_eq!(hi3.name, "Honkai Impact 3rd");
         assert_eq!(hi3.gamebanana_game_id, 10349);
     }

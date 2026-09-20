@@ -44,7 +44,7 @@ interface ModListItemProps {
   onOpenGameBanana: (mod: ModItem) => void;
   onOpenLinkGameBanana: (mod: ModItem) => void;
   onSetPreview: (mod: ModItem) => void;
-  isNte?: boolean;
+  isNtePak?: boolean;
 }
 
 export default function ModListItem({
@@ -63,7 +63,7 @@ export default function ModListItem({
   onOpenGameBanana,
   onOpenLinkGameBanana,
   onSetPreview,
-  isNte = false,
+  isNtePak = false,
 }: ModListItemProps) {
   const previewUrl = mod.preview_path ? convertFileSrc(mod.preview_path) : null;
 
@@ -187,7 +187,7 @@ export default function ModListItem({
             </Group>
 
             <Group gap="xs" align="center">
-              {!isNte && (
+              {!isNtePak && (
                 <Badge size="xs" variant="outline" color="gray">
                   {mod.hashes.length}{" "}
                   {mod.hashes.length === 1 ? "hash" : "hashes"}
@@ -214,7 +214,7 @@ export default function ModListItem({
             onChange={(e) => onToggle(mod.id, e.currentTarget.checked)}
           />
 
-          {!isNte && (
+          {!isNtePak && (
             <Tooltip label="Keybinds and toggles">
               <ActionIcon
                 variant="subtle"

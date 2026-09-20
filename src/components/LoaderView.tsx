@@ -24,7 +24,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { LoaderRelease, NteLoaderStatus } from "../types";
+import { LoaderRelease, NtePakLoaderStatus } from "../types";
 
 interface LoaderViewProps {
   gameDir?: string;
@@ -66,7 +66,7 @@ export default function LoaderView({
   );
   const [selectedDllName, setSelectedDllName] = useState<string>("version.dll");
   const [sigSubdir, setSigSubdir] = useState<string>("");
-  const [status, setStatus] = useState<NteLoaderStatus | null>(null);
+  const [status, setStatus] = useState<NtePakLoaderStatus | null>(null);
   const [isLoadingReleases, setIsLoadingReleases] = useState<boolean>(false);
   const [isInstallingAsi, setIsInstallingAsi] = useState<boolean>(false);
   const [isInstallingSig, setIsInstallingSig] = useState<boolean>(false);
@@ -76,7 +76,7 @@ export default function LoaderView({
   const fetchStatus = useCallback(async () => {
     if (!gameDir) return;
     try {
-      const res = await invoke<NteLoaderStatus>("get_nte_status", {
+      const res = await invoke<NtePakLoaderStatus>("get_nte_pak_status", {
         gameDir,
       });
       setStatus(res);
@@ -106,8 +106,8 @@ export default function LoaderView({
     setIsLoadingReleases(true);
     try {
       const [asiList, sigList] = await Promise.all([
-        invoke<LoaderRelease[]>("get_nte_asi_loader_releases"),
-        invoke<LoaderRelease[]>("get_nte_sig_bypasser_releases"),
+        invoke<LoaderRelease[]>("get_nte_pak_asi_loader_releases"),
+        invoke<LoaderRelease[]>("get_nte_pak_sig_bypasser_releases"),
       ]);
       setAsiReleases(asiList);
       setSigReleases(sigList);
@@ -143,7 +143,7 @@ export default function LoaderView({
 
     try {
       setIsInstallingAsi(true);
-      await invoke("install_nte_asi_loader", {
+      await invoke("install_nte_pak_asi_loader", {
         gameDir,
         downloadUrl: release.download_url,
         version: release.tag_name,
@@ -170,7 +170,7 @@ export default function LoaderView({
     if (!gameDir) return;
     try {
       setIsUninstallingAsi(true);
-      await invoke("uninstall_nte_asi_loader", { gameDir });
+      await invoke("uninstall_nte_pak_asi_loader", { gameDir });
       await fetchStatus();
       notifications.show({
         title: "Uninstalled Successfully",
@@ -195,7 +195,7 @@ export default function LoaderView({
 
     try {
       setIsInstallingSig(true);
-      await invoke("install_nte_sig_bypasser", {
+      await invoke("install_nte_pak_sig_bypasser", {
         gameDir,
         downloadUrl: release.download_url,
         version: release.tag_name,
@@ -222,7 +222,7 @@ export default function LoaderView({
     if (!gameDir) return;
     try {
       setIsUninstallingSig(true);
-      await invoke("uninstall_nte_sig_bypasser", { gameDir });
+      await invoke("uninstall_nte_pak_sig_bypasser", { gameDir });
       await fetchStatus();
       notifications.show({
         title: "Uninstalled Successfully",
