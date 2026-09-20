@@ -1,18 +1,17 @@
 # Veil
 
-Yet another 3DMigoto mod manager
+Yet another 3DMigoto (and NTE) mod manager
 
 ## Features
 
-- Windows and Linux support
-- Non-destructive mod activation using symlinks between disabled and active folders
-- Multi-game support for 3DMigoto and XXMI loaders (Arknights: Endfield, Genshin Impact, Honkai Impact 3rd, Honkai: Star Rail, Wuthering Waves, and Zenless Zone Zero)
-- Mod organization with preview images, categories, grid/list view modes, sorting/filtering, multi-select, batch operations, and automatic subfolder detection during extraction
-- Integrated GameBanana browser with search, category filtering, sort options, and NSFW toggles
+- Supports Windows and Linux
+- Works with all 3DMigoto-based games (AKEF, GI, HI3, HSR, WUWA, ZZZ) and NTE (pak-based)
+- Non-destructive mod activation using symlinks and _P suffix
+- Mod organization with images, categories, filters, batch operations, and automatic subfolder handling
+- Integrated GameBanana browser for downloading mods with automatic update tracking and handling
 - Built-in download manager with queue and direct archive extraction (.7z, .zip, .rar)
-- Automatic mod update tracking against GameBanana and duplicate installation handling (replace or keep both)
-- Interactive INI keybind and variable editor with support for live variable toggles (via d3dx_user.ini)
-- Mod conflict detection analyzing overlapping hashes across active mods
+- Interactive INI keybind/variable editor with support (via d3dx_user.ini)
+- Mod conflict detector using hashes
 
 ## Installation
 
