@@ -4,11 +4,11 @@ use std::io::{Cursor, Read};
 use std::path::{Path, PathBuf};
 use zip::ZipArchive;
 
-use super::is_dir_empty_or_hidden;
 use super::loader::{
     compute_bytes_sha256, compute_file_sha256, read_loader_metadata, resolve_nte_pak_paths,
     validate_safe_subpath, write_loader_metadata,
 };
+use crate::mod_folder::is_dir_empty_or_hidden;
 
 pub async fn install_asi_loader(
     game_dir: &Path,

@@ -3,8 +3,6 @@ mod hash;
 mod mods;
 
 use serde::{Deserialize, Serialize};
-use std::fs;
-use std::path::Path;
 
 pub use categories::{
     cleanup_empty_categories, create_category, delete_category, list_categories, rename_category,
@@ -34,19 +32,6 @@ pub struct ModItem {
 pub struct CategoryItem {
     pub name: String,
     pub mod_count: usize,
-}
-
-fn is_dir_empty_or_hidden(dir: &Path) -> bool {
-    match fs::read_dir(dir) {
-        Ok(mut entries) => entries.all(|e| {
-            if let Ok(entry) = e {
-                entry.file_name().to_string_lossy().starts_with('.')
-            } else {
-                true
-            }
-        }),
-        Err(_) => false,
-    }
 }
 
 #[cfg(test)]

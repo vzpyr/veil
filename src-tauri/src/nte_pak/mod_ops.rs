@@ -5,7 +5,7 @@ use crate::archive::sanitize_folder_name;
 use crate::symlink::UNCATEGORIZED_DIR_NAME;
 
 use super::COMPANION_EXTENSIONS;
-use super::is_dir_empty_or_hidden;
+use crate::mod_folder::is_dir_empty_or_hidden;
 
 pub fn toggle_nte_pak_mod(mods_dir: &Path, rel_id: &str, enable: bool) -> Result<bool, String> {
     let mod_dir = mods_dir.join(rel_id);

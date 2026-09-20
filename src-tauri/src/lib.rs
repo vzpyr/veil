@@ -9,6 +9,7 @@ pub mod scanner;
 pub mod symlink;
 
 mod commands;
+mod mod_folder;
 
 use commands::*;
 use config::{config_path, read_config};

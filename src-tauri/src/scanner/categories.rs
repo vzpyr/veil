@@ -6,7 +6,7 @@ use std::fs;
 use std::path::Path;
 
 use super::CategoryItem;
-use super::is_dir_empty_or_hidden;
+use crate::mod_folder::is_dir_empty_or_hidden;
 
 pub fn list_categories(mods_dir: &Path) -> Result<Vec<CategoryItem>, String> {
     let disabled_dir = disabled_dir(mods_dir);
