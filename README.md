@@ -2,6 +2,16 @@
 
 Yet another 3DMigoto (and NTE) mod manager
 
+<p align="center">
+  <img src="screenshots/mods.png" width="49%">
+  <img src="screenshots/downloadqueue.png" width="49%">
+</p>
+
+<p align="center">
+  <img src="screenshots/gamebanana.png" width="49%">
+  <img src="screenshots/loader.png" width="49%">
+</p>
+
 ## Features
 
 - Supports Windows and Linux
