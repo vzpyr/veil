@@ -626,7 +626,7 @@ pub fn postprocess_nte_extracted_mod(mod_dir: &Path) -> Result<(), String> {
 
     if !has_pak {
         let _ = fs::remove_dir_all(mod_dir);
-        return Err("Archive does not contain any .pak files. NTEMI and 3DMigoto mods are not supported for Neverness to Everness.".to_string());
+        return Err("Archive does not contain any .pak files. 3DMigoto mods are not supported for Neverness to Everness.".to_string());
     }
 
     for path in files_to_check {
