@@ -30,6 +30,18 @@ pub fn effective_category_name(category: Option<&str>) -> String {
     }
 }
 
+pub fn validate_category_name(category_name: &str) -> Result<String, String> {
+    let trimmed = category_name.trim();
+    if trimmed.is_empty() {
+        return Err("Category name cannot be empty".to_string());
+    }
+    let sanitized = sanitize_folder_name(trimmed);
+    if sanitized.eq_ignore_ascii_case(UNCATEGORIZED_DIR_NAME) {
+        return Err("Cannot use reserved category name 'Uncategorized'".to_string());
+    }
+    Ok(sanitized)
+}
+
 pub fn resolve_category_dir(
     disabled_directory: &Path,
     category: Option<&str>,

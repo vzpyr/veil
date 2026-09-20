@@ -1,9 +1,8 @@
 use std::fs;
 use std::path::Path;
 
-use crate::archive::sanitize_folder_name;
 use crate::scanner::CategoryItem;
-use crate::symlink::UNCATEGORIZED_DIR_NAME;
+use crate::symlink::{UNCATEGORIZED_DIR_NAME, validate_category_name};
 
 pub fn list_nte_pak_categories(mods_dir: &Path) -> Result<Vec<CategoryItem>, String> {
     if !mods_dir.exists() {
@@ -41,14 +40,7 @@ pub fn list_nte_pak_categories(mods_dir: &Path) -> Result<Vec<CategoryItem>, Str
 }
 
 pub fn create_nte_pak_category(mods_dir: &Path, category_name: &str) -> Result<(), String> {
-    let trimmed = category_name.trim();
-    if trimmed.is_empty() {
-        return Err("Category name cannot be empty".to_string());
-    }
-    let sanitized = sanitize_folder_name(trimmed);
-    if sanitized.eq_ignore_ascii_case(UNCATEGORIZED_DIR_NAME) {
-        return Err("Cannot use reserved category name 'Uncategorized'".to_string());
-    }
+    let sanitized = validate_category_name(category_name)?;
     let cat_dir = mods_dir.join(&sanitized);
     if cat_dir.exists() {
         return Err(format!("Category already exists: {}", sanitized));
@@ -62,18 +54,8 @@ pub fn rename_nte_pak_category(
     old_name: &str,
     new_name: &str,
 ) -> Result<(), String> {
-    let trimmed_old = old_name.trim();
-    let trimmed_new = new_name.trim();
-    if trimmed_old.is_empty() || trimmed_new.is_empty() {
-        return Err("Category name cannot be empty".to_string());
-    }
-    let sanitized_old = sanitize_folder_name(trimmed_old);
-    let sanitized_new = sanitize_folder_name(trimmed_new);
-    if sanitized_old.eq_ignore_ascii_case(UNCATEGORIZED_DIR_NAME)
-        || sanitized_new.eq_ignore_ascii_case(UNCATEGORIZED_DIR_NAME)
-    {
-        return Err("Cannot rename to or from reserved Uncategorized category".to_string());
-    }
+    let sanitized_old = validate_category_name(old_name)?;
+    let sanitized_new = validate_category_name(new_name)?;
     if sanitized_old == sanitized_new {
         return Ok(());
     }
@@ -94,14 +76,7 @@ pub fn delete_nte_pak_category(
     category_name: &str,
     delete_mods: bool,
 ) -> Result<(), String> {
-    let trimmed = category_name.trim();
-    if trimmed.is_empty() {
-        return Err("Category name cannot be empty".to_string());
-    }
-    let sanitized = sanitize_folder_name(trimmed);
-    if sanitized.eq_ignore_ascii_case(UNCATEGORIZED_DIR_NAME) {
-        return Err("Cannot delete the reserved Uncategorized category".to_string());
-    }
+    let sanitized = validate_category_name(category_name)?;
     let cat_dir = mods_dir.join(&sanitized);
     if !cat_dir.exists() {
         return Err(format!("Category does not exist: {}", sanitized));

@@ -1,6 +1,6 @@
-use crate::archive::sanitize_folder_name;
 use crate::symlink::{
     UNCATEGORIZED_DIR_NAME, active_dir, create_mod_symlink, disabled_dir, remove_mod_symlink,
+    validate_category_name,
 };
 use std::fs;
 use std::path::Path;
@@ -44,14 +44,7 @@ pub fn list_categories(mods_dir: &Path) -> Result<Vec<CategoryItem>, String> {
 }
 
 pub fn create_category(mods_dir: &Path, category_name: &str) -> Result<(), String> {
-    let trimmed = category_name.trim();
-    if trimmed.is_empty() {
-        return Err("Category name cannot be empty".to_string());
-    }
-    let sanitized = sanitize_folder_name(trimmed);
-    if sanitized.eq_ignore_ascii_case(UNCATEGORIZED_DIR_NAME) {
-        return Err("Cannot use reserved category name 'Uncategorized'".to_string());
-    }
+    let sanitized = validate_category_name(category_name)?;
     let cat_dir = disabled_dir(mods_dir).join(&sanitized);
     if cat_dir.exists() {
         return Err(format!("Category already exists: {}", sanitized));
@@ -61,19 +54,8 @@ pub fn create_category(mods_dir: &Path, category_name: &str) -> Result<(), Strin
 }
 
 pub fn rename_category(mods_dir: &Path, old_name: &str, new_name: &str) -> Result<(), String> {
-    let trimmed_old = old_name.trim();
-    let trimmed_new = new_name.trim();
-    if trimmed_old.is_empty() || trimmed_new.is_empty() {
-        return Err("Category name cannot be empty".to_string());
-    }
-    let sanitized_old = sanitize_folder_name(trimmed_old);
-    let sanitized_new = sanitize_folder_name(trimmed_new);
-    if sanitized_old.eq_ignore_ascii_case(UNCATEGORIZED_DIR_NAME) {
-        return Err("Cannot rename the reserved Uncategorized category".to_string());
-    }
-    if sanitized_new.eq_ignore_ascii_case(UNCATEGORIZED_DIR_NAME) {
-        return Err("Cannot use reserved category name 'Uncategorized'".to_string());
-    }
+    let sanitized_old = validate_category_name(old_name)?;
+    let sanitized_new = validate_category_name(new_name)?;
 
     if sanitized_old == sanitized_new {
         return Ok(());
@@ -134,14 +116,7 @@ pub fn delete_category(
     category_name: &str,
     delete_mods: bool,
 ) -> Result<(), String> {
-    let trimmed = category_name.trim();
-    if trimmed.is_empty() {
-        return Err("Category name cannot be empty".to_string());
-    }
-    let sanitized = sanitize_folder_name(trimmed);
-    if sanitized.eq_ignore_ascii_case(UNCATEGORIZED_DIR_NAME) {
-        return Err("Cannot delete the reserved Uncategorized category".to_string());
-    }
+    let sanitized = validate_category_name(category_name)?;
 
     let disabled_dir = disabled_dir(mods_dir);
     let active_dir = active_dir(mods_dir);
