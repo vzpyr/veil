@@ -228,7 +228,7 @@ export default function App() {
                   autoCategorize={config.autoCategorize}
                   showNsfw={config.showNsfw}
                   autoCheckUpdates={Boolean(config.config?.auto_check_updates)}
-                  colorScheme={config.config?.color_scheme ?? "dark"}
+                  colorScheme={config.config?.color_scheme ?? "system"}
                   onUpdateDir={handleUpdateModsDir}
                   onUpdateAutoCategorize={config.setAutoCategorize}
                   onShowNsfwChange={config.setShowNsfw}

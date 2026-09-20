@@ -164,9 +164,10 @@ export default function SettingsView({
             </Text>
             <SegmentedControl
               size="xs"
-              value={colorScheme === "light" ? "light" : "dark"}
+              value={colorScheme}
               onChange={onColorSchemeChange}
               data={[
+                { value: "system", label: "System" },
                 { value: "dark", label: "Dark" },
                 { value: "light", label: "Light" },
               ]}

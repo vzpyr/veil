@@ -12,7 +12,7 @@ import App from "./App";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <MantineProvider theme={theme} defaultColorScheme="dark">
+    <MantineProvider theme={theme} defaultColorScheme="auto">
       <MotionConfig reducedMotion="user">
         <Notifications position="bottom-right" />
         <App />

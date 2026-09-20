@@ -18,6 +18,9 @@ export default function useAppConfig() {
   const autoCategorize = config?.auto_categorize ?? true;
   const showNsfw = config?.show_nsfw ?? false;
 
+  const toMantineScheme = (scheme: string) =>
+    scheme === "light" ? "light" : scheme === "dark" ? "dark" : "auto";
+
   const load = useCallback(async () => {
     const [loadedGames, loadedConfig] = await Promise.all([
       invoke<GameDefinition[]>("get_games"),
@@ -25,7 +28,7 @@ export default function useAppConfig() {
     ]);
     setGames(loadedGames);
     setConfig(loadedConfig);
-    setColorScheme(loadedConfig.color_scheme === "light" ? "light" : "dark");
+    setColorScheme(toMantineScheme(loadedConfig.color_scheme));
     return { games: loadedGames, config: loadedConfig };
   }, [setColorScheme]);
 
@@ -35,7 +38,7 @@ export default function useAppConfig() {
         colorScheme: scheme,
       });
       setConfig(updated);
-      setColorScheme(scheme === "light" ? "light" : "dark");
+      setColorScheme(toMantineScheme(scheme));
     },
     [setColorScheme],
   );

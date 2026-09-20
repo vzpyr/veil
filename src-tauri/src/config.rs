@@ -31,7 +31,7 @@ fn default_auto_categorize() -> bool {
 }
 
 fn default_color_scheme() -> String {
-    "dark".to_string()
+    "system".to_string()
 }
 
 fn default_view_mode() -> String {
@@ -47,7 +47,7 @@ impl Default for AppConfig {
             active_game_id: "zzz".to_string(),
             auto_categorize: true,
             show_nsfw: false,
-            color_scheme: "dark".to_string(),
+            color_scheme: "system".to_string(),
             auto_check_updates: false,
             view_mode: "grid".to_string(),
             games,
@@ -91,7 +91,7 @@ mod tests {
         assert!(!config.auto_check_updates);
         assert!(config.auto_categorize);
         assert!(!config.show_nsfw);
-        assert_eq!(config.color_scheme, "dark");
+        assert_eq!(config.color_scheme, "system");
         assert_eq!(config.view_mode, "grid");
     }
 

@@ -70,10 +70,10 @@ pub fn set_show_nsfw(app: AppHandle, show_nsfw: bool) -> Result<AppConfig, Strin
 
 #[tauri::command]
 pub fn set_color_scheme(app: AppHandle, color_scheme: String) -> Result<AppConfig, String> {
-    let scheme = if color_scheme == "light" {
-        "light"
-    } else {
-        "dark"
+    let scheme = match color_scheme.as_str() {
+        "dark" => "dark",
+        "light" => "light",
+        _ => "system",
     };
     let path = config_path(&app)?;
     let mut config = read_config(&path);
