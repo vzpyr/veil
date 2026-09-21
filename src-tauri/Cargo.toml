@@ -1,6 +1,6 @@
 [package]
 name = "veil"
-version = "0.1.1"
+version = "0.1.2"
 description = "Yet another 3DMigoto mod manager"
 authors = ["vzpyr"]
 edition = "2024"
