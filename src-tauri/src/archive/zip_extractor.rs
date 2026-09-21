@@ -19,23 +19,22 @@ fn read_raw_entry(
     Ok(raw)
 }
 
-fn lzma_props(raw: &[u8]) -> Result<(u8, u32, usize), String> {
+fn lzma_props(raw: &[u8]) -> Result<(u8, u32), String> {
     if raw.len() < 9 {
         return Err("Truncated lzma archive entry".to_string());
     }
-    let props_size = u16::from_le_bytes([raw[2], raw[3]]) as usize;
-    if props_size != 5 || raw.len() < 4 + props_size {
+    if u16::from_le_bytes([raw[2], raw[3]]) != 5 {
         return Err("Unsupported lzma archive entry header".to_string());
     }
     let props = raw[4];
     let dict_size = u32::from_le_bytes([raw[5], raw[6], raw[7], raw[8]]);
-    Ok((props, dict_size, 4 + props_size))
+    Ok((props, dict_size))
 }
 
 fn decode_lzma(raw: &[u8], expected_size: u64) -> Result<Vec<u8>, String> {
-    let (props, dict_size, header_end) = lzma_props(raw)?;
+    let (props, dict_size) = lzma_props(raw)?;
 
-    let starts = [header_end + 8, header_end];
+    let starts = [17, 9];
     let mut last_error = String::new();
     for start in starts {
         if start >= raw.len() {
