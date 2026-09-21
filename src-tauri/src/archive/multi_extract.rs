@@ -22,7 +22,7 @@ pub fn extract_sevenz(
     }
 
     if let Err(err) =
-        sevenz_rust::decompress_file(archive_path, temp_extract_dir).map_err(|e| e.to_string())
+        sevenz_rust2::decompress_file(archive_path, temp_extract_dir).map_err(|e| e.to_string())
     {
         let _ = fs::remove_dir_all(temp_extract_dir);
         return Err(err);
@@ -66,56 +66,50 @@ pub fn extract_rar(
         return Err("Download cancelled".to_string());
     }
 
-    let mut archive = unrar::Archive::new(archive_path)
-        .open_for_processing()
-        .map_err(|e| e.to_string())?;
-
-    loop {
-        if is_cancelled() {
+    let archive = match rars::ArchiveReader::read_path(archive_path) {
+        Ok(archive) => archive,
+        Err(err) => {
             let _ = fs::remove_dir_all(temp_extract_dir);
+            return Err(err.to_string());
+        }
+    };
+
+    let mut cancelled = false;
+    let result = archive.extract_to(None, |meta| {
+        if is_cancelled() {
+            cancelled = true;
+            return Err(rars::Error::Cancelled);
+        }
+
+        let entry_name = String::from_utf8_lossy(&meta.name).replace('\\', "/");
+        let skipped_entry =
+            entry_name.starts_with("__MACOSX/") || entry_name.ends_with(".DS_Store");
+
+        if meta.is_directory || skipped_entry {
+            return Ok(Box::new(std::io::sink()));
+        }
+
+        if !is_safe_path(Path::new(&entry_name)) {
+            return Err(std::io::Error::other(format!(
+                "Unsafe path detected in rar archive: {}",
+                entry_name
+            ))
+            .into());
+        }
+
+        let out_path = temp_extract_dir.join(&entry_name);
+        if let Some(parent) = out_path.parent() {
+            fs::create_dir_all(parent)?;
+        }
+        Ok(Box::new(fs::File::create(&out_path)?))
+    });
+
+    if let Err(err) = result {
+        let _ = fs::remove_dir_all(temp_extract_dir);
+        if cancelled {
             return Err("Download cancelled".to_string());
         }
-
-        let result = archive.read_header().map_err(|e| {
-            let _ = fs::remove_dir_all(temp_extract_dir);
-            e.to_string()
-        });
-
-        match result {
-            Ok(Some(header)) => {
-                let entry_name = header.entry().filename.to_string_lossy().replace('\\', "/");
-                let is_dir = header.entry().is_directory();
-                let skipped_entry =
-                    entry_name.starts_with("__MACOSX/") || entry_name.ends_with(".DS_Store");
-
-                if !is_dir && !skipped_entry && !is_safe_path(Path::new(&entry_name)) {
-                    let _ = fs::remove_dir_all(temp_extract_dir);
-                    return Err(format!(
-                        "Unsafe path detected in rar archive: {}",
-                        entry_name
-                    ));
-                }
-
-                match if is_dir || skipped_entry {
-                    header.skip().map_err(|e| e.to_string())
-                } else {
-                    header
-                        .extract_with_base(temp_extract_dir)
-                        .map_err(|e| e.to_string())
-                } {
-                    Ok(next) => archive = next,
-                    Err(err) => {
-                        let _ = fs::remove_dir_all(temp_extract_dir);
-                        return Err(err);
-                    }
-                }
-            }
-            Ok(None) => break,
-            Err(err) => {
-                let _ = fs::remove_dir_all(temp_extract_dir);
-                return Err(err);
-            }
-        }
+        return Err(err.to_string());
     }
 
     if is_cancelled() {
