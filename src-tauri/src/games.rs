@@ -25,6 +25,11 @@ pub fn supported_games() -> Vec<GameDefinition> {
             gamebanana_game_id: 10349,
         },
         GameDefinition {
+            id: "starrail".to_string(),
+            name: "Honkai Star Rail".to_string(),
+            gamebanana_game_id: 18366,
+        },
+        GameDefinition {
             id: "nte".to_string(),
             name: "Neverness to Everness (NEMI)".to_string(),
             gamebanana_game_id: 23012,
@@ -33,11 +38,6 @@ pub fn supported_games() -> Vec<GameDefinition> {
             id: "ntepak".to_string(),
             name: "Neverness to Everness (pak)".to_string(),
             gamebanana_game_id: 23012,
-        },
-        GameDefinition {
-            id: "starrail".to_string(),
-            name: "Honkai Star Rail".to_string(),
-            gamebanana_game_id: 18366,
         },
         GameDefinition {
             id: "wuwa".to_string(),
