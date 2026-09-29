@@ -31,6 +31,8 @@ export default function useAppUi() {
     modsToMove: [],
     categoryName: null,
   });
+  const [selectedPresetId, setSelectedPresetId] = useState<string | null>(null);
+  const [presetSaveDrawerOpen, setPresetSaveDrawerOpen] = useState(false);
 
   return {
     activeTab,
@@ -57,6 +59,10 @@ export default function useAppUi() {
     setSortBy,
     categoryModal,
     setCategoryModal,
+    selectedPresetId,
+    setSelectedPresetId,
+    presetSaveDrawerOpen,
+    setPresetSaveDrawerOpen,
   };
 }
 

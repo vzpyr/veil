@@ -86,6 +86,34 @@ export default function useAppConfig() {
     setConfig(updated);
   }, []);
 
+  const savePreset = useCallback(
+    async (
+      gameId: string,
+      name: string,
+      modIds: string[],
+      presetId?: string,
+    ) => {
+      const updated = await invoke<AppConfig>("save_preset", {
+        gameId,
+        name,
+        modIds,
+        presetId: presetId || null,
+      });
+      setConfig(updated);
+      return updated;
+    },
+    [],
+  );
+
+  const deletePreset = useCallback(async (gameId: string, presetId: string) => {
+    const updated = await invoke<AppConfig>("delete_preset", {
+      gameId,
+      presetId,
+    });
+    setConfig(updated);
+    return updated;
+  }, []);
+
   return {
     games,
     config,
@@ -103,6 +131,8 @@ export default function useAppConfig() {
     setShowNsfw,
     setAutoCheckUpdates,
     setViewMode,
+    savePreset,
+    deletePreset,
   };
 }
 

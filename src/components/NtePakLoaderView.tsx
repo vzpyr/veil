@@ -257,7 +257,11 @@ export default function NtePakLoaderView({
           }}
         />
 
-        <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+        <SimpleGrid
+          cols={{ base: 1, sm: 2 }}
+          spacing="sm"
+          style={{ alignItems: "start" }}
+        >
           <AsiLoaderCard
             installed={Boolean(status?.asi_loader_installed)}
             dllName={status?.asi_loader_dll ?? "version.dll"}

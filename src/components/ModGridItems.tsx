@@ -71,7 +71,7 @@ export default function ModGridItems({
               onOpenGameBanana={onOpenGameBanana}
               onOpenLinkGameBanana={onOpenLinkGameBanana}
               onSetPreview={onSetPreview}
-              isNtePak={activeGameId === "ntepak"}
+              isNtePak={activeGameId === "neverness-to-everness-pak"}
             />
           </motion.div>
         ))}
@@ -106,7 +106,7 @@ export default function ModGridItems({
             onOpenGameBanana={onOpenGameBanana}
             onOpenLinkGameBanana={onOpenLinkGameBanana}
             onSetPreview={onSetPreview}
-            isNtePak={activeGameId === "ntepak"}
+            isNtePak={activeGameId === "neverness-to-everness-pak"}
           />
         </motion.div>
       ))}

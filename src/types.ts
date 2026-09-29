@@ -4,8 +4,15 @@ export interface GameDefinition {
   gamebanana_game_id: number;
 }
 
+export interface ModPreset {
+  id: string;
+  name: string;
+  mod_ids: string[];
+}
+
 export interface GameSettings {
   dir?: string;
+  presets?: ModPreset[];
 }
 
 export interface AppConfig {

@@ -1,4 +1,6 @@
 import { Box } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
+import { useState } from "react";
 import Sidebar from "./Sidebar";
 import ModGrid from "./ModGrid";
 import type { AppConfigApi } from "../hooks/useAppConfig";
@@ -25,6 +27,43 @@ export default function InstalledView({
   filters,
   manual,
 }: InstalledViewProps) {
+  const [isApplyingPreset, setIsApplyingPreset] = useState(false);
+  const presets = config.activeSettings.presets ?? [];
+
+  const handleApplyPreset = async () => {
+    if (!ui.selectedPresetId) return;
+    const preset = presets.find((p) => p.id === ui.selectedPresetId);
+    if (!preset) return;
+
+    try {
+      setIsApplyingPreset(true);
+      await ops.applyPreset(preset, mods.mods);
+    } finally {
+      setIsApplyingPreset(false);
+    }
+  };
+
+  const handleDeletePreset = async () => {
+    if (!config.activeGame || !ui.selectedPresetId) return;
+    const preset = presets.find((p) => p.id === ui.selectedPresetId);
+    const presetName = preset?.name || "Preset";
+    try {
+      await config.deletePreset(config.activeGame.id, ui.selectedPresetId);
+      ui.setSelectedPresetId(null);
+      notifications.show({
+        title: "Preset deleted",
+        message: `Preset "${presetName}" deleted.`,
+        color: "orange",
+      });
+    } catch (err) {
+      notifications.show({
+        title: "Delete failed",
+        message: String(err),
+        color: "red",
+      });
+    }
+  };
+
   return (
     <>
       <Sidebar
@@ -37,6 +76,14 @@ export default function InstalledView({
         onSearchChange={ui.setSearchQuery}
         conflicts={mods.conflicts}
         onOpenConflicts={() => ui.setConflictDrawerOpen(true)}
+        presets={presets}
+        selectedPresetId={ui.selectedPresetId}
+        onSelectPreset={ui.setSelectedPresetId}
+        mods={mods.mods}
+        onOpenSavePreset={() => ui.setPresetSaveDrawerOpen(true)}
+        onApplyPreset={handleApplyPreset}
+        onDeletePreset={handleDeletePreset}
+        isApplyingPreset={isApplyingPreset}
         onOpenCreateCategory={() =>
           ui.setCategoryModal({
             open: true,

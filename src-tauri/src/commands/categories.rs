@@ -14,7 +14,7 @@ pub fn get_categories(
 ) -> Result<Vec<CategoryItem>, String> {
     let dir = effective_mods_dir(game_id.as_deref(), &mods_dir);
     let path = dir.as_path();
-    if game_id.as_deref() == Some("ntepak") {
+    if game_id.as_deref() == Some("neverness-to-everness-pak") {
         std::fs::create_dir_all(path).map_err(|e| e.to_string())?;
         return list_nte_pak_categories(path);
     }
@@ -30,7 +30,7 @@ pub fn create_category(
 ) -> Result<(), String> {
     let dir = effective_mods_dir(game_id.as_deref(), &mods_dir);
     let path = dir.as_path();
-    if game_id.as_deref() == Some("ntepak") {
+    if game_id.as_deref() == Some("neverness-to-everness-pak") {
         return create_nte_pak_category(path, &category_name);
     }
     crate::scanner::create_category(path, &category_name)
@@ -45,7 +45,7 @@ pub fn rename_category(
 ) -> Result<(), String> {
     let dir = effective_mods_dir(game_id.as_deref(), &mods_dir);
     let path = dir.as_path();
-    if game_id.as_deref() == Some("ntepak") {
+    if game_id.as_deref() == Some("neverness-to-everness-pak") {
         return rename_nte_pak_category(path, &old_name, &new_name);
     }
     crate::scanner::rename_category(path, &old_name, &new_name)
@@ -60,7 +60,7 @@ pub fn delete_category(
 ) -> Result<(), String> {
     let dir = effective_mods_dir(game_id.as_deref(), &mods_dir);
     let path = dir.as_path();
-    if game_id.as_deref() == Some("ntepak") {
+    if game_id.as_deref() == Some("neverness-to-everness-pak") {
         return delete_nte_pak_category(path, &category_name, delete_mods);
     }
     crate::scanner::delete_category(path, &category_name, delete_mods)

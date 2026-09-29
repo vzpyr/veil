@@ -23,7 +23,7 @@ export default function LoaderHeader({
       </div>
       <Button
         size="xs"
-        variant="subtle"
+        variant="default"
         leftSection={<RefreshCw size={14} />}
         loading={isLoadingReleases}
         onClick={onRefresh}

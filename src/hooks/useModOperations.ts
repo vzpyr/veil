@@ -2,7 +2,7 @@ import { notifications } from "@mantine/notifications";
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 import { openPath } from "@tauri-apps/plugin-opener";
-import { AppConfig, ModItem } from "../types";
+import { AppConfig, ModItem, ModPreset } from "../types";
 
 type RefreshData = (
   targetModsDir?: string,
@@ -281,6 +281,49 @@ export default function useModOperations({
     }
   };
 
+  const applyPreset = async (preset: ModPreset, mods: ModItem[]) => {
+    if (!modsDir) return;
+    try {
+      const targetPresetIds = new Set(preset.mod_ids);
+      const toEnable = mods
+        .filter((m) => targetPresetIds.has(m.id) && !m.enabled)
+        .map((m) => m.id);
+      const toDisable = mods
+        .filter((m) => !targetPresetIds.has(m.id) && m.enabled)
+        .map((m) => m.id);
+
+      if (toEnable.length > 0) {
+        await invoke("batch_toggle_mods", {
+          modsDir,
+          modIds: toEnable,
+          enable: true,
+          gameId: activeGameId,
+        });
+      }
+      if (toDisable.length > 0) {
+        await invoke("batch_toggle_mods", {
+          modsDir,
+          modIds: toDisable,
+          enable: false,
+          gameId: activeGameId,
+        });
+      }
+
+      await refreshData();
+      notifications.show({
+        title: "Preset applied",
+        message: `Preset "${preset.name}" applied.`,
+        color: "green",
+      });
+    } catch (err) {
+      notifications.show({
+        title: "Preset error",
+        message: String(err),
+        color: "red",
+      });
+    }
+  };
+
   return {
     toggleMods,
     toggleMod,
@@ -293,6 +336,7 @@ export default function useModOperations({
     deleteCategory,
     setModPreview,
     openFolder,
+    applyPreset,
   };
 }
 

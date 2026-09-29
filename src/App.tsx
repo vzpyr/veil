@@ -88,12 +88,13 @@ export default function App() {
 
   const handleSelectGame = async (gameId: string) => {
     try {
-      if (ui.activeTab === "loader" && gameId !== "ntepak") {
+      if (ui.activeTab === "loader" && gameId !== "neverness-to-everness-pak") {
         ui.setActiveTab("installed");
       }
       const updatedConfig = await config.setActiveGame(gameId);
       ui.setSelectedCategory(null);
       ui.setSearchQuery("");
+      ui.setSelectedPresetId(null);
       const nextModsDir = updatedConfig.games[gameId]?.dir;
       if (nextModsDir) {
         await invoke("cleanup_on_boot", { modsDir: nextModsDir, gameId });
@@ -180,7 +181,7 @@ export default function App() {
             )}
 
             {ui.activeTab === "loader" &&
-              config.activeGame?.id === "ntepak" && (
+              config.activeGame?.id === "neverness-to-everness-pak" && (
                 <Box
                   style={{
                     flex: 1,

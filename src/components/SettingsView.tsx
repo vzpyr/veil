@@ -41,7 +41,7 @@ export default function SettingsView({
   onUpdateAutoCheckUpdates,
   onColorSchemeChange,
 }: SettingsViewProps) {
-  const isNtePak = activeGame.id === "ntepak";
+  const isNtePak = activeGame.id === "neverness-to-everness-pak";
   const displayedDir = settings.dir;
 
   const handleBrowseFolder = async () => {

@@ -33,7 +33,7 @@ pub fn extract_archive_file(
     duplicate_action: Option<String>,
     game_id: Option<String>,
 ) -> Result<String, String> {
-    let is_nte_pak = game_id.as_deref() == Some("ntepak");
+    let is_nte_pak = game_id.as_deref() == Some("neverness-to-everness-pak");
     let dir = effective_mods_dir(game_id.as_deref(), &mods_dir);
     let path = dir.as_path();
 
@@ -134,7 +134,7 @@ pub fn link_mod_to_gamebanana(
 ) -> Result<(), String> {
     let dir = effective_mods_dir(game_id.as_deref(), &mods_dir);
     let path = dir.as_path();
-    if game_id.as_deref() != Some("ntepak") {
+    if game_id.as_deref() != Some("neverness-to-everness-pak") {
         ensure_veil_dirs(path)?;
     }
     link_mod(path, &mod_id, gamebanana_id, version, file_id)

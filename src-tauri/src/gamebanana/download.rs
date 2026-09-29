@@ -28,7 +28,7 @@ pub async fn download_and_install_mod(
     version: Option<String>,
     game_id: Option<String>,
 ) -> Result<String, String> {
-    let is_nte_pak = game_id.as_deref() == Some("ntepak");
+    let is_nte_pak = game_id.as_deref() == Some("neverness-to-everness-pak");
     let resolved_mods_dir = if is_nte_pak {
         crate::nte_pak::resolve_nte_pak_paths(Path::new(&mods_dir)).1
     } else {

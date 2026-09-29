@@ -14,7 +14,7 @@ pub fn cleanup_on_boot(mods_dir: String, game_id: Option<String>) -> Result<(), 
     if !path.exists() {
         return Ok(());
     }
-    if game_id.as_deref() == Some("ntepak") {
+    if game_id.as_deref() == Some("neverness-to-everness-pak") {
         return Ok(());
     }
     prune_orphaned_symlinks(path)?;
@@ -27,7 +27,7 @@ pub fn cleanup_on_boot(mods_dir: String, game_id: Option<String>) -> Result<(), 
 pub fn scan_mods(mods_dir: String, game_id: Option<String>) -> Result<Vec<ModItem>, String> {
     let dir = effective_mods_dir(game_id.as_deref(), &mods_dir);
     let path = dir.as_path();
-    if game_id.as_deref() == Some("ntepak") {
+    if game_id.as_deref() == Some("neverness-to-everness-pak") {
         std::fs::create_dir_all(path).map_err(|e| e.to_string())?;
         return scan_nte_pak_mods(path);
     }
@@ -42,7 +42,7 @@ pub fn get_mod_conflicts(
     mods_dir: String,
     game_id: Option<String>,
 ) -> Result<Vec<ConflictGroup>, String> {
-    if game_id.as_deref() == Some("ntepak") {
+    if game_id.as_deref() == Some("neverness-to-everness-pak") {
         return Ok(Vec::new());
     }
     let dir = effective_mods_dir(game_id.as_deref(), &mods_dir);
@@ -61,7 +61,7 @@ pub fn toggle_mod(
 ) -> Result<bool, String> {
     let dir = effective_mods_dir(game_id.as_deref(), &mods_dir);
     let path = dir.as_path();
-    if game_id.as_deref() == Some("ntepak") {
+    if game_id.as_deref() == Some("neverness-to-everness-pak") {
         return toggle_nte_pak_mod(path, &mod_id, enable);
     }
     crate::scanner::toggle_mod_status(path, &mod_id, enable)
@@ -76,7 +76,7 @@ pub fn move_mod(
 ) -> Result<String, String> {
     let dir = effective_mods_dir(game_id.as_deref(), &mods_dir);
     let path = dir.as_path();
-    if game_id.as_deref() == Some("ntepak") {
+    if game_id.as_deref() == Some("neverness-to-everness-pak") {
         return move_nte_pak_mod_category(path, &mod_id, target_category);
     }
     crate::scanner::move_mod_category(path, &mod_id, target_category)
@@ -86,7 +86,7 @@ pub fn move_mod(
 pub fn delete_mod(mods_dir: String, mod_id: String, game_id: Option<String>) -> Result<(), String> {
     let dir = effective_mods_dir(game_id.as_deref(), &mods_dir);
     let path = dir.as_path();
-    if game_id.as_deref() == Some("ntepak") {
+    if game_id.as_deref() == Some("neverness-to-everness-pak") {
         return delete_nte_pak_mod(path, &mod_id);
     }
     crate::scanner::delete_mod(path, &mod_id)
@@ -101,7 +101,7 @@ pub fn batch_toggle_mods(
 ) -> Result<(), String> {
     let dir = effective_mods_dir(game_id.as_deref(), &mods_dir);
     let path = dir.as_path();
-    if game_id.as_deref() == Some("ntepak") {
+    if game_id.as_deref() == Some("neverness-to-everness-pak") {
         for id in &mod_ids {
             toggle_nte_pak_mod(path, id, enable)?;
         }
@@ -119,7 +119,7 @@ pub fn batch_move_mods(
 ) -> Result<(), String> {
     let dir = effective_mods_dir(game_id.as_deref(), &mods_dir);
     let path = dir.as_path();
-    if game_id.as_deref() == Some("ntepak") {
+    if game_id.as_deref() == Some("neverness-to-everness-pak") {
         for id in &mod_ids {
             move_nte_pak_mod_category(path, id, target_category.clone())?;
         }
@@ -136,7 +136,7 @@ pub fn batch_delete_mods(
 ) -> Result<(), String> {
     let dir = effective_mods_dir(game_id.as_deref(), &mods_dir);
     let path = dir.as_path();
-    if game_id.as_deref() == Some("ntepak") {
+    if game_id.as_deref() == Some("neverness-to-everness-pak") {
         for id in &mod_ids {
             delete_nte_pak_mod(path, id)?;
         }

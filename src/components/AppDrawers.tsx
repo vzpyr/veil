@@ -1,3 +1,4 @@
+import { notifications } from "@mantine/notifications";
 import CategoryDrawer from "./CategoryDrawer";
 import ConflictDrawer from "./ConflictDrawer";
 import { DownloadQueueDrawer } from "./DownloadQueueDrawer";
@@ -5,6 +6,7 @@ import { DuplicateDrawer } from "./DuplicateDrawer";
 import KeybindDrawer from "./KeybindDrawer";
 import LinkGameBananaDrawer from "./LinkGameBananaDrawer";
 import ManualInstallDrawer from "./ManualInstallDrawer";
+import PresetSaveDrawer from "./PresetSaveDrawer";
 import GbModDrawer from "./browser/GbModDrawer";
 import type { AppConfigApi } from "../hooks/useAppConfig";
 import type { ModsLibrary } from "../hooks/useModsLibrary";
@@ -125,6 +127,43 @@ export default function AppDrawers({
         modsDir={config.modsDir}
         gameId={config.activeGame?.id}
         onSuccess={() => mods.refreshData()}
+      />
+
+      <PresetSaveDrawer
+        opened={ui.presetSaveDrawerOpen}
+        onClose={() => ui.setPresetSaveDrawerOpen(false)}
+        selectedPreset={
+          (config.activeSettings.presets ?? []).find(
+            (p) => p.id === ui.selectedPresetId,
+          ) || null
+        }
+        enabledCount={mods.mods.filter((m) => m.enabled).length}
+        onSave={async (name, presetId) => {
+          if (!config.activeGame) return;
+          const enabledModIds = mods.mods
+            .filter((m) => m.enabled)
+            .map((m) => m.id);
+          const updated = await config.savePreset(
+            config.activeGame.id,
+            name,
+            enabledModIds,
+            presetId,
+          );
+          const savedPresets =
+            updated.games[config.activeGame.id]?.presets ?? [];
+          const savedPreset = presetId
+            ? savedPresets.find((p) => p.id === presetId)
+            : savedPresets.find((p) => p.name === name) ||
+              savedPresets[savedPresets.length - 1];
+          if (savedPreset) {
+            ui.setSelectedPresetId(savedPreset.id);
+          }
+          notifications.show({
+            title: "Preset saved",
+            message: `Preset "${name}" saved successfully.`,
+            color: "green",
+          });
+        }}
       />
     </>
   );

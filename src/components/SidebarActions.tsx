@@ -1,4 +1,4 @@
-import { Badge, Button, Stack, Tooltip } from "@mantine/core";
+import { Badge, Button, Divider, Stack, Tooltip } from "@mantine/core";
 import {
   FolderOpen,
   FolderPlus,
@@ -7,11 +7,19 @@ import {
   Sparkles,
   TriangleAlert,
 } from "lucide-react";
-import { ConflictGroup } from "../types";
+import { ConflictGroup, ModItem, ModPreset } from "../types";
+import SidebarPresets from "./SidebarPresets";
 
 interface SidebarActionsProps {
   conflicts: ConflictGroup[];
   onOpenConflicts: () => void;
+  presets: ModPreset[];
+  selectedPresetId: string | null;
+  onSelectPreset: (presetId: string | null) => void;
+  mods: ModItem[];
+  onOpenSavePreset: () => void;
+  onApplyPreset: () => void;
+  onDeletePreset: () => void;
   onOpenCreateCategory: () => void;
   onOpenModsFolder: () => void;
   onOpenManualInstall: () => void;
@@ -20,11 +28,19 @@ interface SidebarActionsProps {
   onRescanMods: () => void;
   isRefreshing: boolean;
   hasModsDir: boolean;
+  isApplyingPreset?: boolean;
 }
 
 export default function SidebarActions({
   conflicts,
   onOpenConflicts,
+  presets,
+  selectedPresetId,
+  onSelectPreset,
+  mods,
+  onOpenSavePreset,
+  onApplyPreset,
+  onDeletePreset,
   onOpenCreateCategory,
   onOpenModsFolder,
   onOpenManualInstall,
@@ -33,6 +49,7 @@ export default function SidebarActions({
   onRescanMods,
   isRefreshing,
   hasModsDir,
+  isApplyingPreset,
 }: SidebarActionsProps) {
   return (
     <Stack gap="xs">
@@ -56,6 +73,21 @@ export default function SidebarActions({
           </Button>
         </Tooltip>
       )}
+
+      <SidebarPresets
+        presets={presets}
+        selectedPresetId={selectedPresetId}
+        onSelectPreset={onSelectPreset}
+        mods={mods}
+        onOpenSaveModal={onOpenSavePreset}
+        onApplyPreset={onApplyPreset}
+        onDeletePreset={onDeletePreset}
+        hasModsDir={hasModsDir}
+        isApplying={isApplyingPreset}
+      />
+
+      <Divider color="var(--color-border-subtle)" my="3xs" />
+
       <Button
         fullWidth
         variant="default"

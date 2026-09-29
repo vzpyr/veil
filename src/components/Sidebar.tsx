@@ -7,7 +7,7 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { Search, X } from "lucide-react";
-import { CategoryItem, ConflictGroup } from "../types";
+import { CategoryItem, ConflictGroup, ModItem, ModPreset } from "../types";
 import SidebarActions from "./SidebarActions";
 import SidebarCategoryList from "./SidebarCategoryList";
 
@@ -21,6 +21,13 @@ interface SidebarProps {
   onSearchChange: (query: string) => void;
   conflicts: ConflictGroup[];
   onOpenConflicts: () => void;
+  presets: ModPreset[];
+  selectedPresetId: string | null;
+  onSelectPreset: (presetId: string | null) => void;
+  mods: ModItem[];
+  onOpenSavePreset: () => void;
+  onApplyPreset: () => void;
+  onDeletePreset: () => void;
   onOpenCreateCategory: () => void;
   onRenameCategory: (categoryName: string) => void;
   onDeleteCategory: (categoryName: string) => void;
@@ -31,6 +38,7 @@ interface SidebarProps {
   onRescanMods: () => void;
   isRefreshing: boolean;
   hasModsDir: boolean;
+  isApplyingPreset?: boolean;
 }
 
 export default function Sidebar({
@@ -43,6 +51,13 @@ export default function Sidebar({
   onSearchChange,
   conflicts,
   onOpenConflicts,
+  presets,
+  selectedPresetId,
+  onSelectPreset,
+  mods,
+  onOpenSavePreset,
+  onApplyPreset,
+  onDeletePreset,
   onOpenCreateCategory,
   onRenameCategory,
   onDeleteCategory,
@@ -53,6 +68,7 @@ export default function Sidebar({
   onRescanMods,
   isRefreshing,
   hasModsDir,
+  isApplyingPreset,
 }: SidebarProps) {
   return (
     <Stack
@@ -115,6 +131,13 @@ export default function Sidebar({
         <SidebarActions
           conflicts={conflicts}
           onOpenConflicts={onOpenConflicts}
+          presets={presets}
+          selectedPresetId={selectedPresetId}
+          onSelectPreset={onSelectPreset}
+          mods={mods}
+          onOpenSavePreset={onOpenSavePreset}
+          onApplyPreset={onApplyPreset}
+          onDeletePreset={onDeletePreset}
           onOpenCreateCategory={onOpenCreateCategory}
           onOpenModsFolder={onOpenModsFolder}
           onOpenManualInstall={onOpenManualInstall}
@@ -123,6 +146,7 @@ export default function Sidebar({
           onRescanMods={onRescanMods}
           isRefreshing={isRefreshing}
           hasModsDir={hasModsDir}
+          isApplyingPreset={isApplyingPreset}
         />
       </Box>
     </Stack>

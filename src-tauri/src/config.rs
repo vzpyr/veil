@@ -4,10 +4,20 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use tauri::{AppHandle, Manager};
 
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+pub struct ModPreset {
+    pub id: String,
+    pub name: String,
+    #[serde(default)]
+    pub mod_ids: Vec<String>,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct GameSettings {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub dir: Option<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub presets: Vec<ModPreset>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -41,10 +51,11 @@ fn default_view_mode() -> String {
 impl Default for AppConfig {
     fn default() -> Self {
         let mut games = HashMap::new();
-        games.insert("zzz".to_string(), GameSettings::default());
-        games.insert("endfield".to_string(), GameSettings::default());
+        for game in crate::games::supported_games() {
+            games.insert(game.id, GameSettings::default());
+        }
         Self {
-            active_game_id: "zzz".to_string(),
+            active_game_id: "zenless-zone-zero".to_string(),
             auto_categorize: true,
             show_nsfw: false,
             color_scheme: "system".to_string(),
@@ -100,7 +111,7 @@ mod tests {
         let temp = tempdir().unwrap();
         let path = temp.path().join("config.json");
         let raw_json = r#"{
-            "active_game_id": "zzz",
+            "active_game_id": "zenless-zone-zero",
             "auto_categorize": true,
             "show_nsfw": false,
             "color_scheme": "dark",
@@ -127,5 +138,34 @@ mod tests {
         let loaded = read_config(&path);
         assert!(loaded.auto_check_updates);
         assert_eq!(loaded.view_mode, "list");
+    }
+
+    #[test]
+    fn test_presets_write_and_read() {
+        let temp = tempdir().unwrap();
+        let path = temp.path().join("config.json");
+        let mut games = HashMap::new();
+        games.insert(
+            "zenless-zone-zero".to_string(),
+            GameSettings {
+                dir: Some("/mods".to_string()),
+                presets: vec![ModPreset {
+                    id: "preset-1".to_string(),
+                    name: "Combat Outfit".to_string(),
+                    mod_ids: vec!["mod-a".to_string(), "mod-b".to_string()],
+                }],
+            },
+        );
+        let config = AppConfig {
+            games,
+            ..AppConfig::default()
+        };
+
+        write_config(&path, &config).unwrap();
+        let loaded = read_config(&path);
+        let zzz = loaded.games.get("zenless-zone-zero").unwrap();
+        assert_eq!(zzz.presets.len(), 1);
+        assert_eq!(zzz.presets[0].name, "Combat Outfit");
+        assert_eq!(zzz.presets[0].mod_ids, vec!["mod-a", "mod-b"]);
     }
 }

@@ -109,7 +109,7 @@ export default function Header({
       },
     ];
 
-    if (activeGameId === "ntepak") {
+    if (activeGameId === "neverness-to-everness-pak") {
       tabs.push({
         value: "loader",
         label: (

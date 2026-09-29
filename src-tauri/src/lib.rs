@@ -73,6 +73,8 @@ pub fn run() {
             link_mod_to_gamebanana,
             unlink_mod_from_gamebanana,
             set_mod_preview_image,
+            save_preset,
+            delete_preset,
         ])
         .run(tauri::generate_context!())
         .expect("error while running veil");
