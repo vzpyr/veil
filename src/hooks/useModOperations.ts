@@ -14,12 +14,16 @@ interface UseModOperationsArgs {
   activeGameId?: string;
   modsDir?: string;
   refreshData: RefreshData;
+  setLocalModEnabled: (modIds: string[], enable: boolean) => void;
+  setLocalModPreview: (modId: string, previewPath: string) => void;
 }
 
 export default function useModOperations({
   activeGameId,
   modsDir,
   refreshData,
+  setLocalModEnabled,
+  setLocalModPreview,
 }: UseModOperationsArgs) {
   const toggleMods = async (modIds: string[], enable: boolean) => {
     if (!modsDir || modIds.length === 0) return;
@@ -30,7 +34,7 @@ export default function useModOperations({
         enable,
         gameId: activeGameId,
       });
-      await refreshData();
+      setLocalModEnabled(modIds, enable);
       notifications.show({
         title: enable ? "Mods enabled" : "Mods disabled",
         message:
@@ -246,14 +250,14 @@ export default function useModOperations({
         const arrayBuffer = await blob.arrayBuffer();
         const imageBytes = Array.from(new Uint8Array(arrayBuffer));
 
-        await invoke("set_mod_preview_image", {
+        const destPath = await invoke<string>("set_mod_preview_image", {
           modsDir,
           modId: mod.id,
           imageBytes,
           gameId: activeGameId,
         });
 
-        await refreshData();
+        setLocalModPreview(mod.id, destPath);
         notifications.show({
           title: "Preview updated",
           message: `Preview image updated for ${mod.name}.`,
@@ -299,6 +303,7 @@ export default function useModOperations({
           enable: true,
           gameId: activeGameId,
         });
+        setLocalModEnabled(toEnable, true);
       }
       if (toDisable.length > 0) {
         await invoke("batch_toggle_mods", {
@@ -307,9 +312,9 @@ export default function useModOperations({
           enable: false,
           gameId: activeGameId,
         });
+        setLocalModEnabled(toDisable, false);
       }
 
-      await refreshData();
       notifications.show({
         title: "Preset applied",
         message: `Preset "${preset.name}" applied.`,

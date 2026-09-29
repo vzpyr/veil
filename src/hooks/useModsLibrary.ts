@@ -6,9 +6,11 @@ import {
   AppConfig,
   CategoryItem,
   ConflictGroup,
+  LibraryData,
   ModItem,
   ModUpdateInfo,
 } from "../types";
+import { detectConflicts } from "../utils";
 
 interface UseModsLibraryArgs {
   configRef: { current: AppConfig | null };
@@ -54,29 +56,20 @@ export default function useModsLibrary({
 
       try {
         setIsRefreshing(true);
-        const [scannedMods, catList, conflictList] = await Promise.all([
-          invoke<ModItem[]>("scan_mods", {
-            modsDir: targetDir,
-            gameId: targetGameId,
-          }),
-          invoke<CategoryItem[]>("get_categories", {
-            modsDir: targetDir,
-            gameId: targetGameId,
-          }),
-          invoke<ConflictGroup[]>("get_mod_conflicts", {
-            modsDir: targetDir,
-            gameId: targetGameId,
-          }),
-        ]);
-        setMods(scannedMods);
-        setCategories(catList);
-        setConflicts(conflictList);
+        const data = await invoke<LibraryData>("get_library_data", {
+          modsDir: targetDir,
+          gameId: targetGameId,
+        });
+
+        setMods(data.mods);
+        setCategories(data.categories);
+        setConflicts(data.conflicts);
 
         const shouldAutoCheck = Boolean(
           (activeConfig ?? configRef.current)?.auto_check_updates,
         );
         if (shouldAutoCheck) {
-          checkModsUpdates(scannedMods).then((updates) => {
+          checkModsUpdates(data.mods).then((updates) => {
             setUpdatesMap(updates);
           });
         }
@@ -91,6 +84,31 @@ export default function useModsLibrary({
       }
     },
     [activeGameId, modsDir, configRef],
+  );
+
+  const setLocalModEnabled = useCallback(
+    (modIds: string[], enable: boolean) => {
+      const idSet = new Set(modIds);
+      setMods((prev) => {
+        const next = prev.map((m) =>
+          idSet.has(m.id) ? { ...m, enabled: enable } : m,
+        );
+        setConflicts(detectConflicts(next));
+        return next;
+      });
+    },
+    [],
+  );
+
+  const setLocalModPreview = useCallback(
+    (modId: string, previewPath: string) => {
+      setMods((prev) =>
+        prev.map((m) =>
+          m.id === modId ? { ...m, preview_path: previewPath } : m,
+        ),
+      );
+    },
+    [],
   );
 
   const rescanMods = useCallback(async () => {
@@ -153,6 +171,8 @@ export default function useModsLibrary({
     isRefreshing,
     isCheckingUpdates,
     refreshData,
+    setLocalModEnabled,
+    setLocalModPreview,
     rescanMods,
     checkUpdates,
   };

@@ -2,10 +2,18 @@ use crate::conflict::{ConflictGroup, detect_conflicts};
 use crate::nte_pak::{
     delete_nte_pak_mod, move_nte_pak_mod_category, scan_nte_pak_mods, toggle_nte_pak_mod,
 };
-use crate::scanner::{ModItem, cleanup_empty_categories, set_mod_preview};
+use crate::scanner::{CategoryItem, ModItem, cleanup_empty_categories, set_mod_preview};
 use crate::symlink::{cleanup_empty_active_dir, ensure_veil_dirs, prune_orphaned_symlinks};
+use serde::{Deserialize, Serialize};
 
 use super::effective_mods_dir;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LibraryData {
+    pub mods: Vec<ModItem>,
+    pub categories: Vec<CategoryItem>,
+    pub conflicts: Vec<ConflictGroup>,
+}
 
 #[tauri::command]
 pub fn cleanup_on_boot(mods_dir: String, game_id: Option<String>) -> Result<(), String> {
@@ -21,6 +29,35 @@ pub fn cleanup_on_boot(mods_dir: String, game_id: Option<String>) -> Result<(), 
     cleanup_empty_active_dir(path)?;
     cleanup_empty_categories(path)?;
     Ok(())
+}
+
+#[tauri::command]
+pub fn get_library_data(mods_dir: String, game_id: Option<String>) -> Result<LibraryData, String> {
+    let dir = effective_mods_dir(game_id.as_deref(), &mods_dir);
+    let path = dir.as_path();
+    if game_id.as_deref() == Some("neverness-to-everness-pak") {
+        std::fs::create_dir_all(path).map_err(|e| e.to_string())?;
+        let mods = scan_nte_pak_mods(path)?;
+        let categories = crate::nte_pak::list_nte_pak_categories(path)?;
+        return Ok(LibraryData {
+            mods,
+            categories,
+            conflicts: Vec::new(),
+        });
+    }
+
+    ensure_veil_dirs(path)?;
+    prune_orphaned_symlinks(path)?;
+    cleanup_empty_active_dir(path)?;
+    let mods = crate::scanner::scan_mods(path)?;
+    let categories = crate::scanner::list_categories(path)?;
+    let conflicts = detect_conflicts(&mods);
+
+    Ok(LibraryData {
+        mods,
+        categories,
+        conflicts,
+    })
 }
 
 #[tauri::command]

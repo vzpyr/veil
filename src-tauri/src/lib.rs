@@ -52,6 +52,7 @@ pub fn run() {
             set_auto_check_updates,
             set_view_mode,
             cleanup_on_boot,
+            get_library_data,
             scan_mods,
             get_mod_conflicts,
             get_categories,

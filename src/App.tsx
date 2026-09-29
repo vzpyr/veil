@@ -30,6 +30,8 @@ export default function App() {
     activeGameId: config.activeGame?.id,
     modsDir: config.modsDir,
     refreshData: mods.refreshData,
+    setLocalModEnabled: mods.setLocalModEnabled,
+    setLocalModPreview: mods.setLocalModPreview,
   });
   const downloads = useDownloads({
     mods: mods.mods,

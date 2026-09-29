@@ -58,6 +58,12 @@ export interface ConflictGroup {
   mod_names: string[];
 }
 
+export interface LibraryData {
+  mods: ModItem[];
+  categories: CategoryItem[];
+  conflicts: ConflictGroup[];
+}
+
 type DownloadStatus =
   "queued" | "downloading" | "extracting" | "completed" | "failed";
 
