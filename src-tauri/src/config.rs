@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 use tauri::{AppHandle, Manager};
@@ -7,9 +7,9 @@ use tauri::{AppHandle, Manager};
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
 pub struct ModPreset {
     pub id: String,
-    pub name: String,
     #[serde(default)]
     pub mod_ids: Vec<String>,
+    pub name: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -26,14 +26,14 @@ pub struct AppConfig {
     #[serde(default = "default_auto_categorize")]
     pub auto_categorize: bool,
     #[serde(default)]
-    pub show_nsfw: bool,
+    pub auto_check_updates: bool,
     #[serde(default = "default_color_scheme")]
     pub color_scheme: String,
+    pub games: BTreeMap<String, GameSettings>,
     #[serde(default)]
-    pub auto_check_updates: bool,
+    pub show_nsfw: bool,
     #[serde(default = "default_view_mode")]
     pub view_mode: String,
-    pub games: HashMap<String, GameSettings>,
 }
 
 fn default_auto_categorize() -> bool {
@@ -50,18 +50,18 @@ fn default_view_mode() -> String {
 
 impl Default for AppConfig {
     fn default() -> Self {
-        let mut games = HashMap::new();
+        let mut games = BTreeMap::new();
         for game in crate::games::supported_games() {
             games.insert(game.id, GameSettings::default());
         }
         Self {
             active_game_id: "zenless-zone-zero".to_string(),
             auto_categorize: true,
-            show_nsfw: false,
-            color_scheme: "system".to_string(),
             auto_check_updates: false,
-            view_mode: "grid".to_string(),
+            color_scheme: "system".to_string(),
             games,
+            show_nsfw: false,
+            view_mode: "grid".to_string(),
         }
     }
 }
@@ -144,15 +144,15 @@ mod tests {
     fn test_presets_write_and_read() {
         let temp = tempdir().unwrap();
         let path = temp.path().join("config.json");
-        let mut games = HashMap::new();
+        let mut games = BTreeMap::new();
         games.insert(
             "zenless-zone-zero".to_string(),
             GameSettings {
                 dir: Some("/mods".to_string()),
                 presets: vec![ModPreset {
                     id: "preset-1".to_string(),
-                    name: "Combat Outfit".to_string(),
                     mod_ids: vec!["mod-a".to_string(), "mod-b".to_string()],
+                    name: "Combat Outfit".to_string(),
                 }],
             },
         );
@@ -167,5 +167,27 @@ mod tests {
         assert_eq!(zzz.presets.len(), 1);
         assert_eq!(zzz.presets[0].name, "Combat Outfit");
         assert_eq!(zzz.presets[0].mod_ids, vec!["mod-a", "mod-b"]);
+    }
+
+    #[test]
+    fn test_config_json_keys_sorted_alphabetically() {
+        let temp = tempdir().unwrap();
+        let path = temp.path().join("config.json");
+        let config = AppConfig::default();
+        write_config(&path, &config).unwrap();
+
+        let raw = fs::read_to_string(&path).unwrap();
+        let val: serde_json::Value = serde_json::from_str(&raw).unwrap();
+        let obj = val.as_object().unwrap();
+        let keys: Vec<&String> = obj.keys().collect();
+        let mut sorted_keys = keys.clone();
+        sorted_keys.sort();
+        assert_eq!(keys, sorted_keys);
+
+        let games_obj = obj.get("games").unwrap().as_object().unwrap();
+        let game_keys: Vec<&String> = games_obj.keys().collect();
+        let mut sorted_game_keys = game_keys.clone();
+        sorted_game_keys.sort();
+        assert_eq!(game_keys, sorted_game_keys);
     }
 }
