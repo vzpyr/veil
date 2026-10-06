@@ -2,8 +2,7 @@ name: Release
 
 on:
   push:
-    tags:
-      - "v*"
+    tags: ["v*"]
 
 permissions:
   contents: write
@@ -16,16 +15,16 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            bundles: deb,rpm,appimage
+            build: npm run build:all
           - os: windows-latest
-            bundles: nsis
+            build: npm run tauri build -- --bundles nsis
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
 
       - uses: dtolnay/rust-toolchain@stable
 
@@ -34,50 +33,42 @@ jobs:
           workspaces: src-tauri
 
       - name: Install Linux dependencies
-        if: matrix.os == 'ubuntu-latest'
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf rpm flatpak flatpak-builder
-          flatpak remote-add --if-not-exists --user flathub https://flathub.org/repo/flathub.flatpakrepo
+          flatpak remote-add --user flathub https://flathub.org/repo/flathub.flatpakrepo
           flatpak install -y --user flathub org.gnome.Platform//50 org.gnome.Sdk//50
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Build Linux
-        if: matrix.os == 'ubuntu-latest'
-        run: npm run build:all
-
-      - name: Build Windows
-        if: matrix.os == 'windows-latest'
-        env:
-          RUSTFLAGS: "--remap-path-prefix=$HOME=~"
-        run: npm run tauri build -- --bundles ${{ matrix.bundles }}
+      - name: Build
+        run: ${{ matrix.build }}
 
       - name: Rename
         shell: bash
-        env:
-          VERSION: ${{ github.ref_name }}
         run: |
+          v="${GITHUB_REF_NAME#v}"
           if [ -f veil.flatpak ]; then
-            mv veil.flatpak "veil-${VERSION#v}-x86_64.flatpak"
+            mv veil.flatpak "veil-$v-x86_64.flatpak"
           fi
           if [ -f src-tauri/target/release/veil.exe ]; then
-            cp src-tauri/target/release/veil.exe "src-tauri/target/release/bundle/nsis/veil-${VERSION#v}-x64.exe"
+            cp src-tauri/target/release/veil.exe "src-tauri/target/release/bundle/nsis/veil-$v-x64.exe"
           fi
           cd src-tauri/target
           while IFS= read -r f; do
             d="${f%/*}"
             case "$f" in
-              *.deb) mv "$f" "$d/veil-${VERSION#v}-amd64.deb" ;;
-              *.rpm) mv "$f" "$d/veil-${VERSION#v}-x86_64.rpm" ;;
-              *.AppImage) mv "$f" "$d/veil-${VERSION#v}-x86_64.AppImage" ;;
-              *setup.exe) mv "$f" "$d/veil-${VERSION#v}-x64-setup.exe" ;;
+              *.deb) mv "$f" "$d/veil-$v-amd64.deb" ;;
+              *.rpm) mv "$f" "$d/veil-$v-x86_64.rpm" ;;
+              *.AppImage) mv "$f" "$d/veil-$v-x86_64.AppImage" ;;
+              *setup.exe) mv "$f" "$d/veil-$v-x64-setup.exe" ;;
             esac
-          done < <(find . -path '*/bundle/*/*' -type f \( -name '*.deb' -o -name '*.rpm' -o -name '*.AppImage' -o -name '*setup.exe' \))
+          done < <(find . -path '*/bundle/*/*' -type f)
 
       - name: Upload
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: |
             src-tauri/target/**/bundle/deb/*.deb
