@@ -6,7 +6,7 @@
   <summary>Yet another 3DMigoto mod manager</summary>
   <description>
     <p>
-      Veil is a lightweight, easy-to-use manager for 3DMigoto-based mods that lets you browse, install and configure mods across multiple games effortlessly.
+      Yet another 3DMigoto (and NTE) mod manager
     </p>
   </description>
   <launchable type="desktop-id">com.vzpyr.veil.desktop</launchable>
