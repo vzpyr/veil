@@ -15,7 +15,7 @@ Yet another 3DMigoto (and NTE) mod manager
 ## Features
 
 - Supports Windows and Linux
-- Works with all 3DMigoto-based games (AKEF, GI, HI3, HSR, WUWA, ZZZ) + NTE (NEMI and pak)
+- Works with all 3DMigoto-based games (AKEF, GI, HI3, HSR, WuWa, ZZZ) + NTE (NEMI and pak)
 - Built-in NTE pak loader management (Ultimate ASI Loader + Universal Sig Bypasser)
 - Non-destructive mod activation using symlinks and _P suffix
 - Mod organization with images, categories, filters, batch operations, and automatic subfolder handling
@@ -29,23 +29,17 @@ Yet another 3DMigoto (and NTE) mod manager
 
 You can download prebuilt application bundles from [Releases](https://github.com/vzpyr/veil/releases).
 
-## Building from Source
+## Building
 
-### Prerequisites
-
-- Node.js 22+ and npm
-- Rust 1.85+ and Cargo
-- System dependencies for Tauri (such as WebKitGTK and libsoup on Linux)
-
-### Build
+You need Node.js and Rust.
 
 ```bash
 npm install
 npm run tauri build
 ```
 
-The compiled binary and distribution bundles will be located in `src-tauri/target/release/bundle/`.
+Binaries will afterwards land in `src-tauri/target/release/`.
 
 ## License
 
-MIT
+[MIT](LICENSE)
