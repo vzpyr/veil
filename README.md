@@ -27,7 +27,7 @@ Yet another 3DMigoto (and NTE) mod manager
 
 ## Installation
 
-You can download prebuilt application bundles from [Releases](https://github.com/vzpyr/veil/releases).
+You can download Veil from the [Releases](https://github.com/vzpyr/veil/releases).
 
 ## Building
 
