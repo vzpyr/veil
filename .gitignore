@@ -1,8 +1,8 @@
-src-tauri/gen/
-src-tauri/target/
+*.flatpak
+.flatpak-builder/
+build-dir/
 dist/
 node_modules/
-build-dir/
 repo/
-.flatpak-builder/
-*.flatpak
+src-tauri/gen/
+src-tauri/target/
